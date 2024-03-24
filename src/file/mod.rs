@@ -17,7 +17,7 @@ use std::path::Path;
 #[derive(Default)]
 pub struct File {
   filepath: String,
-  version: u16,
+  version: (u8, u8),
 
   tags: HashSet<String>,
 
@@ -48,7 +48,7 @@ impl File {
     &self.filepath
   }
 
-  pub fn version(&self) -> u16 {
+  pub fn version(&self) -> (u8, u8) {
     self.version
   }
 
