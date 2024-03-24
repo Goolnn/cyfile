@@ -9,6 +9,7 @@ use std::fmt::{
   Debug,
 };
 
+#[derive(Copy, Clone)]
 pub struct Date {
   year: u16,
   month: u8,
