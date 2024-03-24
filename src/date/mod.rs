@@ -13,7 +13,7 @@ pub struct Date {
   year: u16,
   month: u8,
   day: u8,
-  
+
   hour: u8,
   minute: u8,
   second: u8,
@@ -25,7 +25,7 @@ impl Date {
       year,
       month,
       day,
-      
+
       hour,
       minute,
       second,
@@ -74,7 +74,7 @@ impl Default for Date {
       year,
       month,
       day,
-      
+
       hour,
       minute,
       second,
