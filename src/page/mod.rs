@@ -34,15 +34,15 @@ impl Page {
     self.mask = mask;
   }
 
-  pub fn raw_mut(&mut self) -> &mut [u8] {
+  pub fn raw_mut(&mut self) -> &mut Vec<u8> {
     &mut self.raw
   }
 
-  pub fn raw(&self) -> &[u8] {
+  pub fn raw(&self) -> &Vec<u8> {
     &self.raw
   }
 
-  pub fn mask_mut(&mut self) -> &mut [u8] {
+  pub fn mask_mut(&mut self) -> &mut Vec<u8> {
     &mut self.mask
   }
 
@@ -50,11 +50,11 @@ impl Page {
     &self.mask
   }
 
-  pub fn notes_mut(&mut self) -> &mut [Note] {
+  pub fn notes_mut(&mut self) -> &mut Vec<Note> {
     &mut self.notes
   }
 
-  pub fn notes(&self) -> &[Note] {
+  pub fn notes(&self) -> &Vec<Note> {
     &self.notes
   }
 }
