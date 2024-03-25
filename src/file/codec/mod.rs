@@ -16,8 +16,8 @@ pub(crate) trait Encode {
   fn encode(&self, codec: &mut Codec) -> FileResult<()>;
 }
 
-pub(crate) trait Decode {
-  fn decode(&self, codec: &mut Codec) -> FileResult<()>;
+pub(crate) trait Decode: Sized {
+  fn decode(&self, codec: &mut Codec) -> FileResult<Self>;
 }
 
 pub struct Codec {
