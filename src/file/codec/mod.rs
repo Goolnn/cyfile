@@ -102,13 +102,7 @@ impl Codec {
   pub fn read_data<T: Copy>(&mut self) -> FileResult<Vec<u8>>
     where T: TryInto<usize>
   {
-    let len = if let Ok(len) = self.read_primitive::<T>()?.try_into() {
-      len
-    } else {
-      return Err(FileError::ReadFailed);
-    };
-
-    let mut buffer = vec![0u8; len];
+    let mut buffer = vec![0u8; self.read_len::<T>()?];
 
     if self.stream.read(&mut buffer)? != buffer.len() {
       Err(FileError::Undefined)
@@ -120,13 +114,7 @@ impl Codec {
   pub fn read_string<T: Copy>(&mut self) -> FileResult<String>
     where T: TryInto<usize>
   {
-    let len = if let Ok(len) = self.read_primitive::<T>()?.try_into() {
-      len
-    } else {
-      return Err(FileError::ReadFailed);
-    };
-
-    let mut buffer = vec![0u8; len];
+    let mut buffer = vec![0u8; self.read_len::<T>()?];
 
     if self.stream.read(&mut buffer)? != buffer.len() {
       return Err(FileError::ReadFailed);
@@ -136,6 +124,16 @@ impl Codec {
 
     if let Ok(string) = String::from_utf8(buffer) {
       Ok(string)
+    } else {
+      Err(FileError::ReadFailed)
+    }
+  }
+  
+  fn read_len<T: Copy>(&mut self) -> FileResult<usize>
+    where T: TryInto<usize>
+  {
+    if let Ok(len) = self.read_primitive::<T>()?.try_into() {
+      Ok(len)
     } else {
       Err(FileError::ReadFailed)
     }
