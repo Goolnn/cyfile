@@ -76,7 +76,7 @@ impl Codec {
   pub fn write_string<T: Copy>(&mut self, data: &str) -> FileResult<()>
     where usize: TryInto<T>
   {
-    let mut data = Vec::from(data.as_bytes());
+    let data = Vec::from(data.as_bytes());
 
     let len = if let Ok(len) = data.len().try_into() {
       len
