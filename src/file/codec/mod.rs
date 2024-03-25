@@ -28,17 +28,21 @@ pub struct Codec {
 }
 
 impl Codec {
-  pub fn new(stream: File, filepath: &str, version: (u8, u8)) -> Self {
+  pub fn new(stream: File, filepath: &str) -> Self {
     Self {
       stream,
 
       filepath: filepath.to_string(),
-      version,
+      version: (0, 0),
     }
   }
 
   pub fn into_inner(self) -> File {
     self.stream
+  }
+  
+  pub fn set_version(&mut self, version: (u8, u8)) {
+    self.version = version;
   }
   
   pub fn filepath(&self) -> &str {
