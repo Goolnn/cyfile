@@ -78,6 +78,26 @@ impl Codec {
   {
     let mut data = Vec::from(data.as_bytes());
 
+    let len = if let Ok(len) = data.len().try_into() {
+      len
+    } else {
+      return Err(FileError::WriteFailed);
+    };
+
+    self.write_primitive(len)?;
+
+    if self.stream.write(&data)? != data.len() {
+      Err(FileError::WriteFailed)
+    } else {
+      Ok(())
+    }
+  }
+
+  pub fn write_string_with_nil<T: Copy>(&mut self, data: &str) -> FileResult<()>
+    where usize: TryInto<T>
+  {
+    let mut data = Vec::from(data.as_bytes());
+
     data.push(0);
 
     let len = if let Ok(len) = data.len().try_into() {
@@ -120,6 +140,22 @@ impl Codec {
   }
 
   pub fn read_string<T: Copy>(&mut self) -> FileResult<String>
+    where T: TryInto<usize>
+  {
+    let mut buffer = vec![0u8; self.read_len::<T>()?];
+
+    if self.stream.read(&mut buffer)? != buffer.len() {
+      return Err(FileError::ReadFailed);
+    }
+
+    if let Ok(string) = String::from_utf8(buffer) {
+      Ok(string)
+    } else {
+      Err(FileError::ReadFailed)
+    }
+  }
+
+  pub fn read_string_with_nil<T: Copy>(&mut self) -> FileResult<String>
     where T: TryInto<usize>
   {
     let mut buffer = vec![0u8; self.read_len::<T>()?];
