@@ -1,3 +1,4 @@
+use image::GenericImageView;
 use crate::note::Note;
 
 #[derive(Default)]
@@ -56,5 +57,15 @@ impl Page {
 
   pub fn notes(&self) -> &Vec<Note> {
     &self.notes
+  }
+  
+  pub fn size(&self) -> (usize, usize) {
+    if let Ok(image) = image::load_from_memory(&self.raw) {
+      let (width, height) = image.dimensions();
+
+      (width as usize, height as usize)
+    } else {
+      (0, 0)
+    }
   }
 }
