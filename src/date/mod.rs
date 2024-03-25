@@ -39,6 +39,10 @@ impl Date {
       second,
     }
   }
+  
+  pub fn now() -> Self {
+    Self::default()
+  }
 
   pub fn year(&self) -> u16 {
     self.year
