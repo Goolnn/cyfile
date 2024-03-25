@@ -119,3 +119,391 @@ impl File {
     &self.pages
   }
 }
+
+impl Encode for File {
+  fn encode(&self, codec: &mut Codec) -> FileResult<()> {
+    // 写入文件头部数据
+    codec.write_data(&HEADER_DATA)?;
+
+    // 写入文件版本数据
+    let (major, minor) = codec.version();
+
+    codec.write_primitive(major)?;
+    codec.write_primitive(minor)?;
+
+    match (major, minor) {
+      (0, 0) => {
+        // 图像数量
+        codec.write_primitive(self.pages.len() as u8)?;
+
+        for page in &self.pages {
+          // 图像数据
+          codec.write_data_with_len::<u32>(page.raw())?;
+
+          // 图像尺寸
+          let (page_width, page_height) = page.size();
+
+          // 标签数量
+          codec.write_primitive(page.notes().len() as u8)?;
+
+          for note in page.notes() {
+            let note_x = (page_width as f64 * (note.x() + 1.0) / 2.0) as u16;
+            let note_y = (page_height as f64 * (1.0 - (note.y() + 1.0) / 2.0)) as u16;
+
+            codec.write_primitive(note_x)?;
+            codec.write_primitive(note_y)?;
+
+            // 合并文本
+            let merged_text = note.merge_texts();
+
+            codec.write_string_with_nil::<u16>(&merged_text)?;
+          }
+        }
+
+        Ok(())
+      }
+
+      (0, 1) => {
+        // 图像数量
+        codec.write_primitive(self.pages.len() as u8)?;
+
+        // 保存次数
+        codec.write_primitive(1_u8)?;
+
+        // 保存时间
+        Date::now().encode(codec)?;
+
+        // 图像数据
+        for page in &self.pages {
+          codec.write_data_with_len::<u32>(page.raw())?;
+        }
+
+        // 标记数据
+        for page in &self.pages {
+          // 图像尺寸
+          let (page_width, page_height) = page.size();
+
+          // 标记数量
+          codec.write_primitive(page.notes().len() as u8)?;
+
+          for note in page.notes() {
+            let note_x = (page_width as f64 * ((note.x() + 1.0) / 2.0)) as u16;
+            let note_y = (page_height as f64 * (1.0 - (note.y() + 1.0) / 2.0)) as u16;
+
+            codec.write_primitive(note_x)?;
+            codec.write_primitive(note_y)?;
+
+            // 合并文本
+            let merged_text = note.merge_texts();
+
+            // 初译数据
+            codec.write_string_with_nil::<u16>(&merged_text)?;
+            // 校对数据
+            codec.write_string_with_nil::<u16>("")?;
+          }
+        }
+
+        Ok(())
+      }
+
+      (0, 2) => {
+        // 分类标签
+        self.tags.encode(codec)?;
+
+        // 创建时间
+        self.created_date.encode(codec)?;
+
+        // 保存时间
+        self.saved_date.encode(codec)?;
+
+        // 工作人员
+        self.credits.encode(codec)?;
+
+        // 图像数据
+        for page in &self.pages {
+          page.encode(codec)?;
+        }
+
+        Ok(())
+      }
+
+      _ => Err(FileError::InvalidVersion),
+    }
+  }
+}
+
+impl Encode for HashSet<String> {
+  fn encode(&self, codec: &mut Codec) -> FileResult<()> {
+    // 标签数量
+    codec.write_primitive(self.len() as u32)?;
+
+    // 标签数据
+    for tag in self {
+      codec.write_string::<u32>(tag)?;
+    }
+
+    Ok(())
+  }
+}
+
+impl Encode for HashMap<Credit, HashSet<String>> {
+  fn encode(&self, codec: &mut Codec) -> FileResult<()> {
+    // 职位数量
+    codec.write_primitive(self.len() as u32)?;
+
+    for (&credit, stuffs) in self {
+      codec.write_primitive(credit as u8)?;
+
+      // 人员数量
+      codec.write_primitive(stuffs.len() as u32)?;
+
+      for stuff in stuffs {
+        codec.write_string::<u32>(stuff)?;
+      }
+    }
+
+    Ok(())
+  }
+}
+
+impl Decode for File {
+  fn decode(codec: &mut Codec) -> FileResult<Self> {
+    // 头部数据
+    let header_data = codec.read_data(15)?;
+
+    if header_data != HEADER_DATA {
+      return Err(FileError::InvalidHeader);
+    }
+
+    // 版本数据
+    let (major, minor) = (codec.read_primitive::<u8>()?, codec.read_primitive::<u8>()?);
+
+    if !VERSIONS.contains(&(major, minor)) {
+      return Err(FileError::InvalidVersion);
+    }
+
+    match (major, minor) {
+      (0, 0) => {
+        let page_count = codec.read_primitive::<u8>()?;
+
+        let mut pages = Vec::with_capacity(page_count as usize);
+
+        for _ in 0..page_count {
+          let mut page = Page::new(codec.read_data_with_len::<u32>()?);
+
+          let (page_width, page_height) = page.size();
+
+          let note_count = codec.read_primitive::<u8>()?;
+
+          for _ in 0..note_count {
+            let note_x = codec.read_primitive::<u16>()? as f64;
+            let note_y = codec.read_primitive::<u16>()? as f64;
+
+            let content = codec.read_string_with_nil::<u16>()?;
+
+            let mut note = Note::with_coordinate(
+              note_x / page_width as f64 * 2.0 - 1.0,
+              1.0 - note_y / page_height as f64 * 2.0,
+            );
+
+            note.texts_mut().push(Text::with_content(&content));
+
+            page.notes_mut().push(note);
+          }
+
+          pages.push(page);
+        }
+
+        Ok(Self {
+          filepath: codec.filepath().to_string(),
+          version: (major, minor),
+
+          pages,
+
+          ..Self::default()
+        })
+      }
+
+      (0, 1) => {
+        // 图像数量
+        let page_count = codec.read_primitive::<u8>()?;
+
+        let mut pages = Vec::with_capacity(page_count as usize);
+
+        // 保存次数
+        codec.read_primitive::<u8>()?;
+
+        // 保存时间
+        let date = Date::decode(codec)?;
+
+        // 读取图像
+        for _ in 0..page_count {
+          let image_data = codec.read_data_with_len::<u32>()?;
+
+          pages.push(Page::new(image_data));
+        }
+
+        // 读取标签
+        for i in 0..page_count {
+          // 标签数量
+          let note_count = codec.read_primitive::<u8>()?;
+
+          let mut page = &mut pages[i as usize];
+
+          page.notes_mut().reserve(note_count as usize);
+
+          let (page_width, page_height) = page.size();
+
+          for _ in 0..note_count {
+            let note_x = codec.read_primitive::<u16>()? as f64;
+            let note_y = codec.read_primitive::<u16>()? as f64;
+
+            let mut note = Note::with_coordinate(
+              note_x / page_width as f64 * 2.0 - 1.0,
+              1.0 - note_y / page_height as f64 * 2.0,
+            );
+
+            let draft = codec.read_string::<u16>()?;
+            let revision = codec.read_string::<u16>()?;
+
+            // 解析 HTML 文本
+            let regex = match Regex::new(r"<span.*?>|</span>") {
+              Ok(regex) => regex,
+              Err(_) => return Err(FileError::Undefined),
+            };
+
+            let draft = regex.replace_all(&draft, "").to_string();
+            let revision = regex.replace_all(&revision, "").to_string();
+
+            let regex = match Regex::new(r"<p.*?>(.*)</p>") {
+              Ok(regex) => regex,
+              Err(_) => return Err(FileError::Undefined),
+            };
+
+            let extract = |text| {
+              regex.captures_iter(text).map(|capture| {
+                let (_, [text]) = capture.extract();
+
+                if text == "<br />" {
+                  String::new()
+                } else {
+                  text.replace("<br />", "\n")
+                }
+              }).collect::<Vec<String>>().join("\n")
+            };
+
+            let draft = extract(&draft);
+            let revision = extract(&revision);
+
+            // 添加文本
+            if !draft.is_empty() {
+              note.texts_mut().push(Text::with_content(&draft));
+            }
+
+            if !revision.is_empty() {
+              note.texts_mut().push(Text::with_content(&revision));
+            }
+
+            page.notes_mut().push(note);
+          }
+        }
+
+        Ok(Self {
+          filepath: codec.filepath().to_string(),
+          version: (major, minor),
+
+          created_date: date,
+          saved_date: date,
+
+          pages,
+
+          ..Self::default()
+        })
+      }
+
+      (0, 2) => {
+        // 分类标签
+        let tags = HashSet::decode(codec)?;
+
+        // 创建时间
+        let created_date = Date::decode(codec)?;
+        // 保存时间
+        let saved_date = Date::decode(codec)?;
+
+        // 工作人员
+        let credits = HashMap::decode(codec)?;
+
+        // 图像数据
+        let page_count = codec.read_primitive::<u32>()?;
+
+        let mut pages = Vec::with_capacity(page_count as usize);
+
+        for _ in 0..page_count {
+          pages.push(Page::decode(codec)?);
+        }
+
+        Ok(Self {
+          filepath: codec.filepath().to_string(),
+          version: (major, minor),
+
+          tags,
+
+          created_date,
+          saved_date,
+
+          credits,
+
+          pages,
+        })
+      }
+
+      _ => Err(FileError::InvalidVersion),
+    }
+  }
+}
+
+impl Decode for HashSet<String> {
+  fn decode(codec: &mut Codec) -> FileResult<Self> {
+    // 标签数量
+    let note_count = codec.read_primitive::<u32>()?;
+
+    let mut tags = Self::with_capacity(note_count as usize);
+
+    // 标签数据
+    for _ in 0..note_count {
+      let tag = codec.read_string::<u32>()?;
+
+      tags.insert(tag);
+    }
+
+    Ok(tags)
+  }
+}
+
+impl Decode for HashMap<Credit, HashSet<String>> {
+  fn decode(codec: &mut Codec) -> FileResult<Self> {
+    // 职位数量
+    let credit_count = codec.read_primitive::<u32>()?;
+
+    let mut credits = Self::with_capacity(credit_count as usize);
+
+    for _ in 0..credit_count {
+      let credit = Credit::from(codec.read_primitive::<u8>()?);
+
+      // 人员数量
+      let stuff_count = codec.read_primitive::<u32>()?;
+
+      let mut stuffs = HashSet::with_capacity(stuff_count as usize);
+
+      for _ in 0..stuff_count {
+        let stuff = codec.read_string::<u32>()?;
+
+        stuffs.insert(stuff);
+      }
+
+      credits.insert(credit, stuffs);
+    }
+
+    Ok(credits)
+  }
+}
