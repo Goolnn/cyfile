@@ -1,7 +1,12 @@
 pub enum Credit {
-  Translators,      // 翻译
-  Proofreaders,     // 校对
-  Retouchers,       // 修图
-  Typesetters,      // 嵌字
-  Supervisors,      // 监修
+  // 翻译
+  Translators,
+  // 校对
+  Proofreaders,
+  // 修图
+  Retouchers,
+  // 嵌字
+  Typesetters,
+  // 监修
+  Supervisors,
 }
