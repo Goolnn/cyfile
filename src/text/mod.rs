@@ -1,3 +1,11 @@
+use crate::error::FileResult;
+
+use crate::file::codec::{
+  Encode,
+  Decode,
+  Codec,
+};
+
 #[derive(Default)]
 pub struct Text {
   content: String,
@@ -44,5 +52,23 @@ impl Text {
 
   pub fn comment(&self) -> &str {
     &self.comment
+  }
+}
+
+impl Encode for Text {
+  fn encode(&self, codec: &mut Codec) -> FileResult<()> {
+    codec.write_string::<u32>(&self.content)?;
+    codec.write_string::<u32>(&self.comment)?;
+
+    Ok(())
+  }
+}
+
+impl Decode for Text {
+  fn decode(&self, codec: &mut Codec) -> FileResult<Self> {
+    Ok(Self {
+      content: codec.read_string::<u32>()?,
+      comment: codec.read_string::<u32>()?,
+    })
   }
 }
