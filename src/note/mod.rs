@@ -1,6 +1,9 @@
 use crate::text::Text;
+use crate::page::Page;
 
-pub struct Note {
+pub struct Note<'a> {
+  parent: Option<&'a Page>,
+  
   x: f64,
   y: f64,
 
@@ -9,30 +12,36 @@ pub struct Note {
   texts: Vec<Text>,
 }
 
-impl Note {
-  pub fn new() -> Self {
-    Self::default()
+impl<'a> Note<'a> {
+  pub fn new(parent: &'a Page) -> Self {
+    Self {
+      parent: Some(parent),
+      
+      ..Self::default()
+    }
   }
 
-  pub fn with_coordinate_and_choice(x: f64, y: f64, choice: usize) -> Self {
+  pub fn with_coordinate_and_choice(parent: &'a Page, x: f64, y: f64, choice: usize) -> Self {
     Self {
+      parent: Some(parent),
+      
       x,
       y,
 
       choice,
 
-      texts: Vec::new(),
+      ..Self::default()
     }
   }
 
-  pub fn with_coordinate(x: f64, y: f64) -> Self {
+  pub fn with_coordinate(parent: &'a Page, x: f64, y: f64) -> Self {
     Self {
+      parent: Some(parent),
+      
       x,
       y,
 
-      choice: 0,
-
-      texts: Vec::new(),
+      ..Self::default()
     }
   }
 
@@ -69,9 +78,11 @@ impl Note {
   }
 }
 
-impl Default for Note {
+impl<'a> Default for Note<'a> {
   fn default() -> Self {
     Self {
+      parent: None,
+      
       x: 0.0,
       y: 0.0,
 
