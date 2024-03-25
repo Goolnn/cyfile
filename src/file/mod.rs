@@ -1,3 +1,5 @@
+pub(crate) mod codec;
+
 use crate::credit::Credit;
 use crate::page::Page;
 use crate::date::Date;
