@@ -23,20 +23,26 @@ pub(crate) trait Decode: Sized {
 pub struct Codec {
   stream: File,
 
+  filepath: String,
   version: (u8, u8),
 }
 
 impl Codec {
-  pub fn new(stream: File, version: (u8, u8)) -> Self {
+  pub fn new(stream: File, filepath: &str, version: (u8, u8)) -> Self {
     Self {
       stream,
 
+      filepath: filepath.to_string(),
       version,
     }
   }
 
   pub fn into_inner(self) -> File {
     self.stream
+  }
+  
+  pub fn filepath(&self) -> &str {
+    &self.filepath
   }
 
   pub fn version(&self) -> (u8, u8) {
