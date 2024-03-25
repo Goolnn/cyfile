@@ -1,6 +1,8 @@
 use crate::note::Note;
 
-use image::GenericImageView;
+use image::io::Reader;
+
+use std::io::Cursor;
 
 #[derive(Default)]
 pub struct Page {
@@ -61,12 +63,8 @@ impl Page {
   }
 
   pub fn size(&self) -> (usize, usize) {
-    if let Ok(image) = image::load_from_memory(&self.raw) {
-      let (width, height) = image.dimensions();
+    let (width, height) = Reader::new(Cursor::new(&self.raw)).into_dimensions().unwrap_or((0, 0));
 
-      (width as usize, height as usize)
-    } else {
-      (0, 0)
-    }
+    (width as usize, height as usize)
   }
 }
