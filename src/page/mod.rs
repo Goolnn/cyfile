@@ -101,7 +101,7 @@ impl Encode for Page {
 
     match codec.version() {
       (0, 0) => {
-        codec.write_data::<u32>(&self.raw)?;
+        codec.write_data_with_len::<u32>(&self.raw)?;
 
         let (image_width, image_height) = {
           let (image_width, image_height) = self.size();
@@ -129,8 +129,8 @@ impl Encode for Page {
       }
 
       (0, 2) => {
-        codec.write_data::<u32>(&self.raw)?;
-        codec.write_data::<u32>(&self.mask)?;
+        codec.write_data_with_len::<u32>(&self.raw)?;
+        codec.write_data_with_len::<u32>(&self.mask)?;
 
         codec.write_primitive(self.notes.len() as u32)?;
 

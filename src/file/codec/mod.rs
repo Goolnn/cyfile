@@ -55,7 +55,15 @@ impl Codec {
     }
   }
 
-  pub fn write_data<T: Copy>(&mut self, data: &[u8]) -> FileResult<()>
+  pub fn write_data(&mut self, data: &[u8]) -> FileResult<()> {
+    if self.stream.write(data)? != data.len() {
+      Err(FileError::WriteFailed)
+    } else {
+      Ok(())
+    }
+  }
+
+  pub fn write_data_with_len<T: Copy>(&mut self, data: &[u8]) -> FileResult<()>
     where usize: TryInto<T>
   {
     let len = if let Ok(len) = data.len().try_into() {
@@ -127,7 +135,17 @@ impl Codec {
     }
   }
 
-  pub fn read_data<T: Copy>(&mut self) -> FileResult<Vec<u8>>
+  pub fn read_data(&mut self, len: usize) -> FileResult<Vec<u8>> {
+    let mut buffer = vec![0u8; len];
+
+    if self.stream.read(&mut buffer)? != buffer.len() {
+      Err(FileError::Undefined)
+    } else {
+      Ok(buffer)
+    }
+  }
+
+  pub fn read_data_with_len<T: Copy>(&mut self) -> FileResult<Vec<u8>>
     where T: TryInto<usize>
   {
     let mut buffer = vec![0u8; self.read_len::<T>()?];
