@@ -22,17 +22,25 @@ pub(crate) trait Decode {
 
 pub struct Codec {
   stream: File,
+  
+  version: (u8, u8),
 }
 
 impl Codec {
-  pub fn new(stream: File) -> Self {
+  pub fn new(stream: File, version: (u8, u8)) -> Self {
     Self {
       stream,
+      
+      version,
     }
   }
 
   pub fn into_inner(self) -> File {
     self.stream
+  }
+  
+  pub fn version(&self) -> (u8, u8) {
+    self.version
   }
 
   pub fn write_primitive<T: Copy>(&mut self, data: T) -> FileResult<()> {
