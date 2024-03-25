@@ -65,7 +65,7 @@ impl Encode for Text {
 }
 
 impl Decode for Text {
-  fn decode(&self, codec: &mut Codec) -> FileResult<Self> {
+  fn decode(codec: &mut Codec) -> FileResult<Self> {
     Ok(Self {
       content: codec.read_string::<u32>()?,
       comment: codec.read_string::<u32>()?,

@@ -118,7 +118,7 @@ impl Encode for Date {
 }
 
 impl Decode for Date {
-  fn decode(&self, codec: &mut Codec) -> FileResult<Self> {
+  fn decode(codec: &mut Codec) -> FileResult<Self> {
     let year = codec.read_primitive::<u16>()?;
     let month = codec.read_primitive::<u8>()?;
     let day = codec.read_primitive::<u8>()?;
