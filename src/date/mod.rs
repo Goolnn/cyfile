@@ -8,6 +8,9 @@ use std::fmt::{
   Formatter,
   Debug,
 };
+use crate::error::FileResult;
+
+use crate::file::codec::{Codec, Encode};
 
 #[derive(Copy, Clone)]
 pub struct Date {
@@ -93,5 +96,19 @@ impl Debug for Date {
       self.minute,
       self.second,
     )
+  }
+}
+
+impl Encode for Date {
+  fn encode(&self, codec: &mut Codec) -> FileResult<()> {
+    codec.write_primitive(self.year)?;
+    codec.write_primitive(self.month)?;
+    codec.write_primitive(self.day)?;
+
+    codec.write_primitive(self.hour)?;
+    codec.write_primitive(self.minute)?;
+    codec.write_primitive(self.second)?;
+
+    Ok(())
   }
 }
