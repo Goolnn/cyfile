@@ -10,3 +10,17 @@ pub enum Credit {
   // 监修
   Supervisors,
 }
+
+impl From<u8> for Credit {
+  fn from(value: u8) -> Self {
+    match value { 
+      0 => Self::Translators,
+      1 => Self::Proofreaders,
+      2 => Self::Retouchers,
+      3 => Self::Typesetters,
+      4 => Self::Supervisors,
+      
+      _ => Self::Translators,
+    }
+  }
+}
