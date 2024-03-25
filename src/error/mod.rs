@@ -10,6 +10,9 @@ pub enum FileError {
   PathNotExists,
   PathNotFile,
 
+  WriteFailed,
+  ReadFailed,
+
   Undefined,
 }
 
