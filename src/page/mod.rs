@@ -1,5 +1,6 @@
-use image::GenericImageView;
 use crate::note::Note;
+
+use image::GenericImageView;
 
 #[derive(Default)]
 pub struct Page {
@@ -58,7 +59,7 @@ impl Page {
   pub fn notes(&self) -> &Vec<Note> {
     &self.notes
   }
-  
+
   pub fn size(&self) -> (usize, usize) {
     if let Ok(image) = image::load_from_memory(&self.raw) {
       let (width, height) = image.dimensions();
