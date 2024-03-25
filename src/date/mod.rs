@@ -10,7 +10,11 @@ use std::fmt::{
 };
 use crate::error::FileResult;
 
-use crate::file::codec::{Codec, Encode};
+use crate::file::codec::{
+  Encode,
+  Decode,
+  Codec,
+};
 
 #[derive(Copy, Clone)]
 pub struct Date {
@@ -110,5 +114,27 @@ impl Encode for Date {
     codec.write_primitive(self.second)?;
 
     Ok(())
+  }
+}
+
+impl Decode for Date {
+  fn decode(&self, codec: &mut Codec) -> FileResult<Self> {
+    let year = codec.read_primitive::<u16>()?;
+    let month = codec.read_primitive::<u8>()?;
+    let day = codec.read_primitive::<u8>()?;
+
+    let hour = codec.read_primitive::<u8>()?;
+    let minute = codec.read_primitive::<u8>()?;
+    let second = codec.read_primitive::<u8>()?;
+
+    Ok(Self {
+      year,
+      month,
+      day,
+
+      hour,
+      minute,
+      second,
+    })
   }
 }
