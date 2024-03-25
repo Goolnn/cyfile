@@ -73,6 +73,22 @@ impl Note {
   pub fn texts(&self) -> &Vec<Text> {
     &self.texts
   }
+
+  pub(crate) fn merge_texts(&self) -> String {
+    self.texts.iter().map(|text| {
+      let mut result = String::new();
+
+      if text.content().is_empty() && !text.comment().is_empty() {
+        result.push_str(text.comment());
+      } else if text.comment().is_empty() && !text.content().is_empty() {
+        result.push_str(text.content());
+      } else {
+        result.push_str(&format!("{}\n\n{}", text.content(), text.comment()));
+      }
+
+      result
+    }).collect::<Vec<String>>().join("\n\n")
+  }
 }
 
 impl Default for Note {

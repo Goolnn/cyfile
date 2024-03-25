@@ -83,22 +83,6 @@ impl Page {
 
 impl Encode for Page {
   fn encode(&self, codec: &mut Codec) -> FileResult<()> {
-    fn merge_text(texts: &[Text]) -> String {
-      texts.iter().map(|text| {
-        let mut result = String::new();
-
-        if text.content().is_empty() && !text.comment().is_empty() {
-          result.push_str(text.comment());
-        } else if text.comment().is_empty() && !text.content().is_empty() {
-          result.push_str(text.content());
-        } else {
-          result.push_str(&format!("{}\n\n{}", text.content(), text.comment()));
-        }
-
-        result
-      }).collect::<Vec<String>>().join("\n\n")
-    }
-
     match codec.version() {
       (0, 0) => {
         codec.write_data_with_len::<u32>(&self.raw)?;
@@ -120,7 +104,7 @@ impl Encode for Page {
           codec.write_primitive(note_x)?;
           codec.write_primitive(note_y)?;
 
-          let merged_text = merge_text(note.texts());
+          let merged_text = note.merge_texts();
 
           codec.write_string_with_nil::<u16>(&merged_text)?;
         }
