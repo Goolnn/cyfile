@@ -32,6 +32,13 @@ const VERSIONS: [[u8; 2]; 3] = [
   VERSION_0_2,
 ];
 
+trait Export {
+  fn export_to_with_version(&mut self) -> FileResult<()>;
+  fn export_with_version(&mut self) -> FileResult<()>;
+  fn export_to(&mut self) -> FileResult<()>;
+  fn export(&mut self) -> FileResult<()>;
+}
+
 #[derive(Default)]
 pub struct File {
   filepath: String,
