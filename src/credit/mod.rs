@@ -1,3 +1,4 @@
+#[derive(Clone, Copy)]
 pub enum Credit {
   // 翻译
   Translators,
