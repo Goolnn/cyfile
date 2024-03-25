@@ -15,6 +15,7 @@ use std::collections::{
   HashSet,
   HashMap,
 };
+use std::fs;
 
 use crate::credit::Credit;
 use crate::text::Text;
@@ -65,15 +66,37 @@ pub struct File {
 }
 
 impl File {
+  pub fn open(filepath: &str) -> FileResult<Self> {
+    let path = Path::new(filepath);
+    
+    // 判断路径是否存在
+    if !path.exists() {
+      return Err(FileError::PathNotExists);
+    }
+    
+    // 判断路径是否是文件
+    if !path.is_file() {
+      return Err(FileError::PathNotFile);
+    }
+    
+    // 创建编解码器
+    let mut codec = Codec::new(fs::File::open(path)?, filepath);
+    
+    // 解码文件数据
+    Self::decode(&mut codec)
+  }
+
   pub fn new(filepath: &str) -> FileResult<Self> {
     let path = Path::new(filepath);
 
+    // 判断文件是否为路径
     if path.exists() && path.is_dir() {
       return Err(FileError::PathIsDirectory);
     }
 
     Ok(Self {
       filepath: filepath.to_string(),
+      version: VERSION_LATEST,
 
       ..Self::default()
     })
@@ -281,6 +304,8 @@ impl Decode for File {
     if !VERSIONS.contains(&(major, minor)) {
       return Err(FileError::InvalidVersion);
     }
+    
+    codec.set_version((major, minor));
 
     match (major, minor) {
       (0, 0) => {
