@@ -1,9 +1,6 @@
 use crate::text::Text;
 
-use crate::error::{
-  FileResult,
-  FileError,
-};
+use crate::error::FileResult;
 
 use crate::file::codec::{
   Encode,
@@ -93,55 +90,43 @@ impl Default for Note {
 
 impl Encode for Note {
   fn encode(&self, codec: &mut Codec) -> FileResult<()> {
-    match codec.version() {
-      (0, 2) => {
-        codec.write_primitive(self.x)?;
-        codec.write_primitive(self.y)?;
+    codec.write_primitive(self.x)?;
+    codec.write_primitive(self.y)?;
 
-        codec.write_primitive(self.choice)?;
+    codec.write_primitive(self.choice)?;
 
-        codec.write_primitive(self.texts.len() as u32)?;
+    codec.write_primitive(self.texts.len() as u32)?;
 
-        for text in &self.texts {
-          text.encode(codec)?;
-        }
-
-        Ok(())
-      }
-
-      _ => Err(FileError::InvalidVersion),
+    for text in &self.texts {
+      text.encode(codec)?;
     }
+
+    Ok(())
   }
 }
 
 impl Decode for Note {
   fn decode(codec: &mut Codec) -> FileResult<Self> {
-    match codec.version() {
-      (0, 2) => {
-        let x = codec.read_primitive::<f64>()?;
-        let y = codec.read_primitive::<f64>()?;
+    let x = codec.read_primitive::<f64>()?;
+    let y = codec.read_primitive::<f64>()?;
 
-        let choice = codec.read_primitive::<u32>()?;
+    let choice = codec.read_primitive::<u32>()?;
 
-        let len = codec.read_primitive::<u32>()?;
+    let len = codec.read_primitive::<u32>()?;
 
-        let mut texts = Vec::with_capacity(len as usize);
+    let mut texts = Vec::with_capacity(len as usize);
 
-        for _ in 0..len {
-          texts.push(Text::decode(codec)?);
-        }
-
-        Ok(Self {
-          x,
-          y,
-
-          choice,
-
-          texts,
-        })
-      }
-
-      _ => Err(FileError::InvalidVersion),
+    for _ in 0..len {
+      texts.push(Text::decode(codec)?);
     }
+
+    Ok(Self {
+      x,
+      y,
+
+      choice,
+
+      texts,
+    })
   }
 }
