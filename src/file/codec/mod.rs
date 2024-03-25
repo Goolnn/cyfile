@@ -22,7 +22,7 @@ pub(crate) trait Decode {
 
 pub struct Codec {
   stream: File,
-  
+
   version: (u8, u8),
 }
 
@@ -30,7 +30,7 @@ impl Codec {
   pub fn new(stream: File, version: (u8, u8)) -> Self {
     Self {
       stream,
-      
+
       version,
     }
   }
@@ -38,7 +38,7 @@ impl Codec {
   pub fn into_inner(self) -> File {
     self.stream
   }
-  
+
   pub fn version(&self) -> (u8, u8) {
     self.version
   }
@@ -136,7 +136,7 @@ impl Codec {
       Err(FileError::ReadFailed)
     }
   }
-  
+
   fn read_len<T: Copy>(&mut self) -> FileResult<usize>
     where T: TryInto<usize>
   {
