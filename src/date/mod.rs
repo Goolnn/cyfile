@@ -1,3 +1,5 @@
+use crate::error::FileResult;
+
 use chrono::{
   Timelike,
   Datelike,
@@ -8,7 +10,6 @@ use std::fmt::{
   Formatter,
   Debug,
 };
-use crate::error::FileResult;
 
 use crate::file::codec::{
   Encode,
@@ -39,7 +40,7 @@ impl Date {
       second,
     }
   }
-  
+
   pub fn now() -> Self {
     Self::default()
   }

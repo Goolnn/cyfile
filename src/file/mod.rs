@@ -1,5 +1,15 @@
 pub(crate) mod codec;
 
+use crate::credit::Credit;
+use crate::text::Text;
+use crate::page::Page;
+use crate::note::Note;
+use crate::date::Date;
+
+use regex::Regex;
+
+use std::path::Path;
+
 use crate::error::{
   FileResult,
   FileError,
@@ -15,17 +25,8 @@ use std::collections::{
   HashSet,
   HashMap,
 };
+
 use std::fs;
-
-use crate::credit::Credit;
-use crate::text::Text;
-use crate::page::Page;
-use crate::note::Note;
-use crate::date::Date;
-
-use regex::Regex;
-
-use std::path::Path;
 
 // 头部数据
 const HEADER_DATA: [u8; 15] = [0xE8, 0x8B, 0x8D, 0xE7, 0x9C, 0xBC, 0xE6, 0xB1, 0x89, 0xE5, 0x8C, 0x96, 0xE7, 0xBB, 0x84];
@@ -68,20 +69,20 @@ pub struct File {
 impl File {
   pub fn open(filepath: &str) -> FileResult<Self> {
     let path = Path::new(filepath);
-    
+
     // 判断路径是否存在
     if !path.exists() {
       return Err(FileError::PathNotExists);
     }
-    
+
     // 判断路径是否是文件
     if !path.is_file() {
       return Err(FileError::PathNotFile);
     }
-    
+
     // 创建编解码器
     let mut codec = Codec::new(fs::File::open(path)?, filepath);
-    
+
     // 解码文件数据
     Self::decode(&mut codec)
   }
@@ -304,7 +305,7 @@ impl Decode for File {
     if !VERSIONS.contains(&(major, minor)) {
       return Err(FileError::InvalidVersion);
     }
-    
+
     codec.set_version((major, minor));
 
     match (major, minor) {

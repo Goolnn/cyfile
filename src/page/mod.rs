@@ -1,5 +1,9 @@
 use crate::note::Note;
 
+use image::io::Reader;
+
+use std::io::Cursor;
+
 use crate::error::{
   FileResult,
   FileError,
@@ -10,11 +14,6 @@ use crate::file::codec::{
   Decode,
   Codec,
 };
-
-use image::io::Reader;
-
-use std::io::Cursor;
-use crate::Text;
 
 #[derive(Default)]
 pub struct Page {
@@ -135,7 +134,7 @@ impl Decode for Page {
     match codec.version() {
       (0, 0) => {
         todo!()
-      },
+      }
 
       _ => Err(FileError::InvalidVersion),
     }

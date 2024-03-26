@@ -1,16 +1,16 @@
+use std::mem::size_of;
+
+use std::fs::File;
+
 use crate::error::{
   FileResult,
   FileError,
 };
 
-use std::mem::size_of;
-
 use std::io::{
   Write,
   Read,
 };
-
-use std::fs::File;
 
 pub(crate) trait Encode {
   fn encode(&self, codec: &mut Codec) -> FileResult<()>;
@@ -40,11 +40,11 @@ impl Codec {
   pub fn into_inner(self) -> File {
     self.stream
   }
-  
+
   pub fn set_version(&mut self, version: (u8, u8)) {
     self.version = version;
   }
-  
+
   pub fn filepath(&self) -> &str {
     &self.filepath
   }
