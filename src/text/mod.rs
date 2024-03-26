@@ -1,3 +1,4 @@
+use std::fmt::{Debug, Formatter};
 use crate::error::FileResult;
 
 use crate::file::codec::{
@@ -70,5 +71,25 @@ impl Decode for Text {
       content: codec.read_string::<u32>()?,
       comment: codec.read_string::<u32>()?,
     })
+  }
+}
+
+impl Debug for Text {
+  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    if !self.content.is_empty() {
+      writeln!(f, "Content:")?;
+      writeln!(f, "{}", self.content.lines().map(|line| format!("  {}", line)).collect::<Vec<String>>().join("\n"))?;
+    }
+
+    if !(self.content.is_empty() || self.comment.is_empty()) {
+      writeln!(f)?;
+    }
+    
+    if !self.comment.is_empty() {
+      writeln!(f, "Comment:")?;
+      writeln!(f, "{}", self.comment.lines().map(|line| format!("  {}", line)).collect::<Vec<String>>().join("\n"))?;
+    }
+
+    Ok(())
   }
 }
