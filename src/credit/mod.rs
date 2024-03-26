@@ -1,4 +1,4 @@
-#[derive(Eq, Hash, PartialEq, Clone, Copy)]
+#[derive(Eq, Hash, PartialEq, Clone, Copy, Debug)]
 pub enum Credit {
   // 翻译
   Translators,
