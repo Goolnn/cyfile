@@ -32,14 +32,16 @@ impl Text {
   pub fn with_content(content: &str) -> Self {
     Self {
       content: content.to_string(),
-      comment: String::new(),
+
+      ..Self::default()
     }
   }
 
   pub fn with_comment(comment: &str) -> Self {
     Self {
-      content: String::new(),
       comment: comment.to_string(),
+
+      ..Self::default()
     }
   }
 
