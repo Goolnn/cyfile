@@ -1,3 +1,4 @@
+use std::fmt::{Debug, Formatter};
 use crate::note::Note;
 
 use image::GenericImageView;
@@ -140,5 +141,16 @@ impl Decode for Page {
 
       _ => Err(FileError::InvalidVersion),
     }
+  }
+}
+
+impl Debug for Page {
+  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    writeln!(f, "Raw Size: {:.4} MiB", self.raw.len() as f64 / 1024.0 / 1024.0)?;
+    writeln!(f, "Mask Size: {:.4} MiB", self.mask.len() as f64 / 1024.0 / 1024.0)?;
+    writeln!(f, "Notes[{}]:", self.notes.len())?;
+    writeln!(f, "{}", &self.notes.iter().enumerate().map(|(index, note)| format!("* {}\n{:?}", index + 1, note).lines().map(|line| format!("  {}", line)).collect::<Vec<String>>().join("\n")).collect::<Vec<String>>().join("\n\n"))?;
+
+    Ok(())
   }
 }
