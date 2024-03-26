@@ -25,8 +25,10 @@ use std::collections::{
   HashSet,
   HashMap,
 };
+use std::fmt::{Debug, Formatter};
 
 use std::fs;
+use std::ptr::write;
 
 // 头部数据
 const HEADER_DATA: [u8; 15] = [0xE8, 0x8B, 0x8D, 0xE7, 0x9C, 0xBC, 0xE6, 0xB1, 0x89, 0xE5, 0x8C, 0x96, 0xE7, 0xBB, 0x84];
@@ -531,5 +533,40 @@ impl Decode for HashMap<Credit, HashSet<String>> {
     }
 
     Ok(credits)
+  }
+}
+
+impl Debug for File {
+  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    writeln!(f, "Filepath: {}", self.filepath)?;
+    writeln!(f, "Version: {:?}", self.version)?;
+
+    writeln!(f)?;
+
+    writeln!(f, "Tags[{}]: [{}]", self.tags.len(), &self.tags.iter().map(|tag| tag.to_string()).collect::<Vec<String>>().join("/"))?;
+
+    writeln!(f)?;
+
+    writeln!(f, "Created Date: {:?}", self.created_date)?;
+    writeln!(f, "Saved Date: {:?}", self.saved_date)?;
+
+    writeln!(f)?;
+
+    write!(f, "Credits[{}]:", self.credits.len())?;
+
+    if self.credits.is_empty() {
+      writeln!(f, " {{}}")?;
+    } else {
+      writeln!(f, " {{\n{}\n}}", self.credits.iter().map(|(credit, stuffs)| {
+        format!("  {:?}[{}]: [{}],", credit, stuffs.len(), stuffs.iter().map(|stuff| stuff.to_string()).collect::<Vec<String>>().join("/"))
+      }).collect::<Vec<String>>().join("\n"))?;
+    }
+
+    writeln!(f)?;
+
+    writeln!(f, "Pages[{}]:", self.pages.len())?;
+    write!(f, "{}", &self.pages.iter().enumerate().map(|(index, page)| format!("* {}\n{:?}", index + 1, page).lines().map(|line| format!("  {}", line)).collect::<Vec<String>>().join("\n")).collect::<Vec<String>>().join("\n\n"))?;
+
+    Ok(())
   }
 }
