@@ -379,7 +379,7 @@ impl Decode for File {
           // 标签数量
           let note_count = codec.read_primitive::<u8>()?;
 
-          let mut page = &mut pages[i as usize];
+          let page = &mut pages[i as usize];
 
           page.notes_mut().reserve(note_count as usize);
 
