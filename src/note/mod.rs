@@ -152,8 +152,8 @@ impl Debug for Note {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
     writeln!(f, "Coordinate: ({:.2}, {:.2})", self.x, self.y)?;
     writeln!(f, "Choice: {}", self.choice)?;
-    writeln!(f, "Texts:")?;
-    writeln!(f, "{}", &self.texts.iter().map(|text| format!("{:?}", text).lines().map(|line| format!("  {}", line)).collect::<Vec<String>>().join("\n")).collect::<Vec<String>>().join("\n\n"))?;
+    writeln!(f, "Texts[{}]:", self.texts.len())?;
+    writeln!(f, "{}", &self.texts.iter().enumerate().map(|(index, text)| format!("* {}\n{:?}", index + 1, text).lines().map(|line| format!("  {}", line)).collect::<Vec<String>>().join("\n")).collect::<Vec<String>>().join("\n\n"))?;
 
     Ok(())
   }
