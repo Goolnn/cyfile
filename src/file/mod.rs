@@ -139,7 +139,7 @@ impl File {
     &mut self.pages
   }
 
-  pub fn pages(&mut self) -> &Vec<Page> {
+  pub fn pages(&self) -> &Vec<Page> {
     &self.pages
   }
 }
