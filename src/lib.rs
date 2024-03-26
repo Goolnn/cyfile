@@ -11,5 +11,6 @@ pub use credit::Credit;
 pub use text::Text;
 pub use page::Page;
 pub use note::Note;
+pub use file::Export;
 pub use file::File;
 pub use date::Date;
