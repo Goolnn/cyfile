@@ -49,10 +49,10 @@ const VERSIONS: [(u8, u8); 3] = [
   VERSION_0_2,
 ];
 
-trait Export {
-  fn export_to_with_version(&mut self) -> FileResult<()>;
-  fn export_with_version(&mut self) -> FileResult<()>;
-  fn export_to(&mut self) -> FileResult<()>;
+pub trait Export {
+  fn export_to_with_version(&mut self, filepath: &str, version: (u8, u8)) -> FileResult<()>;
+  fn export_with_version(&mut self, version: (u8, u8)) -> FileResult<()>;
+  fn export_to(&mut self, filepath: &str) -> FileResult<()>;
   fn export(&mut self) -> FileResult<()>;
 }
 
@@ -146,6 +146,33 @@ impl File {
 
   pub fn pages(&self) -> &Vec<Page> {
     &self.pages
+  }
+}
+
+impl Export for File {
+  fn export_to_with_version(&mut self, filepath: &str, version: (u8, u8)) -> FileResult<()> {
+    self.filepath = filepath.to_string();
+    self.version = version;
+
+    self.saved_date = Date::now();
+
+    let mut codec = Codec::new(fs::File::create(filepath)?, filepath);
+
+    self.encode(&mut codec)?;
+
+    Ok(())
+  }
+
+  fn export_with_version(&mut self, version: (u8, u8)) -> FileResult<()> {
+    self.export_to_with_version(&self.filepath.clone(), version)
+  }
+
+  fn export_to(&mut self, filepath: &str) -> FileResult<()> {
+    self.export_to_with_version(filepath, self.version)
+  }
+
+  fn export(&mut self) -> FileResult<()> {
+    self.export_to_with_version(&self.filepath.clone(), self.version)
   }
 }
 
