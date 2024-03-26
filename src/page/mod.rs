@@ -1,4 +1,3 @@
-use std::fmt::{Debug, Formatter};
 use crate::note::Note;
 
 use image::GenericImageView;
@@ -12,6 +11,11 @@ use crate::file::codec::{
   Encode,
   Decode,
   Codec,
+};
+
+use std::fmt::{
+  Formatter,
+  Debug,
 };
 
 #[derive(Default)]
@@ -150,7 +154,7 @@ impl Debug for Page {
     writeln!(f, "Mask Size: {:.4} MiB", self.mask.len() as f64 / 1024.0 / 1024.0)?;
 
     writeln!(f)?;
-    
+
     writeln!(f, "Notes[{}]:", self.notes.len())?;
     writeln!(f, "{}", &self.notes.iter().enumerate().map(|(index, note)| format!("* {}\n{:?}", index + 1, note).lines().map(|line| format!("  {}", line)).collect::<Vec<String>>().join("\n")).collect::<Vec<String>>().join("\n\n"))?;
 

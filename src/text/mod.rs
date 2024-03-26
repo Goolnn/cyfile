@@ -1,10 +1,14 @@
-use std::fmt::{Debug, Formatter};
 use crate::error::FileResult;
 
 use crate::file::codec::{
   Encode,
   Decode,
   Codec,
+};
+
+use std::fmt::{
+  Formatter,
+  Debug,
 };
 
 #[derive(Default)]
@@ -84,7 +88,7 @@ impl Debug for Text {
     if !(self.content.is_empty() || self.comment.is_empty()) {
       writeln!(f)?;
     }
-    
+
     if !self.comment.is_empty() {
       writeln!(f, "Comment:")?;
       writeln!(f, "{}", self.comment.lines().map(|line| format!("  {}", line)).collect::<Vec<String>>().join("\n"))?;

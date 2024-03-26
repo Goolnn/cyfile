@@ -1,4 +1,3 @@
-use std::fmt::{Debug, Formatter};
 use crate::text::Text;
 
 use crate::error::FileResult;
@@ -7,6 +6,11 @@ use crate::file::codec::{
   Encode,
   Decode,
   Codec,
+};
+
+use std::fmt::{
+  Formatter,
+  Debug,
 };
 
 pub struct Note {
