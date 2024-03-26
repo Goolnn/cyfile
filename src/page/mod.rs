@@ -1,8 +1,6 @@
 use crate::note::Note;
 
-use image::io::Reader;
-
-use std::io::Cursor;
+use image::GenericImageView;
 
 use crate::error::{
   FileResult,
@@ -74,9 +72,13 @@ impl Page {
   }
 
   pub fn size(&self) -> (usize, usize) {
-    let (width, height) = Reader::new(Cursor::new(&self.raw)).into_dimensions().unwrap_or((0, 0));
+    if let Ok(image) = image::load_from_memory(&self.raw) {
+      let (width, height) = image.dimensions();
 
-    (width as usize, height as usize)
+      (width as usize, height as usize)
+    } else {
+      (0, 0)
+    }
   }
 }
 
