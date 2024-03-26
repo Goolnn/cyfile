@@ -82,16 +82,16 @@ impl Debug for Text {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
     if !self.content.is_empty() {
       writeln!(f, "Content:")?;
-      writeln!(f, "{}", self.content.lines().map(|line| format!("  {}", line)).collect::<Vec<String>>().join("\n"))?;
+      write!(f, "{}", self.content.lines().map(|line| format!("  {}", line)).collect::<Vec<String>>().join("\n"))?;
     }
 
     if !(self.content.is_empty() || self.comment.is_empty()) {
-      writeln!(f)?;
+      writeln!(f, "\n")?;
     }
 
     if !self.comment.is_empty() {
       writeln!(f, "Comment:")?;
-      writeln!(f, "{}", self.comment.lines().map(|line| format!("  {}", line)).collect::<Vec<String>>().join("\n"))?;
+      write!(f, "{}", self.comment.lines().map(|line| format!("  {}", line)).collect::<Vec<String>>().join("\n"))?;
     }
 
     Ok(())
