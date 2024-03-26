@@ -1,3 +1,4 @@
+use std::fmt::{Debug, Formatter};
 use crate::text::Text;
 
 use crate::error::FileResult;
@@ -144,5 +145,16 @@ impl Decode for Note {
 
       texts,
     })
+  }
+}
+
+impl Debug for Note {
+  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    writeln!(f, "Coordinate: ({:.2}, {:.2})", self.x, self.y)?;
+    writeln!(f, "Choice: {}", self.choice)?;
+    writeln!(f, "Texts:")?;
+    writeln!(f, "{}", &self.texts.iter().map(|text| format!("{:?}", text).lines().map(|line| format!("  {}", line)).collect::<Vec<String>>().join("\n")).collect::<Vec<String>>().join("\n\n"))?;
+
+    Ok(())
   }
 }
