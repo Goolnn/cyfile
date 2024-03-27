@@ -336,29 +336,7 @@ impl Decode for File {
         let mut pages = Vec::with_capacity(page_count as usize);
 
         for _ in 0..page_count {
-          let mut page = Page::new(codec.read_data_with_len::<u32>()?);
-
-          let (page_width, page_height) = page.size();
-
-          let note_count = codec.read_primitive::<u8>()?;
-
-          for _ in 0..note_count {
-            let note_x = codec.read_primitive::<u16>()? as f64;
-            let note_y = codec.read_primitive::<u16>()? as f64;
-
-            let content = codec.read_string_with_nil::<u16>()?;
-
-            let mut note = Note::with_coordinate(
-              note_x / page_width as f64 * 2.0 - 1.0,
-              1.0 - note_y / page_height as f64 * 2.0,
-            );
-
-            note.texts_mut().push(Text::with_content(&content));
-
-            page.notes_mut().push(note);
-          }
-
-          pages.push(page);
+          pages.push(Page::decode(codec)?);
         }
 
         Ok(Self {
