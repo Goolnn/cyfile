@@ -88,11 +88,8 @@ impl File {
       return Err(FileError::PathNotFile);
     }
 
-    // 创建编解码器
-    let mut codec = Codec::new(fs::File::open(path)?, filepath);
-
     // 解码文件数据
-    Self::decode(&mut codec)
+    Self::decode(&mut Codec::new(fs::File::open(path)?, filepath))
   }
 
   pub fn create(filepath: &str) -> FileResult<Self> {
