@@ -1,6 +1,6 @@
-use crate::text::Text;
-
 use crate::error::FileResult;
+
+use crate::text::Text;
 
 use crate::file::codec::{
   Encode,
@@ -13,13 +13,15 @@ use std::fmt::{
   Debug,
 };
 
+type Texts = Vec<Text>;
+
 pub struct Note {
   x: f64,
   y: f64,
 
   choice: u32,
 
-  texts: Vec<Text>,
+  texts: Texts,
 }
 
 impl Note {
@@ -71,11 +73,11 @@ impl Note {
     self.choice
   }
 
-  pub fn texts_mut(&mut self) -> &mut Vec<Text> {
+  pub fn texts_mut(&mut self) -> &mut Texts {
     &mut self.texts
   }
 
-  pub fn texts(&self) -> &Vec<Text> {
+  pub fn texts(&self) -> &Texts {
     &self.texts
   }
 
