@@ -33,6 +33,10 @@ use std::fmt::{
   Debug,
 };
 
+type Credits = HashMap<Credit, HashSet<String>>;
+type Pages = Vec<Page>;
+type Tags = HashSet<String>;
+
 // 头部数据
 const HEADER_DATA: [u8; 15] = [0xE8, 0x8B, 0x8D, 0xE7, 0x9C, 0xBC, 0xE6, 0xB1, 0x89, 0xE5, 0x8C, 0x96, 0xE7, 0xBB, 0x84];
 
@@ -61,14 +65,14 @@ pub struct File {
   filepath: String,
   version: (u8, u8),
 
-  tags: HashSet<String>,
+  tags: Tags,
 
   created_date: Date,
   saved_date: Date,
 
-  credits: HashMap<Credit, HashSet<String>>,
+  credits: Credits,
 
-  pages: Vec<Page>,
+  pages: Pages,
 }
 
 impl File {
@@ -116,11 +120,11 @@ impl File {
     self.version
   }
 
-  pub fn tags_mut(&mut self) -> &mut HashSet<String> {
+  pub fn tags_mut(&mut self) -> &mut Tags {
     &mut self.tags
   }
 
-  pub fn tags(&self) -> &HashSet<String> {
+  pub fn tags(&self) -> &Tags {
     &self.tags
   }
 
@@ -132,19 +136,19 @@ impl File {
     self.saved_date
   }
 
-  pub fn credits_mut(&mut self) -> &mut HashMap<Credit, HashSet<String>> {
+  pub fn credits_mut(&mut self) -> &mut Credits {
     &mut self.credits
   }
 
-  pub fn credits(&self) -> &HashMap<Credit, HashSet<String>> {
+  pub fn credits(&self) -> &Credits {
     &self.credits
   }
 
-  pub fn pages_mut(&mut self) -> &mut Vec<Page> {
+  pub fn pages_mut(&mut self) -> &mut Pages {
     &mut self.pages
   }
 
-  pub fn pages(&self) -> &Vec<Page> {
+  pub fn pages(&self) -> &Pages {
     &self.pages
   }
 }
@@ -288,21 +292,7 @@ impl Encode for File {
   }
 }
 
-impl Encode for HashSet<String> {
-  fn encode(&self, codec: &mut Codec) -> FileResult<()> {
-    // 标签数量
-    codec.write_primitive(self.len() as u32)?;
-
-    // 标签数据
-    for tag in self {
-      codec.write_string::<u32>(tag)?;
-    }
-
-    Ok(())
-  }
-}
-
-impl Encode for HashMap<Credit, HashSet<String>> {
+impl Encode for Credits {
   fn encode(&self, codec: &mut Codec) -> FileResult<()> {
     // 职位数量
     codec.write_primitive(self.len() as u32)?;
@@ -316,6 +306,20 @@ impl Encode for HashMap<Credit, HashSet<String>> {
       for stuff in stuffs {
         codec.write_string::<u32>(stuff)?;
       }
+    }
+
+    Ok(())
+  }
+}
+
+impl Encode for Tags {
+  fn encode(&self, codec: &mut Codec) -> FileResult<()> {
+    // 标签数量
+    codec.write_primitive(self.len() as u32)?;
+
+    // 标签数据
+    for tag in self {
+      codec.write_string::<u32>(tag)?;
     }
 
     Ok(())
@@ -520,25 +524,7 @@ impl Decode for File {
   }
 }
 
-impl Decode for HashSet<String> {
-  fn decode(codec: &mut Codec) -> FileResult<Self> {
-    // 标签数量
-    let note_count = codec.read_primitive::<u32>()?;
-
-    let mut tags = Self::with_capacity(note_count as usize);
-
-    // 标签数据
-    for _ in 0..note_count {
-      let tag = codec.read_string::<u32>()?;
-
-      tags.insert(tag);
-    }
-
-    Ok(tags)
-  }
-}
-
-impl Decode for HashMap<Credit, HashSet<String>> {
+impl Decode for Credits {
   fn decode(codec: &mut Codec) -> FileResult<Self> {
     // 职位数量
     let credit_count = codec.read_primitive::<u32>()?;
@@ -563,6 +549,24 @@ impl Decode for HashMap<Credit, HashSet<String>> {
     }
 
     Ok(credits)
+  }
+}
+
+impl Decode for Tags {
+  fn decode(codec: &mut Codec) -> FileResult<Self> {
+    // 标签数量
+    let note_count = codec.read_primitive::<u32>()?;
+
+    let mut tags = Self::with_capacity(note_count as usize);
+
+    // 标签数据
+    for _ in 0..note_count {
+      let tag = codec.read_string::<u32>()?;
+
+      tags.insert(tag);
+    }
+
+    Ok(tags)
   }
 }
 
