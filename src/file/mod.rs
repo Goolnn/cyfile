@@ -159,9 +159,7 @@ impl Export for File {
 
     self.saved_date = Date::now();
 
-    let mut codec = Codec::with_version(fs::File::create(filepath)?, filepath, version);
-
-    self.encode(&mut codec)?;
+    self.encode(&mut Codec::with_version(fs::File::create(filepath)?, filepath, version))?;
 
     Ok(())
   }
