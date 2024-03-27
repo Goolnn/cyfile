@@ -194,27 +194,7 @@ impl Encode for File {
         codec.write_primitive(self.pages.len() as u8)?;
 
         for page in &self.pages {
-          // 图像数据
-          codec.write_data_with_len::<u32>(page.raw())?;
-
-          // 图像尺寸
-          let (page_width, page_height) = page.size();
-
-          // 标签数量
-          codec.write_primitive(page.notes().len() as u8)?;
-
-          for note in page.notes() {
-            let note_x = (page_width as f64 * (note.x() + 1.0) / 2.0) as u16;
-            let note_y = (page_height as f64 * (1.0 - (note.y() + 1.0) / 2.0)) as u16;
-
-            codec.write_primitive(note_x)?;
-            codec.write_primitive(note_y)?;
-
-            // 合并文本
-            let merged_text = note.merge_texts();
-
-            codec.write_string_with_nil::<u16>(&merged_text)?;
-          }
+          page.encode(codec)?;
         }
 
         Ok(())

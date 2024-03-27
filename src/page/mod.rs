@@ -93,25 +93,23 @@ impl Encode for Page {
   fn encode(&self, codec: &mut Codec) -> FileResult<()> {
     match codec.version() {
       (0, 0) => {
-        codec.write_data_with_len::<u32>(&self.raw)?;
+        // 图像数据
+        codec.write_data_with_len::<u32>(self.raw())?;
 
-        let (image_width, image_height) = {
-          let (image_width, image_height) = self.size();
+        // 图像尺寸
+        let (page_width, page_height) = self.size();
 
-          (image_width as f64, image_height as f64)
-        };
+        // 标签数量
+        codec.write_primitive(self.notes().len() as u8)?;
 
-        let note_count = self.notes.len() as u8;
-
-        codec.write_primitive(note_count)?;
-
-        for note in &self.notes {
-          let note_x = (image_width * (note.x() + 1.0) / 2.0) as u16;
-          let note_y = (image_height * (1.0 - (note.y() + 1.0) / 2.0)) as u16;
+        for note in self.notes() {
+          let note_x = (page_width as f64 * (note.x() + 1.0) / 2.0) as u16;
+          let note_y = (page_height as f64 * (1.0 - (note.y() + 1.0) / 2.0)) as u16;
 
           codec.write_primitive(note_x)?;
           codec.write_primitive(note_y)?;
 
+          // 合并文本
           let merged_text = note.merge_texts();
 
           codec.write_string_with_nil::<u16>(&merged_text)?;
@@ -141,7 +139,7 @@ impl Encode for Notes {
     for note in self {
       note.encode(codec)?;
     }
-    
+
     Ok(())
   }
 }
