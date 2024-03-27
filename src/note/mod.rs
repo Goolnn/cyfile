@@ -120,10 +120,18 @@ impl Encode for Note {
 
     codec.write_primitive(self.texts.len() as u32)?;
 
-    for text in &self.texts {
+    self.texts.encode(codec)?;
+
+    Ok(())
+  }
+}
+
+impl Encode for Texts {
+  fn encode(&self, codec: &mut Codec) -> FileResult<()> {
+    for text in self {
       text.encode(codec)?;
     }
-
+    
     Ok(())
   }
 }
@@ -135,13 +143,7 @@ impl Decode for Note {
 
     let choice = codec.read_primitive::<u32>()?;
 
-    let len = codec.read_primitive::<u32>()?;
-
-    let mut texts = Vec::with_capacity(len as usize);
-
-    for _ in 0..len {
-      texts.push(Text::decode(codec)?);
-    }
+    let texts = Texts::decode(codec)?;
 
     Ok(Self {
       x,
@@ -151,6 +153,20 @@ impl Decode for Note {
 
       texts,
     })
+  }
+}
+
+impl Decode for Texts {
+  fn decode(codec: &mut Codec) -> FileResult<Self> {
+    let len = codec.read_primitive::<u32>()?;
+
+    let mut texts = Vec::with_capacity(len as usize);
+
+    for _ in 0..len {
+      texts.push(Text::decode(codec)?);
+    }
+    
+    Ok(texts)
   }
 }
 
