@@ -36,17 +36,13 @@ impl Codec {
       version: (0, 0),
     }
   }
-  
+
   pub fn with_version(stream: File, filepath: &str, version: (u8, u8)) -> Self {
     Self {
       version,
-      
+
       ..Self::new(stream, filepath)
     }
-  }
-
-  pub fn into_inner(self) -> File {
-    self.stream
   }
 
   pub fn set_version(&mut self, version: (u8, u8)) {
