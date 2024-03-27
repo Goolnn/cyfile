@@ -562,13 +562,6 @@ impl Debug for File {
 
     writeln!(f, "Tags[{}]: [{}]", self.tags.len(), &self.tags.iter().map(|tag| tag.to_string()).collect::<Vec<String>>().join("/"))?;
 
-    writeln!(f)?;
-
-    writeln!(f, "Created Date: {:?}", self.created_date)?;
-    writeln!(f, "Saved Date: {:?}", self.saved_date)?;
-
-    writeln!(f)?;
-
     write!(f, "Credits[{}]:", self.credits.len())?;
 
     if self.credits.is_empty() {
@@ -578,6 +571,11 @@ impl Debug for File {
         format!("  {:?}[{}]: [{}],", credit, stuffs.len(), stuffs.iter().map(|stuff| stuff.to_string()).collect::<Vec<String>>().join("/"))
       }).collect::<Vec<String>>().join("\n"))?;
     }
+
+    writeln!(f)?;
+
+    writeln!(f, "Created Date: {:?}", self.created_date)?;
+    writeln!(f, "Saved Date: {:?}", self.saved_date)?;
 
     writeln!(f)?;
 
