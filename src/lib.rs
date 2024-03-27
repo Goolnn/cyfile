@@ -1,11 +1,11 @@
+pub mod error;
+
 mod credit;
 mod text;
 mod page;
 mod note;
 mod file;
 mod date;
-
-pub mod error;
 
 pub use credit::Credit;
 pub use text::Text;
