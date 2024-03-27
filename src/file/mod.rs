@@ -356,8 +356,6 @@ impl Decode for File {
         // 图像数量
         let page_count = codec.read_primitive::<u8>()?;
 
-        let mut pages = Vec::with_capacity(page_count as usize);
-
         // 保存次数
         codec.read_primitive::<u8>()?;
 
@@ -365,15 +363,17 @@ impl Decode for File {
         let date = Date::decode(codec)?;
 
         // 读取图像
+        let mut pages = Vec::with_capacity(page_count as usize);
+        
         for _ in 0..page_count {
           let image_data = codec.read_data_with_len::<u32>()?;
 
           pages.push(Page::new(image_data));
         }
 
-        // 读取标签
+        // 读取标记
         for i in 0..page_count {
-          // 标签数量
+          // 标记数量
           let note_count = codec.read_primitive::<u8>()?;
 
           let page = &mut pages[i as usize];
