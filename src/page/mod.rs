@@ -153,8 +153,18 @@ impl Decode for Page {
         todo!()
       },
 
-      (0, 1) => {
-        todo!()
+      (0, 2) => {
+        let raw = codec.read_data_with_len::<u32>()?;
+        let mask = codec.read_data_with_len::<u32>()?;
+
+        let notes = Notes::decode(codec)?;
+        
+        Ok(Self {
+          raw,
+          mask,
+          
+          notes
+        })
       },
 
       _ => Err(FileError::InvalidVersion),
