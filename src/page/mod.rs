@@ -126,15 +126,23 @@ impl Encode for Page {
 
         codec.write_primitive(self.notes.len() as u32)?;
 
-        for note in &self.notes {
-          note.encode(codec)?;
-        }
+        self.notes.encode(codec)?;
 
         Ok(())
       }
 
       _ => Err(FileError::InvalidVersion),
     }
+  }
+}
+
+impl Encode for Notes {
+  fn encode(&self, codec: &mut Codec) -> FileResult<()> {
+    for note in self {
+      note.encode(codec)?;
+    }
+    
+    Ok(())
   }
 }
 
