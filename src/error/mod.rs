@@ -1,6 +1,6 @@
 use std::io;
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum FileError {
   InvalidHeader,
   InvalidVersion,
