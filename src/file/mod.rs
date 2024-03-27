@@ -280,9 +280,7 @@ impl Encode for File {
         self.credits.encode(codec)?;
 
         // 图像数据
-        for page in &self.pages {
-          page.encode(codec)?;
-        }
+        self.pages.encode(codec)?;
 
         Ok(())
       }
@@ -306,6 +304,16 @@ impl Encode for Credits {
       for stuff in stuffs {
         codec.write_string::<u32>(stuff)?;
       }
+    }
+
+    Ok(())
+  }
+}
+
+impl Encode for Pages {
+  fn encode(&self, codec: &mut Codec) -> FileResult<()> {
+    for page in self {
+      page.encode(codec)?;
     }
 
     Ok(())
@@ -485,7 +493,7 @@ impl Decode for File {
 
       (0, 2) => {
         // 分类标签
-        let tags = HashSet::decode(codec)?;
+        let tags = Tags::decode(codec)?;
 
         // 创建时间
         let created_date = Date::decode(codec)?;
@@ -493,16 +501,10 @@ impl Decode for File {
         let saved_date = Date::decode(codec)?;
 
         // 工作人员
-        let credits = HashMap::decode(codec)?;
+        let credits = Credits::decode(codec)?;
 
         // 图像数据
-        let page_count = codec.read_primitive::<u32>()?;
-
-        let mut pages = Vec::with_capacity(page_count as usize);
-
-        for _ in 0..page_count {
-          pages.push(Page::decode(codec)?);
-        }
+        let pages = Pages::decode(codec)?;
 
         Ok(Self {
           filepath: codec.filepath().to_string(),
@@ -549,6 +551,20 @@ impl Decode for Credits {
     }
 
     Ok(credits)
+  }
+}
+
+impl Decode for Pages {
+  fn decode(codec: &mut Codec) -> FileResult<Self> {
+    let page_count = codec.read_primitive::<u32>()?;
+
+    let mut pages = Vec::with_capacity(page_count as usize);
+
+    for _ in 0..page_count {
+      pages.push(Page::decode(codec)?);
+    }
+
+    Ok(pages)
   }
 }
 
