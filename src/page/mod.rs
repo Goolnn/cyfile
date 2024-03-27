@@ -136,6 +136,8 @@ impl Encode for Page {
 
 impl Encode for Notes {
   fn encode(&self, codec: &mut Codec) -> FileResult<()> {
+    codec.write_primitive::<u32>(self.len() as u32)?;
+    
     for note in self {
       note.encode(codec)?;
     }
@@ -149,10 +151,28 @@ impl Decode for Page {
     match codec.version() {
       (0, 0) => {
         todo!()
-      }
+      },
+
+      (0, 1) => {
+        todo!()
+      },
 
       _ => Err(FileError::InvalidVersion),
     }
+  }
+}
+
+impl Decode for Notes {
+  fn decode(codec: &mut Codec) -> FileResult<Self> {
+    let note_count = codec.read_primitive::<u32>()?;
+    
+    let mut notes = Vec::with_capacity(note_count as usize);
+    
+    for _ in 0..note_count {
+      notes.push(Note::decode(codec)?);
+    }
+    
+    Ok(notes)
   }
 }
 
