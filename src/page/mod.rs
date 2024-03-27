@@ -18,12 +18,14 @@ use std::fmt::{
   Debug,
 };
 
+type Notes = Vec<Note>;
+
 #[derive(Default)]
 pub struct Page {
   raw: Vec<u8>,
   mask: Vec<u8>,
 
-  notes: Vec<Note>,
+  notes: Notes,
 }
 
 impl Page {
@@ -68,11 +70,11 @@ impl Page {
     &self.mask
   }
 
-  pub fn notes_mut(&mut self) -> &mut Vec<Note> {
+  pub fn notes_mut(&mut self) -> &mut Notes {
     &mut self.notes
   }
 
-  pub fn notes(&self) -> &Vec<Note> {
+  pub fn notes(&self) -> &Notes {
     &self.notes
   }
 
