@@ -95,7 +95,7 @@ impl File {
     Self::decode(&mut codec)
   }
 
-  pub fn new(filepath: &str) -> FileResult<Self> {
+  pub fn create(filepath: &str) -> FileResult<Self> {
     let path = Path::new(filepath);
 
     // 判断文件是否为路径
