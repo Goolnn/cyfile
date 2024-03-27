@@ -123,8 +123,6 @@ impl Encode for Page {
         codec.write_data_with_len::<u32>(&self.raw)?;
         codec.write_data_with_len::<u32>(&self.mask)?;
 
-        codec.write_primitive(self.notes.len() as u32)?;
-
         self.notes.encode(codec)?;
 
         Ok(())
