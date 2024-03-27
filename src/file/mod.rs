@@ -287,6 +287,8 @@ impl Encode for Credits {
 
 impl Encode for Pages {
   fn encode(&self, codec: &mut Codec) -> FileResult<()> {
+    codec.write_primitive::<u32>(self.len() as u32)?;
+    
     for page in self {
       page.encode(codec)?;
     }
