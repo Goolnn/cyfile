@@ -66,11 +66,10 @@ pub struct File {
   version: (u8, u8),
 
   tags: Tags,
+  credits: Credits,
 
   created_date: Date,
   saved_date: Date,
-
-  credits: Credits,
 
   pages: Pages,
 }
@@ -269,16 +268,14 @@ impl Encode for File {
       (0, 2) => {
         // 分类标签
         self.tags.encode(codec)?;
-
-        // 创建时间
-        self.created_date.encode(codec)?;
-
-        // 保存时间
-        self.saved_date.encode(codec)?;
-
         // 工作人员
         self.credits.encode(codec)?;
-
+        
+        // 创建时间
+        self.created_date.encode(codec)?;
+        // 保存时间
+        self.saved_date.encode(codec)?;
+        
         // 图像数据
         self.pages.encode(codec)?;
 
@@ -494,14 +491,13 @@ impl Decode for File {
       (0, 2) => {
         // 分类标签
         let tags = Tags::decode(codec)?;
+        // 工作人员
+        let credits = Credits::decode(codec)?;
 
         // 创建时间
         let created_date = Date::decode(codec)?;
         // 保存时间
         let saved_date = Date::decode(codec)?;
-
-        // 工作人员
-        let credits = Credits::decode(codec)?;
 
         // 图像数据
         let pages = Pages::decode(codec)?;
@@ -511,11 +507,10 @@ impl Decode for File {
           version: (major, minor),
 
           tags,
+          credits,
 
           created_date,
           saved_date,
-
-          credits,
 
           pages,
         })
