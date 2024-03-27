@@ -391,45 +391,56 @@ impl Decode for File {
               1.0 - note_y / page_height as f64 * 2.0,
             );
 
-            let draft = codec.read_string::<u16>()?;
-            let revision = codec.read_string::<u16>()?;
+            let draft = codec.read_string_with_nil::<u16>()?;
+            let revision = codec.read_string_with_nil::<u16>()?;
 
-            // 解析 HTML 文本
-            let regex = match Regex::new(r"<span.*?>|</span>") {
-              Ok(regex) => regex,
-              Err(_) => return Err(FileError::Undefined),
-            };
+            if draft.contains("DOCTYPE HTML PUBLIC") || revision.contains("DOCTYPE HTML PUBLIC") {
+              // 解析 HTML 文本
+              let regex = match Regex::new(r"<span.*?>|</span>") {
+                Ok(regex) => regex,
+                Err(_) => return Err(FileError::Undefined),
+              };
 
-            let draft = regex.replace_all(&draft, "").to_string();
-            let revision = regex.replace_all(&revision, "").to_string();
+              let draft = regex.replace_all(&draft, "").to_string();
+              let revision = regex.replace_all(&revision, "").to_string();
 
-            let regex = match Regex::new(r"<p.*?>(.*)</p>") {
-              Ok(regex) => regex,
-              Err(_) => return Err(FileError::Undefined),
-            };
+              let regex = match Regex::new(r"<p.*?>(.*)</p>") {
+                Ok(regex) => regex,
+                Err(_) => return Err(FileError::Undefined),
+              };
 
-            let extract = |text| {
-              regex.captures_iter(text).map(|capture| {
-                let (_, [text]) = capture.extract();
+              let extract = |text| {
+                regex.captures_iter(text).map(|capture| {
+                  let (_, [text]) = capture.extract();
 
-                if text == "<br />" {
-                  String::new()
-                } else {
-                  text.replace("<br />", "\n")
-                }
-              }).collect::<Vec<String>>().join("\n")
-            };
+                  if text == "<br />" {
+                    String::new()
+                  } else {
+                    text.replace("<br />", "\n")
+                  }
+                }).collect::<Vec<String>>().join("\n")
+              };
 
-            let draft = extract(&draft);
-            let revision = extract(&revision);
+              let draft = extract(&draft);
+              let revision = extract(&revision);
 
-            // 添加文本
-            if !draft.is_empty() {
-              note.texts_mut().push(Text::with_content(&draft));
-            }
+              // 添加文本
+              if !draft.is_empty() {
+                note.texts_mut().push(Text::with_content(&draft));
+              }
 
-            if !revision.is_empty() {
-              note.texts_mut().push(Text::with_content(&revision));
+              if !revision.is_empty() {
+                note.texts_mut().push(Text::with_content(&revision));
+              }
+            } else {
+              // 添加文本
+              if !draft.is_empty() {
+                note.texts_mut().push(Text::with_content(&draft));
+              }
+
+              if !revision.is_empty() {
+                note.texts_mut().push(Text::with_content(&revision));
+              }
             }
 
             page.notes_mut().push(note);
