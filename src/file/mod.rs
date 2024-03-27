@@ -190,12 +190,8 @@ impl Encode for File {
 
     match (major, minor) {
       (0, 0) => {
-        // 图像数量
-        codec.write_primitive(self.pages.len() as u8)?;
-
-        for page in &self.pages {
-          page.encode(codec)?;
-        }
+        // 图像数据
+        self.pages.encode(codec)?;
 
         Ok(())
       }
@@ -287,8 +283,18 @@ impl Encode for Credits {
 
 impl Encode for Pages {
   fn encode(&self, codec: &mut Codec) -> FileResult<()> {
-    codec.write_primitive::<u32>(self.len() as u32)?;
-    
+    match codec.version() {
+      (0, 0) => {
+        codec.write_primitive(self.len() as u8)?;
+      },
+
+      (0, 2) => {
+        codec.write_primitive::<u32>(self.len() as u32)?;
+      },
+
+      _ => return Err(FileError::InvalidVersion),
+    }
+
     for page in self {
       page.encode(codec)?;
     }
