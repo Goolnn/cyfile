@@ -17,3 +17,8 @@ trait Wrapped<T> {
     &mut *ptr
   }
 }
+
+enum Raw<T> {
+  Owner(T),
+  Refer(*mut T),
+}
