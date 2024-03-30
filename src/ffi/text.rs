@@ -128,7 +128,7 @@ pub unsafe extern fn cyfile_text_comment(text: *mut Text) -> *const c_char {
 
 #[no_mangle]
 pub unsafe extern fn cyfile_text_debug(text: *mut Text) {
-  println!("{:?}", Text::deref(text).raw());
+  print!("{:?}", Text::deref(text).raw());
 }
 
 #[no_mangle]
