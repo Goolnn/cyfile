@@ -1,4 +1,5 @@
 pub mod error;
+pub mod ffi;
 
 mod credit;
 mod text;
