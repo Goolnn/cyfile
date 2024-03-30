@@ -16,6 +16,32 @@ pub struct Text {
   comment: CString,
 }
 
+impl Text {
+  pub unsafe fn set_content(&mut self, content: *const c_char) {
+    let content = CStr::from_ptr(content);
+
+    self.raw_mut().set_content(content.to_str().unwrap());
+
+    self.content = CString::from(content);
+  }
+
+  pub unsafe fn set_comment(&mut self, comment: *const c_char) {
+    let comment = CStr::from_ptr(comment);
+
+    self.raw_mut().set_comment(comment.to_str().unwrap());
+
+    self.comment = CString::from(comment);
+  }
+
+  pub fn content(&self) -> *const c_char {
+    self.content.as_ptr()
+  }
+
+  pub fn comment(&self) -> *const c_char {
+    self.comment.as_ptr()
+  }
+}
+
 impl Wrapped<crate::Text> for Text {
   fn owner(raw: crate::Text) -> *mut Self {
     let content = CString::new(raw.content()).unwrap();
@@ -57,32 +83,6 @@ impl Wrapped<crate::Text> for Text {
         Raw::Refer(refer) => &mut **refer,
       }
     }
-  }
-}
-
-impl Text {
-  pub unsafe fn set_content(&mut self, content: *const c_char) {
-    let content = CStr::from_ptr(content);
-
-    self.raw_mut().set_content(content.to_str().unwrap());
-
-    self.content = CString::from(content);
-  }
-
-  pub unsafe fn set_comment(&mut self, comment: *const c_char) {
-    let comment = CStr::from_ptr(comment);
-
-    self.raw_mut().set_comment(comment.to_str().unwrap());
-
-    self.comment = CString::from(comment);
-  }
-
-  pub fn content(&self) -> *const c_char {
-    self.content.as_ptr()
-  }
-
-  pub fn comment(&self) -> *const c_char {
-    self.comment.as_ptr()
   }
 }
 
