@@ -1,5 +1,4 @@
 pub mod error;
-pub mod ffi;
 
 mod credit;
 mod text;
@@ -7,6 +6,7 @@ mod page;
 mod note;
 mod file;
 mod date;
+mod ffi;
 
 pub use credit::Credit;
 pub use text::Text;

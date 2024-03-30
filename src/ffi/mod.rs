@@ -1,2 +1,2 @@
-pub mod file;
+mod file;
 mod text;
