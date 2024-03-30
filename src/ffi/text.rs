@@ -1,3 +1,5 @@
+use crate::ffi::Wrapped;
+
 use std::ffi::{
   CString,
   CStr,
@@ -11,8 +13,8 @@ pub struct Text {
   comment: CString,
 }
 
-impl Text {
-  pub fn new(raw: crate::Text) -> *mut Self {
+impl Wrapped<crate::Text> for Text {
+  fn new(raw: crate::Text) -> *mut Self {
     let content = CString::new(raw.content()).unwrap();
     let comment = CString::new(raw.comment()).unwrap();
 
@@ -24,14 +26,16 @@ impl Text {
     }))
   }
 
-  pub unsafe fn from_ptr(text: *mut Text) -> &'static mut Text {
-    &mut *text
-  }
-
-  pub fn raw(&self) -> &crate::Text {
+  fn raw(&self) -> &crate::Text {
     &self.raw
   }
 
+  fn raw_mut(&mut self) -> &mut crate::Text {
+    &mut self.raw
+  }
+}
+
+impl Text {
   pub unsafe fn set_content(&mut self, content: *const c_char) {
     let content = CStr::from_ptr(content);
 
@@ -79,27 +83,27 @@ pub unsafe extern fn cyfile_text_with_comment(comment: *const c_char) -> *mut Te
 
 #[no_mangle]
 pub unsafe extern fn cyfile_text_set_content(text: *mut Text, content: *const c_char) {
-  Text::from_ptr(text).set_content(content);
+  Text::deref(text).set_content(content);
 }
 
 #[no_mangle]
 pub unsafe extern fn cyfile_text_set_comment(text: *mut Text, comment: *const c_char) {
-  Text::from_ptr(text).set_comment(comment);
+  Text::deref(text).set_comment(comment);
 }
 
 #[no_mangle]
 pub unsafe extern fn cyfile_text_content(text: *mut Text) -> *const c_char {
-  Text::from_ptr(text).content()
+  Text::deref(text).content()
 }
 
 #[no_mangle]
 pub unsafe extern fn cyfile_text_comment(text: *mut Text) -> *const c_char {
-  Text::from_ptr(text).comment()
+  Text::deref(text).comment()
 }
 
 #[no_mangle]
 pub unsafe extern fn cyfile_text_debug(text: *mut Text) {
-  println!("{:?}", Text::from_ptr(text).raw());
+  println!("{:?}", Text::deref(text).raw());
 }
 
 #[no_mangle]
