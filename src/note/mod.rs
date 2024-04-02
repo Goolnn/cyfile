@@ -73,12 +73,20 @@ impl Note {
     self.choice
   }
 
-  pub fn texts_mut(&mut self) -> &mut Texts {
+  pub fn texts_mut(&mut self) -> &mut [Text] {
     &mut self.texts
   }
 
-  pub fn texts(&self) -> &Texts {
+  pub fn texts(&self) -> &[Text] {
     &self.texts
+  }
+
+  pub fn remove_text(&mut self, index: usize) {
+    self.texts.remove(index);
+  }
+
+  pub fn add_text(&mut self, text: Text) {
+    self.texts.push(text);
   }
 
   pub(crate) fn merge_texts(&self) -> String {
@@ -131,7 +139,7 @@ impl Encode for Texts {
     for text in self {
       text.encode(codec)?;
     }
-    
+
     Ok(())
   }
 }
@@ -165,7 +173,7 @@ impl Decode for Texts {
     for _ in 0..len {
       texts.push(Text::decode(codec)?);
     }
-    
+
     Ok(texts)
   }
 }
@@ -182,7 +190,7 @@ impl Debug for Note {
     writeln!(f)?;
 
     writeln!(f, "Texts[{}]:", self.texts.len())?;
-    writeln!(f, "{}", &self.texts.iter().enumerate().map(|(index, text)| format!("* {}\n{:?}", index + 1, text).lines().map(|line| format!("  {}", line)).collect::<Vec<String>>().join("\n")).collect::<Vec<String>>().join("\n\n"))?;
+    write!(f, "{}", &self.texts.iter().enumerate().map(|(index, text)| format!("* {}\n{:?}", index + 1, text).lines().map(|line| format!("  {}", line)).collect::<Vec<String>>().join("\n")).collect::<Vec<String>>().join("\n\n"))?;
 
     Ok(())
   }
