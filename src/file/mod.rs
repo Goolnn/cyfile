@@ -116,12 +116,16 @@ impl File {
     self.version
   }
 
-  pub fn tags_mut(&mut self) -> &mut Tags {
-    &mut self.tags
-  }
-
   pub fn tags(&self) -> &Tags {
     &self.tags
+  }
+
+  pub fn remove_tag(&mut self, tag: &str) {
+    self.tags.remove(tag);
+  }
+
+  pub fn add_tag(&mut self, tag: &str) {
+    self.tags.insert(tag.to_string());
   }
 
   pub fn created_date(&self) -> Date {
@@ -132,20 +136,32 @@ impl File {
     self.saved_date
   }
 
-  pub fn credits_mut(&mut self) -> &mut Credits {
-    &mut self.credits
+  pub fn credits_of(&self, credit: Credit) -> Option<&HashSet<String>> {
+    self.credits.get(&credit)
   }
 
   pub fn credits(&self) -> &Credits {
     &self.credits
   }
 
-  pub fn pages_mut(&mut self) -> &mut Pages {
+  pub fn remove_credit(&mut self, credit: Credit) {
+    self.credits.remove(&credit);
+  }
+
+  pub fn pages_mut(&mut self) -> &mut [Page] {
     &mut self.pages
   }
 
-  pub fn pages(&self) -> &Pages {
+  pub fn pages(&self) -> &[Page] {
     &self.pages
+  }
+
+  pub fn remove_page(&mut self, index: usize) {
+    self.pages.remove(index);
+  }
+
+  pub fn add_page(&mut self, page: Page) {
+    self.pages.push(page);
   }
 }
 
@@ -241,12 +257,12 @@ impl Encode for File {
         self.tags.encode(codec)?;
         // 工作人员
         self.credits.encode(codec)?;
-        
+
         // 创建时间
         self.created_date.encode(codec)?;
         // 保存时间
         self.saved_date.encode(codec)?;
-        
+
         // 图像数据
         self.pages.encode(codec)?;
 
@@ -283,11 +299,11 @@ impl Encode for Pages {
     match codec.version() {
       (0, 0) => {
         codec.write_primitive(self.len() as u8)?;
-      },
+      }
 
       (0, 2) => {
         codec.write_primitive::<u32>(self.len() as u32)?;
-      },
+      }
 
       _ => return Err(FileError::InvalidVersion),
     }
@@ -364,7 +380,7 @@ impl Decode for File {
 
         // 读取图像
         let mut pages = Vec::with_capacity(page_count as usize);
-        
+
         for _ in 0..page_count {
           let image_data = codec.read_data_with_len::<u32>()?;
 
