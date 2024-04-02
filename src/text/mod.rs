@@ -53,6 +53,14 @@ impl Text {
     self.comment = comment.to_string();
   }
 
+  pub fn clear_content(&mut self) {
+    self.content.clear();
+  }
+
+  pub fn clear_comment(&mut self) {
+    self.comment.clear();
+  }
+
   pub fn content(&self) -> &str {
     &self.content
   }
