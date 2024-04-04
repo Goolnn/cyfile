@@ -394,7 +394,7 @@ impl Decode for File {
 
           let page = &mut pages[i as usize];
 
-          page.notes_mut().reserve(note_count as usize);
+          // page.notes_mut().reserve(note_count as usize);
 
           let (page_width, page_height) = page.size();
 
@@ -442,24 +442,24 @@ impl Decode for File {
 
               // 添加文本
               if !draft.is_empty() {
-                note.texts_mut().push(Text::with_content(&draft));
+                note.add_text(Text::with_content(&draft));
               }
 
               if !revision.is_empty() {
-                note.texts_mut().push(Text::with_content(&revision));
+                note.add_text(Text::with_content(&revision));
               }
             } else {
               // 添加文本
               if !draft.is_empty() {
-                note.texts_mut().push(Text::with_content(&draft));
+                note.add_text(Text::with_content(&draft));
               }
 
               if !revision.is_empty() {
-                note.texts_mut().push(Text::with_content(&revision));
+                note.add_text(Text::with_content(&revision));
               }
             }
 
-            page.notes_mut().push(note);
+            page.add_note(note);
           }
         }
 

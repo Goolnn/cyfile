@@ -87,7 +87,7 @@ impl Page {
     self.notes.push(note);
   }
 
-  pub fn size(&self) -> (usize, usize) {
+  pub(crate) fn size(&self) -> (usize, usize) {
     if let Ok(image) = image::load_from_memory(&self.raw) {
       let (width, height) = image.dimensions();
 
@@ -174,9 +174,9 @@ impl Decode for Page {
             1.0 - note_y / page_height as f64 * 2.0,
           );
 
-          note.texts_mut().push(Text::with_content(&content));
+          note.add_text(Text::with_content(&content));
 
-          page.notes_mut().push(note);
+          page.add_note(note);
         }
 
         Ok(page)

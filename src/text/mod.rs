@@ -45,20 +45,20 @@ impl Text {
     }
   }
 
-  pub fn set_content(&mut self, content: &str) {
-    self.content = content.to_string();
-  }
-
-  pub fn set_comment(&mut self, comment: &str) {
-    self.comment = comment.to_string();
-  }
-
   pub fn clear_content(&mut self) {
     self.content.clear();
   }
 
   pub fn clear_comment(&mut self) {
     self.comment.clear();
+  }
+
+  pub fn set_content(&mut self, content: &str) {
+    self.content = content.to_string();
+  }
+
+  pub fn set_comment(&mut self, comment: &str) {
+    self.comment = comment.to_string();
   }
 
   pub fn content(&self) -> &str {

@@ -15,6 +15,7 @@ use std::fmt::{
 
 type Texts = Vec<Text>;
 
+#[derive(Default)]
 pub struct Note {
   x: f64,
   y: f64,
@@ -81,8 +82,8 @@ impl Note {
     &self.texts
   }
 
-  pub fn remove_text(&mut self, index: usize) {
-    self.texts.remove(index);
+  pub fn remove_text(&mut self, index: u32) {
+    self.texts.remove(index as usize);
   }
 
   pub fn add_text(&mut self, text: Text) {
@@ -103,19 +104,6 @@ impl Note {
 
       result
     }).collect::<Vec<String>>().join("\n\n")
-  }
-}
-
-impl Default for Note {
-  fn default() -> Self {
-    Self {
-      x: 0.0,
-      y: 0.0,
-
-      choice: 0,
-
-      texts: Vec::new(),
-    }
   }
 }
 
