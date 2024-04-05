@@ -27,16 +27,6 @@ pub unsafe extern fn cyfile_text_with_comment(comment: *const c_char) -> *mut Te
 }
 
 #[no_mangle]
-pub unsafe extern fn cyfile_text_set_content(text: *mut Text, content: *const c_char) {
-  (*text).set_content(CStr::from_ptr(content).to_string_lossy().as_ref());
-}
-
-#[no_mangle]
-pub unsafe extern fn cyfile_text_set_comment(text: *mut Text, comment: *const c_char) {
-  (*text).set_comment(CStr::from_ptr(comment).to_string_lossy().as_ref());
-}
-
-#[no_mangle]
 pub unsafe extern fn cyfile_text_clear_content(text: *mut Text) {
   (*text).clear_content();
 }
@@ -44,6 +34,16 @@ pub unsafe extern fn cyfile_text_clear_content(text: *mut Text) {
 #[no_mangle]
 pub unsafe extern fn cyfile_text_clear_comment(text: *mut Text) {
   (*text).clear_comment();
+}
+
+#[no_mangle]
+pub unsafe extern fn cyfile_text_set_content(text: *mut Text, content: *const c_char) {
+  (*text).set_content(CStr::from_ptr(content).to_string_lossy().as_ref());
+}
+
+#[no_mangle]
+pub unsafe extern fn cyfile_text_set_comment(text: *mut Text, comment: *const c_char) {
+  (*text).set_comment(CStr::from_ptr(comment).to_string_lossy().as_ref());
 }
 
 #[no_mangle]
