@@ -23,44 +23,44 @@ type Notes = Vec<Note>;
 
 #[derive(Default)]
 pub struct Page {
-  raw: Vec<u8>,
+  source: Vec<u8>,
   mask: Vec<u8>,
 
   notes: Notes,
 }
 
 impl Page {
-  pub fn new(raw: Vec<u8>) -> Self {
+  pub fn new(source: Vec<u8>, mask: Vec<u8>) -> Self {
     Self {
-      raw,
-
-      ..Self::default()
-    }
-  }
-
-  pub fn with_mask(raw: Vec<u8>, mask: Vec<u8>) -> Self {
-    Self {
-      raw,
+      source,
       mask,
 
       ..Self::default()
     }
   }
 
-  pub fn set_raw(&mut self, raw: Vec<u8>) {
-    self.raw = raw;
+  pub fn with_source(source: Vec<u8>) -> Self {
+    Self {
+      source,
+
+      ..Self::default()
+    }
+  }
+
+  pub fn set_source(&mut self, source: Vec<u8>) {
+    self.source = source;
   }
 
   pub fn set_mask(&mut self, mask: Vec<u8>) {
     self.mask = mask;
   }
 
-  pub fn raw_mut(&mut self) -> &mut [u8] {
-    &mut self.raw
+  pub fn source_mut(&mut self) -> &mut [u8] {
+    &mut self.source
   }
 
-  pub fn raw(&self) -> &[u8] {
-    &self.raw
+  pub fn source(&self) -> &[u8] {
+    &self.source
   }
 
   pub fn mask_mut(&mut self) -> &mut [u8] {
@@ -88,7 +88,7 @@ impl Page {
   }
 
   pub(crate) fn size(&self) -> (usize, usize) {
-    if let Ok(image) = image::load_from_memory(&self.raw) {
+    if let Ok(image) = image::load_from_memory(&self.source) {
       let (width, height) = image.dimensions();
 
       (width as usize, height as usize)
@@ -103,7 +103,7 @@ impl Encode for Page {
     match codec.version() {
       (0, 0) => {
         // 图像数据
-        codec.write_data_with_len::<u32>(self.raw())?;
+        codec.write_data_with_len::<u32>(self.source())?;
 
         // 图像尺寸
         let (page_width, page_height) = self.size();
@@ -128,7 +128,7 @@ impl Encode for Page {
       }
 
       (0, 2) => {
-        codec.write_data_with_len::<u32>(&self.raw)?;
+        codec.write_data_with_len::<u32>(&self.source)?;
         codec.write_data_with_len::<u32>(&self.mask)?;
 
         self.notes.encode(codec)?;
@@ -157,7 +157,7 @@ impl Decode for Page {
   fn decode(codec: &mut Codec) -> FileResult<Self> {
     match codec.version() {
       (0, 0) => {
-        let mut page = Page::new(codec.read_data_with_len::<u32>()?);
+        let mut page = Page::with_source(codec.read_data_with_len::<u32>()?);
 
         let (page_width, page_height) = page.size();
 
@@ -183,13 +183,13 @@ impl Decode for Page {
       }
 
       (0, 2) => {
-        let raw = codec.read_data_with_len::<u32>()?;
+        let source = codec.read_data_with_len::<u32>()?;
         let mask = codec.read_data_with_len::<u32>()?;
 
         let notes = Notes::decode(codec)?;
 
         Ok(Self {
-          raw,
+          source,
           mask,
 
           notes,
@@ -217,7 +217,7 @@ impl Decode for Notes {
 
 impl Debug for Page {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    writeln!(f, "Raw Size: {:.4} MiB", self.raw.len() as f64 / 1024.0 / 1024.0)?;
+    writeln!(f, "Source Size: {:.4} MiB", self.source.len() as f64 / 1024.0 / 1024.0)?;
     writeln!(f, "Mask Size: {:.4} MiB", self.mask.len() as f64 / 1024.0 / 1024.0)?;
 
     writeln!(f)?;
