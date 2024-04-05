@@ -1,14 +1,17 @@
+/// Be used to enumerate different positions of staff.
 #[derive(Eq, Hash, PartialEq, Clone, Copy, Debug)]
 pub enum Credit {
-  // 翻译
+  /// Someone who specialize in converting written or spoken text from one language to another.
   Translators,
-  // 校对
+  /// Someone who are responsible for reviewing written text to identify and correct errors in
+  /// spelling, grammar, punctuation, and formatting.
   Proofreaders,
-  // 修图
+  /// Someont who specialize in the post-production process of enhancing or altering digital images.
   Retouchers,
-  // 嵌字
+  /// Someone who are responsible for arranging and formatting text in a visually appealing manner
+  /// for publication.
   Typesetters,
-  // 监修
+  /// Someone who oversee and manage the work of others within an organization or a specific area.
   Supervisors,
 }
 
