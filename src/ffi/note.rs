@@ -65,24 +65,26 @@ pub unsafe extern fn cyfile_note_texts_len(note: *mut Note) -> c_uint {
 
 #[no_mangle]
 pub unsafe extern fn cyfile_note_texts_mut(note: *mut Note) -> *mut *mut Text {
-  let mut list = Vec::new();
-
-  for text in (*note).texts_mut() {
-    list.push(text as *mut Text);
-  }
-
-  (*Box::into_raw(list.into_boxed_slice())).as_mut_ptr()
+  Box::into_raw((*note)
+    .texts_mut()
+    .iter_mut()
+    .map(|text| {
+      text as *mut Text
+    }).collect::<Vec<*mut Text>>()
+    .into_boxed_slice()
+  ) as *mut *mut Text
 }
 
 #[no_mangle]
 pub unsafe extern fn cyfile_note_texts(note: *mut Note) -> *mut *const Text {
-  let mut list = Vec::new();
-
-  for text in (*note).texts() {
-    list.push(text as *const Text);
-  }
-
-  (*Box::into_raw(list.into_boxed_slice())).as_mut_ptr()
+  Box::into_raw((*note)
+    .texts()
+    .iter()
+    .map(|text| {
+      text as *const Text
+    }).collect::<Vec<*const Text>>()
+    .into_boxed_slice()
+  ) as *mut *const Text
 }
 
 #[no_mangle]
@@ -98,4 +100,9 @@ pub unsafe extern fn cyfile_note_add_text(note: *mut Note, text: *mut Text) {
 #[no_mangle]
 pub unsafe extern fn cyfile_note_debug(note: *mut Note) {
   println!("{:?}", *note);
+}
+
+#[no_mangle]
+unsafe extern fn cyfile_text_drop(note: *mut Note) {
+  drop(Box::from_raw(note));
 }
