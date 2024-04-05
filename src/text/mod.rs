@@ -162,12 +162,12 @@ impl Text {
     self.comment = comment.to_string();
   }
 
-  /// Get content of the `Text`.
+  /// Return content of the `Text`.
   pub fn content(&self) -> &str {
     &self.content
   }
 
-  /// Get comment of the `Text`.
+  /// Return comment of the `Text`.
   pub fn comment(&self) -> &str {
     &self.comment
   }
@@ -211,7 +211,12 @@ impl Debug for Text {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
     if !self.content.is_empty() {
       writeln!(f, "Content:")?;
-      write!(f, "{}", self.content.lines().map(|line| format!("  {}", line)).collect::<Vec<String>>().join("\n"))?;
+      write!(f, "{}", self.content
+        .lines()
+        .map(|line| format!("  {}", line))
+        .collect::<Vec<String>>()
+        .join("\n")
+      )?;
     }
 
     if !(self.content.is_empty() || self.comment.is_empty()) {
@@ -220,7 +225,12 @@ impl Debug for Text {
 
     if !self.comment.is_empty() {
       writeln!(f, "Comment:")?;
-      write!(f, "{}", self.comment.lines().map(|line| format!("  {}", line)).collect::<Vec<String>>().join("\n"))?;
+      write!(f, "{}", self.comment
+        .lines()
+        .map(|line| format!("  {}", line))
+        .collect::<Vec<String>>()
+        .join("\n")
+      )?;
     }
 
     Ok(())
