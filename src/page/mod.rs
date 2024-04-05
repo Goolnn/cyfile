@@ -223,7 +223,17 @@ impl Debug for Page {
     writeln!(f)?;
 
     writeln!(f, "Notes[{}]:", self.notes.len())?;
-    write!(f, "{}", &self.notes.iter().enumerate().map(|(index, note)| format!("* {}\n{:?}", index + 1, note).lines().map(|line| format!("  {}", line)).collect::<Vec<String>>().join("\n")).collect::<Vec<String>>().join("\n\n"))?;
+    write!(f, "{}", &self.notes
+      .iter()
+      .enumerate()
+      .map(|(index, note)| format!("* {}\n{:?}", index + 1, note)
+        .lines()
+        .map(|line| format!("  {}", line))
+        .collect::<Vec<String>>()
+        .join("\n"))
+      .collect::<Vec<String>>()
+      .join("\n\n")
+    )?;
 
     Ok(())
   }
