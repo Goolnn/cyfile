@@ -99,7 +99,7 @@ impl Note {
       } else if text.comment().is_empty() && !text.content().is_empty() {
         result.push_str(text.content());
       } else {
-        result.push_str(&format!("{}\n\n{}", text.content(), text.comment()));
+        result.push_str(format!("{}\n\n{}", text.content(), text.comment()).as_ref());
       }
 
       result
@@ -178,7 +178,17 @@ impl Debug for Note {
     writeln!(f)?;
 
     writeln!(f, "Texts[{}]:", self.texts.len())?;
-    write!(f, "{}", &self.texts.iter().enumerate().map(|(index, text)| format!("* {}\n{:?}", index + 1, text).lines().map(|line| format!("  {}", line)).collect::<Vec<String>>().join("\n")).collect::<Vec<String>>().join("\n\n"))?;
+    write!(f, "{}", &self.texts
+      .iter()
+      .enumerate()
+      .map(|(index, text)| format!("* {}\n{:?}", index + 1, text)
+        .lines()
+        .map(|line| format!("  {}", line))
+        .collect::<Vec<String>>()
+        .join("\n")
+      ).collect::<Vec<String>>()
+      .join("\n\n")
+    )?;
 
     Ok(())
   }

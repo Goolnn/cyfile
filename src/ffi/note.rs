@@ -12,12 +12,19 @@ pub unsafe extern fn cyfile_note_new() -> *mut Note {
 }
 
 #[no_mangle]
-pub unsafe extern fn cyfile_note_with_coordinate_and_choice(x: c_double, y: c_double, choice: c_uint) -> *mut Note {
+pub unsafe extern fn cyfile_note_with_coordinate_and_choice(
+  x: c_double,
+  y: c_double,
+  choice: c_uint,
+) -> *mut Note {
   Box::into_raw(Box::new(Note::with_coordinate_and_choice(x, y, choice)))
 }
 
 #[no_mangle]
-pub unsafe extern fn cyfile_note_with_coordinate(x: c_double, y: c_double) -> *mut Note {
+pub unsafe extern fn cyfile_note_with_coordinate(
+  x: c_double,
+  y: c_double,
+) -> *mut Note {
   Box::into_raw(Box::new(Note::with_coordinate(x, y)))
 }
 
