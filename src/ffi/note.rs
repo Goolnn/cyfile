@@ -103,6 +103,6 @@ pub unsafe extern fn cyfile_note_debug(note: *mut Note) {
 }
 
 #[no_mangle]
-unsafe extern fn cyfile_text_drop(note: *mut Note) {
+unsafe extern fn cyfile_note_drop(note: *mut Note) {
   drop(Box::from_raw(note));
 }
