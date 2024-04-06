@@ -1,5 +1,11 @@
 use crate::error::FileResult;
 
+use crate::file::codec::{
+  Encode,
+  Decode,
+  Codec,
+};
+
 use chrono::{
   Timelike,
   Datelike,
@@ -9,12 +15,6 @@ use chrono::{
 use std::fmt::{
   Formatter,
   Debug,
-};
-
-use crate::file::codec::{
-  Encode,
-  Decode,
-  Codec,
 };
 
 #[derive(Copy, Clone)]
@@ -95,19 +95,6 @@ impl Default for Date {
   }
 }
 
-impl Debug for Date {
-  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}/{}/{} {:2}:{:2}:{:2}",
-      self.year,
-      self.month,
-      self.day,
-      self.hour,
-      self.minute,
-      self.second,
-    )
-  }
-}
-
 impl Encode for Date {
   fn encode(&self, codec: &mut Codec) -> FileResult<()> {
     codec.write_primitive(self.year)?;
@@ -141,5 +128,18 @@ impl Decode for Date {
       minute,
       second,
     })
+  }
+}
+
+impl Debug for Date {
+  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    write!(f, "{}/{}/{} {:2}:{:2}:{:2}",
+      self.year,
+      self.month,
+      self.day,
+      self.hour,
+      self.minute,
+      self.second,
+    )
   }
 }
