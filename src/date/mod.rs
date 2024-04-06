@@ -1,4 +1,4 @@
-use crate::error::FileResult;
+use crate::error::{FileError, FileResult};
 
 use crate::file::codec::{
   Encode,
@@ -97,37 +97,53 @@ impl Default for Date {
 
 impl Encode for Date {
   fn encode(&self, codec: &mut Codec) -> FileResult<()> {
-    codec.write_primitive(self.year)?;
-    codec.write_primitive(self.month)?;
-    codec.write_primitive(self.day)?;
-
-    codec.write_primitive(self.hour)?;
-    codec.write_primitive(self.minute)?;
-    codec.write_primitive(self.second)?;
-
-    Ok(())
+    match codec.version() {
+      (0, 2) => {
+        codec.write_primitive(self.year)?;
+        codec.write_primitive(self.month)?;
+        codec.write_primitive(self.day)?;
+    
+        codec.write_primitive(self.hour)?;
+        codec.write_primitive(self.minute)?;
+        codec.write_primitive(self.second)?;
+    
+        Ok(())
+      },
+      
+      _ => {
+        Err(FileError::InvalidVersion)
+      },
+    }
   }
 }
 
 impl Decode for Date {
   fn decode(codec: &mut Codec) -> FileResult<Self> {
-    let year = codec.read_primitive::<u16>()?;
-    let month = codec.read_primitive::<u8>()?;
-    let day = codec.read_primitive::<u8>()?;
-
-    let hour = codec.read_primitive::<u8>()?;
-    let minute = codec.read_primitive::<u8>()?;
-    let second = codec.read_primitive::<u8>()?;
-
-    Ok(Self {
-      year,
-      month,
-      day,
-
-      hour,
-      minute,
-      second,
-    })
+    match codec.version() {
+      (0, 2) => {
+        let year = codec.read_primitive::<u16>()?;
+        let month = codec.read_primitive::<u8>()?;
+        let day = codec.read_primitive::<u8>()?;
+    
+        let hour = codec.read_primitive::<u8>()?;
+        let minute = codec.read_primitive::<u8>()?;
+        let second = codec.read_primitive::<u8>()?;
+    
+        Ok(Self {
+          year,
+          month,
+          day,
+    
+          hour,
+          minute,
+          second,
+        })
+      },
+      
+      _ => {
+        Err(FileError::InvalidVersion)
+      },
+    }
   }
 }
 
