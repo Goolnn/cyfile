@@ -79,8 +79,8 @@ impl Page {
     &self.notes
   }
 
-  pub fn remove_note(&mut self, index: usize) {
-    self.notes.remove(index);
+  pub fn remove_note(&mut self, index: u32) {
+    self.notes.remove(index as usize);
   }
 
   pub fn add_note(&mut self, note: Note) {
