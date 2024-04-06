@@ -221,7 +221,7 @@ impl Encode for File {
 
         // 图像数据
         for page in &self.pages {
-          codec.write_data_with_len::<u32>(page.raw())?;
+          codec.write_data_with_len::<u32>(page.source())?;
         }
 
         // 标记数据
@@ -384,7 +384,7 @@ impl Decode for File {
         for _ in 0..page_count {
           let image_data = codec.read_data_with_len::<u32>()?;
 
-          pages.push(Page::new(image_data));
+          pages.push(Page::with_source(image_data));
         }
 
         // 读取标记
