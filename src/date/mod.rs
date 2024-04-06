@@ -1,4 +1,7 @@
-use crate::error::{FileError, FileResult};
+use crate::error::{
+  FileResult,
+  FileError,
+};
 
 use crate::file::codec::{
   Encode,
@@ -102,17 +105,17 @@ impl Encode for Date {
         codec.write_primitive(self.year)?;
         codec.write_primitive(self.month)?;
         codec.write_primitive(self.day)?;
-    
+
         codec.write_primitive(self.hour)?;
         codec.write_primitive(self.minute)?;
         codec.write_primitive(self.second)?;
-    
+
         Ok(())
-      },
-      
+      }
+
       _ => {
         Err(FileError::InvalidVersion)
-      },
+      }
     }
   }
 }
@@ -124,25 +127,25 @@ impl Decode for Date {
         let year = codec.read_primitive::<u16>()?;
         let month = codec.read_primitive::<u8>()?;
         let day = codec.read_primitive::<u8>()?;
-    
+
         let hour = codec.read_primitive::<u8>()?;
         let minute = codec.read_primitive::<u8>()?;
         let second = codec.read_primitive::<u8>()?;
-    
+
         Ok(Self {
           year,
           month,
           day,
-    
+
           hour,
           minute,
           second,
         })
-      },
-      
+      }
+
       _ => {
         Err(FileError::InvalidVersion)
-      },
+      }
     }
   }
 }
