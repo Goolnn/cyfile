@@ -6,8 +6,10 @@ pub const VERSION_0_0: (u8, u8) = (0x00, 0x00);
 pub const VERSION_0_1: (u8, u8) = (0x00, 0x01);
 pub const VERSION_0_2: (u8, u8) = (0x00, 0x02);
 
+// 最新版本
 pub const VERSION_LATEST: (u8, u8) = VERSION_0_2;
 
+// 版本列表
 pub const VERSIONS: [(u8, u8); 3] = [
   VERSION_0_0,
   VERSION_0_1,
