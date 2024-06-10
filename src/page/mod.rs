@@ -1,8 +1,8 @@
 mod pages;
 mod image;
 
-pub use image::Image;
 pub use pages::Pages;
+pub use image::Image;
 
 use ::image::GenericImageView;
 
