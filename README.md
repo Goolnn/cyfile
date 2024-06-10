@@ -1,4 +1,4 @@
-# cyFile
+# cyFile: Tool to handle archive files for Cangyan
 
 ## Introduction
 
