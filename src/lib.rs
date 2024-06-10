@@ -15,11 +15,11 @@ pub mod error;
 mod credit;
 mod codec;
 mod text;
+mod tags;
 mod page;
 mod note;
 mod file;
 mod date;
-mod tags;
 
 use codec::Codec;
 
@@ -43,4 +43,5 @@ pub use tags::Tag;
 
 pub use file::Export;
 pub use file::File;
+
 pub use date::Date;
