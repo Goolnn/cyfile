@@ -181,7 +181,7 @@ impl Encode for File {
 
         // 图像数据
         for page in self.pages.inner() {
-          codec.write_data_with_len::<u32>(page.source())?;
+          codec.write_object(page.source())?;
         }
 
         // 标记数据
