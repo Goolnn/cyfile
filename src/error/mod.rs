@@ -1,5 +1,7 @@
 use std::io;
 
+pub type FileResult<T> = Result<T, FileError>;
+
 #[derive(Debug, Eq, PartialEq)]
 pub enum FileError {
   InvalidHeader,
@@ -21,5 +23,3 @@ impl From<io::Error> for FileError {
     Self::Undefined
   }
 }
-
-pub type FileResult<T> = Result<T, FileError>;

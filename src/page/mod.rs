@@ -1,5 +1,6 @@
-use crate::Note;
-use crate::Text;
+mod pages;
+
+pub use pages::Pages;
 
 use image::GenericImageView;
 
@@ -8,18 +9,14 @@ use crate::error::{
   FileError,
 };
 
-use crate::file::codec::{
+use crate::{
   Encode,
   Decode,
   Codec,
+  Notes,
+  Note,
+  Text,
 };
-
-use std::fmt::{
-  Formatter,
-  Debug,
-};
-
-type Notes = Vec<Note>;
 
 #[derive(Default)]
 pub struct Page {
@@ -71,20 +68,12 @@ impl Page {
     &self.mask
   }
 
-  pub fn notes_mut(&mut self) -> &mut [Note] {
+  pub fn notes_mut(&mut self) -> &mut Notes {
     &mut self.notes
   }
 
-  pub fn notes(&self) -> &[Note] {
+  pub fn notes(&self) -> &Notes {
     &self.notes
-  }
-
-  pub fn remove_note(&mut self, index: u32) {
-    self.notes.remove(index as usize);
-  }
-
-  pub fn add_note(&mut self, note: Note) {
-    self.notes.push(note);
   }
 
   pub(crate) fn size(&self) -> (usize, usize) {
@@ -111,7 +100,7 @@ impl Encode for Page {
         // 标签数量
         codec.write_primitive(self.notes().len() as u8)?;
 
-        for note in self.notes() {
+        for note in self.notes().inner() {
           let note_x = (page_width as f64 * (note.x() + 1.0) / 2.0) as u16;
           let note_y = (page_height as f64 * (1.0 - (note.y() + 1.0) / 2.0)) as u16;
 
@@ -131,25 +120,13 @@ impl Encode for Page {
         codec.write_data_with_len::<u32>(&self.source)?;
         codec.write_data_with_len::<u32>(&self.mask)?;
 
-        self.notes.encode(codec)?;
+        codec.write_object(self.notes())?;
 
         Ok(())
       }
 
       _ => Err(FileError::InvalidVersion),
     }
-  }
-}
-
-impl Encode for Notes {
-  fn encode(&self, codec: &mut Codec) -> FileResult<()> {
-    codec.write_primitive::<u32>(self.len() as u32)?;
-
-    for note in self {
-      note.encode(codec)?;
-    }
-
-    Ok(())
   }
 }
 
@@ -174,9 +151,9 @@ impl Decode for Page {
             1.0 - note_y / page_height as f64 * 2.0,
           );
 
-          note.add_text(Text::with_content(&content));
+          note.texts_mut().push_back(Text::with_content(&content));
 
-          page.add_note(note);
+          page.notes_mut().push_back(note);
         }
 
         Ok(page)
@@ -186,7 +163,7 @@ impl Decode for Page {
         let source = codec.read_data_with_len::<u32>()?;
         let mask = codec.read_data_with_len::<u32>()?;
 
-        let notes = Notes::decode(codec)?;
+        let notes = codec.read_object()?;
 
         Ok(Self {
           source,
@@ -198,43 +175,5 @@ impl Decode for Page {
 
       _ => Err(FileError::InvalidVersion),
     }
-  }
-}
-
-impl Decode for Notes {
-  fn decode(codec: &mut Codec) -> FileResult<Self> {
-    let note_count = codec.read_primitive::<u32>()?;
-
-    let mut notes = Vec::with_capacity(note_count as usize);
-
-    for _ in 0..note_count {
-      notes.push(Note::decode(codec)?);
-    }
-
-    Ok(notes)
-  }
-}
-
-impl Debug for Page {
-  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    writeln!(f, "Source Size: {:.4} MiB", self.source.len() as f64 / 1024.0 / 1024.0)?;
-    writeln!(f, "Mask Size: {:.4} MiB", self.mask.len() as f64 / 1024.0 / 1024.0)?;
-
-    writeln!(f)?;
-
-    writeln!(f, "Notes[{}]:", self.notes.len())?;
-    write!(f, "{}", &self.notes
-      .iter()
-      .enumerate()
-      .map(|(index, note)| format!("* {}\n{:?}", index + 1, note)
-        .lines()
-        .map(|line| format!("  {}", line))
-        .collect::<Vec<String>>()
-        .join("\n"))
-      .collect::<Vec<String>>()
-      .join("\n\n")
-    )?;
-
-    Ok(())
   }
 }

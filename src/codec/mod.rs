@@ -1,3 +1,4 @@
+use std::collections::VecDeque;
 use std::mem::size_of;
 
 use std::fs::File;
@@ -12,11 +13,11 @@ use std::io::{
   Read,
 };
 
-pub(crate) trait Encode {
+pub trait Encode {
   fn encode(&self, codec: &mut Codec) -> FileResult<()>;
 }
 
-pub(crate) trait Decode: Sized {
+pub trait Decode: Sized {
   fn decode(codec: &mut Codec) -> FileResult<Self>;
 }
 
@@ -55,6 +56,12 @@ impl Codec {
 
   pub fn version(&self) -> (u8, u8) {
     self.version
+  }
+
+  pub fn write_object<O: Encode>(&mut self, object: &O) -> FileResult<()> {
+    object.encode(self)?;
+
+    Ok(())
   }
 
   pub fn write_primitive<T: Copy>(&mut self, data: T) -> FileResult<()> {
@@ -137,6 +144,10 @@ impl Codec {
     }
   }
 
+  pub fn read_object<O: Decode>(&mut self) -> FileResult<O> {
+    O::decode(self)
+  }
+
   pub fn read_primitive<T: Copy>(&mut self) -> FileResult<T> {
     let mut buffer = vec![0u8; size_of::<T>()];
 
@@ -159,8 +170,8 @@ impl Codec {
     }
   }
 
-  pub fn read_data_with_len<T: Copy>(&mut self) -> FileResult<Vec<u8>>
-    where T: TryInto<usize>
+  pub fn read_data_with_len<T>(&mut self) -> FileResult<Vec<u8>>
+    where T: TryInto<usize> + Copy
   {
     let mut buffer = vec![0u8; self.read_len::<T>()?];
 
@@ -171,8 +182,8 @@ impl Codec {
     }
   }
 
-  pub fn read_string<T: Copy>(&mut self) -> FileResult<String>
-    where T: TryInto<usize>
+  pub fn read_string<T>(&mut self) -> FileResult<String>
+    where T: TryInto<usize> + Copy
   {
     let mut buffer = vec![0u8; self.read_len::<T>()?];
 
@@ -187,8 +198,8 @@ impl Codec {
     }
   }
 
-  pub fn read_string_with_nil<T: Copy>(&mut self) -> FileResult<String>
-    where T: TryInto<usize>
+  pub fn read_string_with_nil<T>(&mut self) -> FileResult<String>
+    where T: TryInto<usize> + Copy
   {
     let mut buffer = vec![0u8; self.read_len::<T>()?];
 
@@ -205,8 +216,23 @@ impl Codec {
     }
   }
 
-  fn read_len<T: Copy>(&mut self) -> FileResult<usize>
-    where T: TryInto<usize>
+  pub fn read_collection<T, O>(&mut self) -> FileResult<VecDeque<O>>
+    where T: TryInto<usize> + Copy,
+          O: Decode,
+  {
+    let count = self.read_len::<T>()?;
+
+    let mut pages = VecDeque::with_capacity(count);
+
+    for _ in 0..count {
+      pages.push_back(self.read_object()?);
+    }
+
+    Ok(pages)
+  }
+
+  fn read_len<T>(&mut self) -> FileResult<usize>
+    where T: TryInto<usize> + Copy
   {
     if let Ok(len) = self.read_primitive::<T>()?.try_into() {
       Ok(len)

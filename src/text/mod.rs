@@ -1,23 +1,22 @@
+mod texts;
+
+pub use texts::Texts;
+
 use crate::error::{
   FileResult,
   FileError,
 };
 
-use crate::file::codec::{
+use crate::{
   Encode,
   Decode,
   Codec,
 };
 
-use std::fmt::{
-  Formatter,
-  Debug,
-};
-
 /// Be used to store the content and the comment of a text.
 ///
 /// The `Text` type generally does not exist independently but rather as a child of a
-/// [`Note`](crate::Note) type.
+/// [`Text`](Text) type.
 ///
 /// # Examples
 ///
@@ -204,35 +203,5 @@ impl Decode for Text {
         Err(FileError::InvalidVersion)
       }
     }
-  }
-}
-
-impl Debug for Text {
-  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    if !self.content.is_empty() {
-      writeln!(f, "Content:")?;
-      write!(f, "{}", self.content
-        .lines()
-        .map(|line| format!("  {}", line))
-        .collect::<Vec<String>>()
-        .join("\n")
-      )?;
-    }
-
-    if !(self.content.is_empty() || self.comment.is_empty()) {
-      writeln!(f, "\n")?;
-    }
-
-    if !self.comment.is_empty() {
-      writeln!(f, "Comment:")?;
-      write!(f, "{}", self.comment
-        .lines()
-        .map(|line| format!("  {}", line))
-        .collect::<Vec<String>>()
-        .join("\n")
-      )?;
-    }
-
-    Ok(())
   }
 }

@@ -1,12 +1,13 @@
-pub(crate) mod codec;
+mod export;
+mod data;
 
-use crate::credit::Credit;
-use crate::text::Text;
-use crate::page::Page;
-use crate::note::Note;
-use crate::date::Date;
+pub use export::Export;
+
+use crate::credit::Credits;
 
 use regex::Regex;
+
+use std::collections::VecDeque;
 
 use std::path::Path;
 
@@ -17,48 +18,23 @@ use crate::error::{
   FileError,
 };
 
-use crate::file::codec::{
+use crate::{
   Encode,
   Decode,
+  Pages,
   Codec,
+  Text,
+  Tags,
+  Page,
+  Note,
+  Date,
 };
 
-use std::collections::{
-  HashSet,
-  HashMap,
+use data::{
+  HEADER_DATA,
+  VERSION_LATEST,
+  VERSIONS,
 };
-
-use std::fmt::{
-  Formatter,
-  Debug,
-};
-
-type Credits = HashMap<Credit, HashSet<String>>;
-type Pages = Vec<Page>;
-type Tags = HashSet<String>;
-
-// 头部数据
-const HEADER_DATA: [u8; 15] = [0xE8, 0x8B, 0x8D, 0xE7, 0x9C, 0xBC, 0xE6, 0xB1, 0x89, 0xE5, 0x8C, 0x96, 0xE7, 0xBB, 0x84];
-
-// 版本数据
-const VERSION_0_0: (u8, u8) = (0x00, 0x00);
-const VERSION_0_1: (u8, u8) = (0x00, 0x01);
-const VERSION_0_2: (u8, u8) = (0x00, 0x02);
-
-const VERSION_LATEST: (u8, u8) = VERSION_0_2;
-
-const VERSIONS: [(u8, u8); 3] = [
-  VERSION_0_0,
-  VERSION_0_1,
-  VERSION_0_2,
-];
-
-pub trait Export {
-  fn export_to_with_version(&mut self, filepath: &str, version: (u8, u8)) -> FileResult<()>;
-  fn export_with_version(&mut self, version: (u8, u8)) -> FileResult<()>;
-  fn export_to(&mut self, filepath: &str) -> FileResult<()>;
-  fn export(&mut self) -> FileResult<()>;
-}
 
 #[derive(Default)]
 pub struct File {
@@ -116,16 +92,12 @@ impl File {
     self.version
   }
 
+  pub fn tags_mut(&mut self) -> &mut Tags {
+    &mut self.tags
+  }
+
   pub fn tags(&self) -> &Tags {
     &self.tags
-  }
-
-  pub fn remove_tag(&mut self, tag: &str) {
-    self.tags.remove(tag);
-  }
-
-  pub fn add_tag(&mut self, tag: &str) {
-    self.tags.insert(tag.to_string());
   }
 
   pub fn created_date(&self) -> Date {
@@ -136,32 +108,20 @@ impl File {
     self.saved_date
   }
 
-  pub fn credits_of(&self, credit: Credit) -> Option<&HashSet<String>> {
-    self.credits.get(&credit)
+  pub fn credits_mut(&mut self) -> &mut Credits {
+    &mut self.credits
   }
 
   pub fn credits(&self) -> &Credits {
     &self.credits
   }
 
-  pub fn remove_credit(&mut self, credit: Credit) {
-    self.credits.remove(&credit);
-  }
-
-  pub fn pages_mut(&mut self) -> &mut [Page] {
+  pub fn pages_mut(&mut self) -> &mut Pages {
     &mut self.pages
   }
 
-  pub fn pages(&self) -> &[Page] {
+  pub fn pages(&self) -> &Pages {
     &self.pages
-  }
-
-  pub fn remove_page(&mut self, index: usize) {
-    self.pages.remove(index);
-  }
-
-  pub fn add_page(&mut self, page: Page) {
-    self.pages.push(page);
   }
 }
 
@@ -171,7 +131,7 @@ impl Export for File {
     self.version = version;
 
     self.saved_date = Date::now();
-
+    
     self.encode(&mut Codec::with_version(fs::File::create(filepath)?, filepath, version))?;
 
     Ok(())
@@ -220,19 +180,19 @@ impl Encode for File {
         Date::now().encode(codec)?;
 
         // 图像数据
-        for page in &self.pages {
+        for page in self.pages.inner() {
           codec.write_data_with_len::<u32>(page.source())?;
         }
 
         // 标记数据
-        for page in &self.pages {
+        for page in self.pages.inner() {
           // 图像尺寸
           let (page_width, page_height) = page.size();
 
           // 标记数量
           codec.write_primitive(page.notes().len() as u8)?;
 
-          for note in page.notes() {
+          for note in page.notes().inner() {
             let note_x = (page_width as f64 * ((note.x() + 1.0) / 2.0)) as u16;
             let note_y = (page_height as f64 * (1.0 - (note.y() + 1.0) / 2.0)) as u16;
 
@@ -254,79 +214,23 @@ impl Encode for File {
 
       (0, 2) => {
         // 分类标签
-        self.tags.encode(codec)?;
+        codec.write_object(&self.tags)?;
         // 工作人员
-        self.credits.encode(codec)?;
+        codec.write_object(&self.credits)?;
 
         // 创建时间
-        self.created_date.encode(codec)?;
+        codec.write_object(&self.created_date)?;
         // 保存时间
-        self.saved_date.encode(codec)?;
+        codec.write_object(&self.saved_date)?;
 
         // 图像数据
-        self.pages.encode(codec)?;
+        codec.write_object(&self.pages)?;
 
         Ok(())
       }
 
       _ => Err(FileError::InvalidVersion),
     }
-  }
-}
-
-impl Encode for Credits {
-  fn encode(&self, codec: &mut Codec) -> FileResult<()> {
-    // 职位数量
-    codec.write_primitive(self.len() as u32)?;
-
-    for (&credit, stuffs) in self {
-      codec.write_primitive(credit as u8)?;
-
-      // 人员数量
-      codec.write_primitive(stuffs.len() as u32)?;
-
-      for stuff in stuffs {
-        codec.write_string::<u32>(stuff)?;
-      }
-    }
-
-    Ok(())
-  }
-}
-
-impl Encode for Pages {
-  fn encode(&self, codec: &mut Codec) -> FileResult<()> {
-    match codec.version() {
-      (0, 0) => {
-        codec.write_primitive(self.len() as u8)?;
-      }
-
-      (0, 2) => {
-        codec.write_primitive::<u32>(self.len() as u32)?;
-      }
-
-      _ => return Err(FileError::InvalidVersion),
-    }
-
-    for page in self {
-      page.encode(codec)?;
-    }
-
-    Ok(())
-  }
-}
-
-impl Encode for Tags {
-  fn encode(&self, codec: &mut Codec) -> FileResult<()> {
-    // 标签数量
-    codec.write_primitive(self.len() as u32)?;
-
-    // 标签数据
-    for tag in self {
-      codec.write_string::<u32>(tag)?;
-    }
-
-    Ok(())
   }
 }
 
@@ -352,17 +256,17 @@ impl Decode for File {
       (0, 0) => {
         let page_count = codec.read_primitive::<u8>()?;
 
-        let mut pages = Vec::with_capacity(page_count as usize);
+        let mut pages = VecDeque::with_capacity(page_count as usize);
 
         for _ in 0..page_count {
-          pages.push(Page::decode(codec)?);
+          pages.push_back(codec.read_object()?);
         }
 
         Ok(Self {
           filepath: codec.filepath().to_string(),
           version: (major, minor),
 
-          pages,
+          pages: Pages::from(pages),
 
           ..Self::default()
         })
@@ -376,15 +280,15 @@ impl Decode for File {
         codec.read_primitive::<u8>()?;
 
         // 保存时间
-        let date = Date::decode(codec)?;
+        let date = codec.read_object()?;
 
         // 读取图像
-        let mut pages = Vec::with_capacity(page_count as usize);
+        let mut pages = VecDeque::with_capacity(page_count as usize);
 
         for _ in 0..page_count {
           let image_data = codec.read_data_with_len::<u32>()?;
 
-          pages.push(Page::with_source(image_data));
+          pages.push_back(Page::with_source(image_data));
         }
 
         // 读取标记
@@ -393,8 +297,6 @@ impl Decode for File {
           let note_count = codec.read_primitive::<u8>()?;
 
           let page = &mut pages[i as usize];
-
-          // page.notes_mut().reserve(note_count as usize);
 
           let (page_width, page_height) = page.size();
 
@@ -442,24 +344,24 @@ impl Decode for File {
 
               // 添加文本
               if !draft.is_empty() {
-                note.add_text(Text::with_content(&draft));
+                note.texts_mut().push_back(Text::with_content(&draft));
               }
 
               if !revision.is_empty() {
-                note.add_text(Text::with_content(&revision));
+                note.texts_mut().push_back(Text::with_content(&revision));
               }
             } else {
               // 添加文本
               if !draft.is_empty() {
-                note.add_text(Text::with_content(&draft));
+                note.texts_mut().push_back(Text::with_content(&draft));
               }
 
               if !revision.is_empty() {
-                note.add_text(Text::with_content(&revision));
+                note.texts_mut().push_back(Text::with_content(&revision));
               }
             }
 
-            page.add_note(note);
+            page.notes_mut().push_back(note);
           }
         }
 
@@ -470,7 +372,7 @@ impl Decode for File {
           created_date: date,
           saved_date: date,
 
-          pages,
+          pages: Pages::from(pages),
 
           ..Self::default()
         })
@@ -478,17 +380,17 @@ impl Decode for File {
 
       (0, 2) => {
         // 分类标签
-        let tags = Tags::decode(codec)?;
+        let tags = codec.read_object()?;
         // 工作人员
-        let credits = Credits::decode(codec)?;
+        let credits = codec.read_object()?;
 
         // 创建时间
-        let created_date = Date::decode(codec)?;
+        let created_date = codec.read_object()?;
         // 保存时间
-        let saved_date = Date::decode(codec)?;
+        let saved_date = codec.read_object()?;
 
         // 图像数据
-        let pages = Pages::decode(codec)?;
+        let pages = codec.read_object()?;
 
         Ok(Self {
           filepath: codec.filepath().to_string(),
@@ -506,98 +408,5 @@ impl Decode for File {
 
       _ => Err(FileError::InvalidVersion),
     }
-  }
-}
-
-impl Decode for Credits {
-  fn decode(codec: &mut Codec) -> FileResult<Self> {
-    // 职位数量
-    let credit_count = codec.read_primitive::<u32>()?;
-
-    let mut credits = Self::with_capacity(credit_count as usize);
-
-    for _ in 0..credit_count {
-      let credit = Credit::from(codec.read_primitive::<u8>()?);
-
-      // 人员数量
-      let stuff_count = codec.read_primitive::<u32>()?;
-
-      let mut stuffs = HashSet::with_capacity(stuff_count as usize);
-
-      for _ in 0..stuff_count {
-        let stuff = codec.read_string::<u32>()?;
-
-        stuffs.insert(stuff);
-      }
-
-      credits.insert(credit, stuffs);
-    }
-
-    Ok(credits)
-  }
-}
-
-impl Decode for Pages {
-  fn decode(codec: &mut Codec) -> FileResult<Self> {
-    let page_count = codec.read_primitive::<u32>()?;
-
-    let mut pages = Vec::with_capacity(page_count as usize);
-
-    for _ in 0..page_count {
-      pages.push(Page::decode(codec)?);
-    }
-
-    Ok(pages)
-  }
-}
-
-impl Decode for Tags {
-  fn decode(codec: &mut Codec) -> FileResult<Self> {
-    // 标签数量
-    let note_count = codec.read_primitive::<u32>()?;
-
-    let mut tags = Self::with_capacity(note_count as usize);
-
-    // 标签数据
-    for _ in 0..note_count {
-      let tag = codec.read_string::<u32>()?;
-
-      tags.insert(tag);
-    }
-
-    Ok(tags)
-  }
-}
-
-impl Debug for File {
-  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    writeln!(f, "Filepath: {}", self.filepath)?;
-    writeln!(f, "Version: {:?}", self.version)?;
-
-    writeln!(f)?;
-
-    writeln!(f, "Tags[{}]: [{}]", self.tags.len(), &self.tags.iter().map(|tag| tag.to_string()).collect::<Vec<String>>().join("/"))?;
-
-    write!(f, "Credits[{}]:", self.credits.len())?;
-
-    if self.credits.is_empty() {
-      writeln!(f, " {{}}")?;
-    } else {
-      writeln!(f, " {{\n{}\n}}", self.credits.iter().map(|(credit, stuffs)| {
-        format!("  {:?}[{}]: [{}],", credit, stuffs.len(), stuffs.iter().map(|stuff| stuff.to_string()).collect::<Vec<String>>().join("/"))
-      }).collect::<Vec<String>>().join("\n"))?;
-    }
-
-    writeln!(f)?;
-
-    writeln!(f, "Created Date: {:?}", self.created_date)?;
-    writeln!(f, "Saved Date: {:?}", self.saved_date)?;
-
-    writeln!(f)?;
-
-    writeln!(f, "Pages[{}]:", self.pages.len())?;
-    write!(f, "{}", &self.pages.iter().enumerate().map(|(index, page)| format!("* {}\n{:?}", index + 1, page).lines().map(|line| format!("  {}", line)).collect::<Vec<String>>().join("\n")).collect::<Vec<String>>().join("\n\n"))?;
-
-    Ok(())
   }
 }

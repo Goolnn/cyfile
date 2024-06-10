@@ -13,17 +13,34 @@
 pub mod error;
 
 mod credit;
+mod codec;
 mod text;
 mod page;
 mod note;
 mod file;
 mod date;
-mod ffi;
+mod tags;
 
+use codec::Codec;
+
+use codec::Encode;
+use codec::Decode;
+
+pub use credit::Credits;
 pub use credit::Credit;
+
+pub use text::Texts;
 pub use text::Text;
-pub use page::Page;
+
+pub use note::Notes;
 pub use note::Note;
+
+pub use page::Pages;
+pub use page::Page;
+
+pub use tags::Tags;
+pub use tags::Tag;
+
 pub use file::Export;
 pub use file::File;
 pub use date::Date;

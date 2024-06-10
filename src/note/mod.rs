@@ -1,19 +1,16 @@
+mod notes;
+
+pub use notes::Notes;
+
 use crate::error::FileResult;
 
-use crate::text::Text;
+use crate::Texts;
 
-use crate::file::codec::{
+use crate::{
   Encode,
   Decode,
   Codec,
 };
-
-use std::fmt::{
-  Formatter,
-  Debug,
-};
-
-type Texts = Vec<Text>;
 
 #[derive(Default)]
 pub struct Note {
@@ -74,24 +71,16 @@ impl Note {
     self.choice
   }
 
-  pub fn texts_mut(&mut self) -> &mut [Text] {
+  pub fn texts_mut(&mut self) -> &mut Texts {
     &mut self.texts
   }
 
-  pub fn texts(&self) -> &[Text] {
+  pub fn texts(&self) -> &Texts {
     &self.texts
   }
 
-  pub fn remove_text(&mut self, index: u32) {
-    self.texts.remove(index as usize);
-  }
-
-  pub fn add_text(&mut self, text: Text) {
-    self.texts.push(text);
-  }
-
   pub(crate) fn merge_texts(&self) -> String {
-    self.texts.iter().map(|text| {
+    self.texts.inner().iter().map(|text| {
       let mut result = String::new();
 
       if text.content().is_empty() && !text.comment().is_empty() {
@@ -116,17 +105,7 @@ impl Encode for Note {
 
     codec.write_primitive(self.texts.len() as u32)?;
 
-    self.texts.encode(codec)?;
-
-    Ok(())
-  }
-}
-
-impl Encode for Texts {
-  fn encode(&self, codec: &mut Codec) -> FileResult<()> {
-    for text in self {
-      text.encode(codec)?;
-    }
+    codec.write_object(self.texts())?;
 
     Ok(())
   }
@@ -134,12 +113,12 @@ impl Encode for Texts {
 
 impl Decode for Note {
   fn decode(codec: &mut Codec) -> FileResult<Self> {
-    let x = codec.read_primitive::<f64>()?;
-    let y = codec.read_primitive::<f64>()?;
+    let x = codec.read_primitive()?;
+    let y = codec.read_primitive()?;
 
-    let choice = codec.read_primitive::<u32>()?;
+    let choice = codec.read_primitive()?;
 
-    let texts = Texts::decode(codec)?;
+    let texts = codec.read_object()?;
 
     Ok(Self {
       x,
@@ -149,47 +128,5 @@ impl Decode for Note {
 
       texts,
     })
-  }
-}
-
-impl Decode for Texts {
-  fn decode(codec: &mut Codec) -> FileResult<Self> {
-    let len = codec.read_primitive::<u32>()?;
-
-    let mut texts = Vec::with_capacity(len as usize);
-
-    for _ in 0..len {
-      texts.push(Text::decode(codec)?);
-    }
-
-    Ok(texts)
-  }
-}
-
-impl Debug for Note {
-  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    writeln!(f, "X: {:.2}", self.x)?;
-    writeln!(f, "Y: {:.2}", self.y)?;
-
-    writeln!(f)?;
-
-    writeln!(f, "Choice: {}", self.choice)?;
-
-    writeln!(f)?;
-
-    writeln!(f, "Texts[{}]:", self.texts.len())?;
-    write!(f, "{}", &self.texts
-      .iter()
-      .enumerate()
-      .map(|(index, text)| format!("* {}\n{:?}", index + 1, text)
-        .lines()
-        .map(|line| format!("  {}", line))
-        .collect::<Vec<String>>()
-        .join("\n")
-      ).collect::<Vec<String>>()
-      .join("\n\n")
-    )?;
-
-    Ok(())
   }
 }
