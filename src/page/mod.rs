@@ -1,8 +1,10 @@
 mod pages;
+mod image;
 
+pub use image::Image;
 pub use pages::Pages;
 
-use image::GenericImageView;
+use ::image::GenericImageView;
 
 use crate::error::{
   FileResult,
@@ -20,8 +22,8 @@ use crate::{
 
 #[derive(Default)]
 pub struct Page {
-  source: Vec<u8>,
-  mask: Vec<u8>,
+  source: Image,
+  mask: Image,
 
   notes: Notes,
 }
@@ -29,8 +31,8 @@ pub struct Page {
 impl Page {
   pub fn new(source: Vec<u8>, mask: Vec<u8>) -> Self {
     Self {
-      source,
-      mask,
+      source: Image::from(source),
+      mask: Image::from(mask),
 
       ..Self::default()
     }
@@ -38,33 +40,33 @@ impl Page {
 
   pub fn with_source(source: Vec<u8>) -> Self {
     Self {
-      source,
+      source: Image::from(source),
 
       ..Self::default()
     }
   }
 
   pub fn set_source(&mut self, source: Vec<u8>) {
-    self.source = source;
+    self.source = Image::from(source);
   }
 
   pub fn set_mask(&mut self, mask: Vec<u8>) {
-    self.mask = mask;
+    self.mask = Image::from(mask);
   }
 
-  pub fn source_mut(&mut self) -> &mut [u8] {
+  pub fn source_mut(&mut self) -> &mut Image {
     &mut self.source
   }
 
-  pub fn source(&self) -> &[u8] {
+  pub fn source(&self) -> &Image {
     &self.source
   }
 
-  pub fn mask_mut(&mut self) -> &mut [u8] {
+  pub fn mask_mut(&mut self) -> &mut Image {
     &mut self.mask
   }
 
-  pub fn mask(&self) -> &[u8] {
+  pub fn mask(&self) -> &Image {
     &self.mask
   }
 
@@ -77,7 +79,7 @@ impl Page {
   }
 
   pub(crate) fn size(&self) -> (usize, usize) {
-    if let Ok(image) = image::load_from_memory(&self.source) {
+    if let Ok(image) = ::image::load_from_memory(self.source.inner()) {
       let (width, height) = image.dimensions();
 
       (width as usize, height as usize)
@@ -92,7 +94,7 @@ impl Encode for Page {
     match codec.version() {
       (0, 0) => {
         // 图像数据
-        codec.write_data_with_len::<u32>(self.source())?;
+        codec.write_object(self.source())?;
 
         // 图像尺寸
         let (page_width, page_height) = self.size();
@@ -117,8 +119,8 @@ impl Encode for Page {
       }
 
       (0, 2) => {
-        codec.write_data_with_len::<u32>(&self.source)?;
-        codec.write_data_with_len::<u32>(&self.mask)?;
+        codec.write_object(self.source())?;
+        codec.write_object(self.mask())?;
 
         codec.write_object(self.notes())?;
 
@@ -166,8 +168,8 @@ impl Decode for Page {
         let notes = codec.read_object()?;
 
         Ok(Self {
-          source,
-          mask,
+          source: Image::from(source),
+          mask: Image::from(mask),
 
           notes,
         })
