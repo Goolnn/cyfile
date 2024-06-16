@@ -7,6 +7,6 @@ edition = "2021"
 crate-type = ["lib"]
 
 [dependencies]
-chrono = "*"
-image = "*"
-regex = "*"
+chrono = "0.4.38"
+image = "0.25.1"
+regex = "1.10.4"
