@@ -4,22 +4,22 @@ pub type FileResult<T> = Result<T, FileError>;
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum FileError {
-  InvalidHeader,
-  InvalidVersion,
-  InvalidStructure,
+    InvalidHeader,
+    InvalidVersion,
+    InvalidStructure,
 
-  PathIsDirectory,
-  PathNotExists,
-  PathNotFile,
+    PathIsDirectory,
+    PathNotExists,
+    PathNotFile,
 
-  WriteFailed,
-  ReadFailed,
+    WriteFailed,
+    ReadFailed,
 
-  Undefined,
+    Undefined,
 }
 
 impl From<io::Error> for FileError {
-  fn from(_: io::Error) -> Self {
-    Self::Undefined
-  }
+    fn from(_: io::Error) -> Self {
+        Self::Undefined
+    }
 }
