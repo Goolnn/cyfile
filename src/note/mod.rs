@@ -3,9 +3,7 @@ mod notes;
 pub use notes::Notes;
 
 use crate::error::FileResult;
-
 use crate::Texts;
-
 use crate::{Codec, Decode, Encode};
 
 #[derive(Default)]

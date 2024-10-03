@@ -1,9 +1,6 @@
-use crate::error::FileResult;
-
-use crate::Text;
-
 use crate::codec::{Codec, Decode, Encode};
-
+use crate::error::FileResult;
+use crate::Text;
 use std::collections::VecDeque;
 
 pub struct Texts(VecDeque<Text>);

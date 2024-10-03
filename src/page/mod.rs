@@ -4,11 +4,9 @@ mod pages;
 pub use image::Image;
 pub use pages::Pages;
 
-use ::image::GenericImageView;
-
 use crate::error::{FileError, FileResult};
-
 use crate::{Codec, Decode, Encode, Note, Notes, Text};
+use ::image::GenericImageView;
 
 #[derive(Default)]
 pub struct Page {

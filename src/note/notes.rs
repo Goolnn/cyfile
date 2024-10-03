@@ -1,10 +1,7 @@
-use crate::error::FileResult;
-
-use std::collections::VecDeque;
-
-use crate::Note;
-
 use crate::codec::{Codec, Decode, Encode};
+use crate::error::FileResult;
+use crate::Note;
+use std::collections::VecDeque;
 
 pub struct Notes(VecDeque<Note>);
 

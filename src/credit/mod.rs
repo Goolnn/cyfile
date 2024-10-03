@@ -1,10 +1,8 @@
 mod credits;
 
-pub use credits::Credits;
-
 use crate::error::{FileError, FileResult};
-
 use crate::{Codec, Decode, Encode};
+pub use credits::Credits;
 
 /// Be used to enumerate different staff positions. It will only be used in the versions 0.2 or
 /// greater.

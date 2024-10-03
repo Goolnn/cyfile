@@ -1,12 +1,8 @@
-use std::collections::VecDeque;
-
-use std::mem::size_of;
-
-use std::fs::File;
-
 use crate::error::{FileError, FileResult};
-
+use std::collections::VecDeque;
+use std::fs::File;
 use std::io::{Read, Write};
+use std::mem::size_of;
 
 pub trait Encode {
     fn encode(&self, codec: &mut Codec) -> FileResult<()>;

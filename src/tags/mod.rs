@@ -1,8 +1,6 @@
-use crate::error::FileResult;
-
-use std::collections::HashSet;
-
 use crate::codec::{Codec, Decode, Encode};
+use crate::error::FileResult;
+use std::collections::HashSet;
 
 pub type Tag = String;
 

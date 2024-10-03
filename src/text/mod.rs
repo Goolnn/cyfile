@@ -3,7 +3,6 @@ mod texts;
 pub use texts::Texts;
 
 use crate::error::{FileError, FileResult};
-
 use crate::{Codec, Decode, Encode};
 
 /// Be used to store the content and the comment of a text.

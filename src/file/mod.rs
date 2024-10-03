@@ -4,20 +4,13 @@ mod export;
 pub use export::Export;
 
 use crate::credit::Credits;
-
-use regex::Regex;
-
-use std::collections::VecDeque;
-
-use std::path::Path;
-
-use std::fs;
-
 use crate::error::{FileError, FileResult};
-
 use crate::{Codec, Date, Decode, Encode, Note, Page, Pages, Tags, Text};
-
 use data::{HEADER_DATA, VERSIONS, VERSION_LATEST};
+use regex::Regex;
+use std::collections::VecDeque;
+use std::fs;
+use std::path::Path;
 
 #[derive(Default)]
 pub struct File {

@@ -1,9 +1,6 @@
-use crate::error::{FileError, FileResult};
-
-use crate::Page;
-
 use crate::codec::{Codec, Decode, Encode};
-
+use crate::error::{FileError, FileResult};
+use crate::Page;
 use std::collections::VecDeque;
 
 pub struct Pages(VecDeque<Page>);
