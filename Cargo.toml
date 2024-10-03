@@ -9,4 +9,4 @@ crate-type = ["lib"]
 [dependencies]
 chrono = "0.4.38"
 image = "0.25.1"
-regex = "1.10.4"
+regex = "1.11.0"
