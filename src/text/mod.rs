@@ -25,20 +25,6 @@ use crate::{Codec, Decode, Encode};
 /// assert_eq!(text.comment(), "Comment of the text");
 /// ```
 ///
-/// You can clear a `Text` with [`clear_content`](Text::clear_content) and [`clear_comment`](Text::clear_comment):
-///
-/// ```
-/// use cyfile::Text;
-///
-/// let mut text = Text::with_content_and_comment("Content of the text", "Comment of the text");
-///
-/// text.clear_content();
-/// text.clear_comment();
-///
-/// assert!(text.content().is_empty());
-/// assert!(text.comment().is_empty());
-/// ```
-///
 /// # Encode
 ///
 /// Support version: `0.2`
@@ -127,20 +113,6 @@ impl Text {
 
             ..Self::default()
         }
-    }
-
-    /// Clear content of the `Text`.
-    ///
-    /// This method will clear all data of content.
-    pub fn clear_content(&mut self) {
-        self.content.clear();
-    }
-
-    /// Clear comment of the `Text`.
-    ///
-    /// This method will clear all data of comment.
-    pub fn clear_comment(&mut self) {
-        self.comment.clear();
     }
 
     /// Set content of the `Text`.
