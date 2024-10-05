@@ -163,3 +163,71 @@ impl Decode for Text {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::Text;
+
+    #[test]
+    fn test_new() {
+        let text = Text::new();
+
+        assert!(text.content().is_empty());
+        assert!(text.comment().is_empty());
+    }
+
+    #[test]
+    fn test_with_content_and_comment() {
+        let text = Text::with_content_and_comment("Content of the text", "Comment of the text");
+
+        assert_eq!(text.content(), "Content of the text");
+        assert_eq!(text.comment(), "Comment of the text");
+    }
+
+    #[test]
+    fn test_with_content() {
+        let text = Text::with_content("Content of the text");
+
+        assert_eq!(text.content(), "Content of the text");
+        assert!(text.comment().is_empty());
+    }
+
+    #[test]
+    fn test_with_comment() {
+        let text = Text::with_comment("Comment of the text");
+
+        assert!(text.content().is_empty());
+        assert_eq!(text.comment(), "Comment of the text");
+    }
+
+    #[test]
+    fn test_set_content() {
+        let mut text = Text::new();
+
+        text.set_content("content");
+
+        assert_eq!(text.content(), "content");
+        assert!(text.comment().is_empty());
+    }
+
+    #[test]
+    fn test_set_comment() {
+        let mut text = Text::new();
+
+        text.set_comment("comment");
+
+        assert!(text.content().is_empty());
+        assert_eq!(text.comment(), "comment");
+    }
+
+    #[test]
+    fn test_set_content_and_comment() {
+        let mut text = Text::new();
+
+        text.set_content("content");
+        text.set_comment("comment");
+
+        assert_eq!(text.content(), "content");
+        assert_eq!(text.comment(), "comment");
+    }
+}
