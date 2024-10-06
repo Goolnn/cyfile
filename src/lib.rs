@@ -13,27 +13,18 @@
 pub mod error;
 
 mod codec;
-mod credit;
 mod date;
-mod file;
 mod note;
 mod page;
-mod tags;
+mod project;
 mod text;
 
-pub use credit::Credit;
-pub use credit::Credits;
 pub use date::Date;
-pub use file::Export;
-pub use file::File;
 pub use note::Note;
-pub use note::Notes;
 pub use page::Page;
-pub use page::Pages;
-pub use tags::Tag;
-pub use tags::Tags;
+pub use project::Project;
+pub use project::ProjectBuilder;
 pub use text::Text;
-pub use text::Texts;
 
 use codec::Codec;
 use codec::Decode;
