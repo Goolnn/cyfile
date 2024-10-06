@@ -1,7 +1,3 @@
-mod texts;
-
-pub use texts::Texts;
-
 use crate::error::{FileError, FileResult};
 use crate::{Codec, Decode, Encode};
 
