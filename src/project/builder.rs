@@ -11,13 +11,13 @@ impl ProjectBuilder {
         Self::default()
     }
 
-    pub fn with_title(&mut self, title: String) -> &mut Self {
-        self.project.title = title;
+    pub fn with_title(mut self, title: impl ToString) -> Self {
+        self.project.title = title.to_string();
 
         self
     }
 
-    pub fn with_page(&mut self, page: Page) -> &mut Self {
+    pub fn with_page(mut self, page: Page) -> Self {
         self.project.pages.push(page);
 
         self
