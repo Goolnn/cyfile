@@ -3,13 +3,7 @@ use crate::Page;
 use crate::Project;
 use std::fs::File;
 use std::io::Result;
-use std::io::Seek;
-use std::io::SeekFrom;
 use std::path::Path;
-
-pub trait Build<T> {
-    fn build(self) -> T;
-}
 
 #[derive(Default)]
 pub struct Create {
@@ -45,12 +39,6 @@ impl ProjectBuilder<()> {
     }
 }
 
-impl<State: Build<Project>> ProjectBuilder<State> {
-    pub fn build(self) -> Project {
-        self.state.build()
-    }
-}
-
 impl ProjectBuilder<Create> {
     pub fn with_title(mut self, title: impl ToString) -> Self {
         self.state.title = title.to_string();
@@ -63,27 +51,19 @@ impl ProjectBuilder<Create> {
 
         self
     }
-}
 
-impl Build<Project> for Create {
-    fn build(self) -> Project {
+    pub fn build(self) -> Project {
         Project {
-            title: self.title,
+            title: self.state.title,
 
-            created_date: self.created_date,
-            saved_date: self.saved_date,
+            created_date: self.state.created_date,
+            saved_date: self.state.saved_date,
 
-            pages: self.pages,
+            pages: self.state.pages,
         }
     }
 }
 
 impl ProjectBuilder<Open> {
     // TODO
-}
-
-impl Build<Project> for Open {
-    fn build(self) -> Project {
-        todo!()
-    }
 }
