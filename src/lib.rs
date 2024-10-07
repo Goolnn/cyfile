@@ -10,9 +10,9 @@
 //! to and incorporate the software into their workflow without encountering significant learning
 //! curves.
 
+pub mod codec;
 pub mod error;
 
-mod codec;
 mod date;
 mod note;
 mod page;
@@ -25,7 +25,3 @@ pub use page::Page;
 pub use project::Project;
 pub use project::ProjectBuilder;
 pub use text::Text;
-
-use codec::Codec;
-use codec::Decode;
-use codec::Encode;
