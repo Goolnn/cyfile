@@ -19,7 +19,7 @@ impl<S: Write> Writer<S> {
     pub fn new(stream: S) -> Self {
         Self {
             stream,
-            version: Version::default(),
+            version: (0, 2),
         }
     }
 
