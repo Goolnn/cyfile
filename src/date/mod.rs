@@ -1,6 +1,9 @@
-use crate::error::{FileError, FileResult};
-use crate::{Codec, Decode, Encode};
+use crate::{
+    codec::{Decode, Encode, Reader, Writer},
+    error::{FileError, FileResult},
+};
 use chrono::{Datelike, Local, Timelike};
+use std::io::Write;
 
 pub type Year = u16;
 pub type Month = u8;
@@ -42,7 +45,6 @@ impl Date {
     }
 
     pub fn now() -> Self {
-        // 获取当前系统时间
         let local = Local::now();
 
         let year = local.year() as Year;
@@ -96,16 +98,16 @@ impl Default for Date {
 }
 
 impl Encode for Date {
-    fn encode(&self, codec: &mut Codec) -> FileResult<()> {
-        match codec.version() {
+    fn encode<S: Write>(&self, writer: &mut Writer<S>) -> FileResult<()> {
+        match writer.version() {
             (0, 1) | (0, 2) => {
-                codec.write_primitive(self.year)?;
-                codec.write_primitive(self.month)?;
-                codec.write_primitive(self.day)?;
+                writer.write_primitive(self.year)?;
+                writer.write_primitive(self.month)?;
+                writer.write_primitive(self.day)?;
 
-                codec.write_primitive(self.hour)?;
-                codec.write_primitive(self.minute)?;
-                codec.write_primitive(self.second)?;
+                writer.write_primitive(self.hour)?;
+                writer.write_primitive(self.minute)?;
+                writer.write_primitive(self.second)?;
 
                 Ok(())
             }
@@ -116,16 +118,16 @@ impl Encode for Date {
 }
 
 impl Decode for Date {
-    fn decode(codec: &mut Codec) -> FileResult<Self> {
-        match codec.version() {
+    fn decode<S: std::io::Read>(reader: &mut Reader<S>) -> FileResult<Self> {
+        match reader.version() {
             (0, 1) | (0, 2) => {
-                let year = codec.read_primitive()?;
-                let month = codec.read_primitive()?;
-                let day = codec.read_primitive()?;
+                let year = reader.read_primitive()?;
+                let month = reader.read_primitive()?;
+                let day = reader.read_primitive()?;
 
-                let hour = codec.read_primitive()?;
-                let minute = codec.read_primitive()?;
-                let second = codec.read_primitive()?;
+                let hour = reader.read_primitive()?;
+                let minute = reader.read_primitive()?;
+                let second = reader.read_primitive()?;
 
                 Ok(Self {
                     year,
