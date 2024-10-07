@@ -66,11 +66,11 @@ impl Note {
         self.choice
     }
 
-    pub fn texts_mut(&mut self) -> &mut [Text] {
+    pub fn texts_mut(&mut self) -> &mut Vec<Text> {
         &mut self.texts
     }
 
-    pub fn texts(&self) -> &[Text] {
+    pub fn texts(&self) -> &Vec<Text> {
         &self.texts
     }
 
