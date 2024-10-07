@@ -34,7 +34,7 @@ impl<S: Write> Writer<S> {
         self.version
     }
 
-    pub fn write_object<T: Encode>(&mut self, object: T) -> FileResult<()> {
+    pub fn write_object<T: Encode>(&mut self, object: &T) -> FileResult<()> {
         object.encode(self)
     }
 
