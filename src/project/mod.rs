@@ -263,6 +263,28 @@ impl Decode for Project {
                 })
             }
 
+            (0, 2) => {
+                let title = reader.read_string_with_len::<u32>()?;
+
+                let created_date = reader.read_object()?;
+                let saved_date = reader.read_object()?;
+
+                let page_count = reader.read_primitive::<u32>()?;
+
+                let mut pages = Vec::with_capacity(page_count as usize);
+
+                for _ in 0..page_count {
+                    pages.push(reader.read_object()?);
+                }
+
+                Ok(Self {
+                    title,
+                    created_date,
+                    saved_date,
+                    pages,
+                })
+            }
+
             _ => Err(FileError::InvalidVersion),
         }
     }

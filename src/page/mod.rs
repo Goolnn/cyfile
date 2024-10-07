@@ -66,7 +66,7 @@ impl Encode for Page {
                 // 标签数量
                 writer.write_primitive(self.notes().len() as u8)?;
 
-                for note in self.notes().iter() {
+                for note in self.notes() {
                     let note_x = (page_width as f64 * (note.x() + 1.0) / 2.0) as u16;
                     let note_y = (page_height as f64 * (1.0 - (note.y() + 1.0) / 2.0)) as u16;
 
