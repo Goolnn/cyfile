@@ -61,6 +61,8 @@ impl Encode for Project {
                 for page in self.pages() {
                     writer.write_object(page)?;
                 }
+
+                Ok(())
             }
 
             (0, 1) => {
@@ -97,19 +99,34 @@ impl Encode for Project {
                         let merged_text = note.merge_texts();
 
                         // 初译数据
-                        writer.write_primitive(merged_text.len() as u16)?;
+                        writer.write_primitive(merged_text.len() as u16 + 1)?;
                         writer.write_string_with_nil(&merged_text)?;
                         // 校对数据
-                        writer.write_primitive(0u16)?;
+                        writer.write_primitive(1u16)?;
                         writer.write_string_with_nil("")?;
                     }
                 }
+
+                Ok(())
             }
 
-            _ => return Err(FileError::InvalidVersion),
-        }
+            (0, 2) => {
+                writer.write_string_with_len::<u32>(self.title())?;
 
-        Ok(())
+                writer.write_object(&self.created_date())?;
+                writer.write_object(&self.saved_date())?;
+
+                writer.write_primitive(self.pages().len() as u32)?;
+
+                for page in self.pages() {
+                    writer.write_object(page)?;
+                }
+
+                Ok(())
+            }
+
+            _ => Err(FileError::InvalidVersion),
+        }
     }
 }
 
