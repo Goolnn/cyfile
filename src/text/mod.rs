@@ -1,5 +1,11 @@
-use crate::error::{FileError, FileResult};
-use crate::{Codec, Decode, Encode};
+use crate::codec::Decode;
+use crate::codec::Encode;
+use crate::codec::Reader;
+use crate::codec::Writer;
+use crate::error::FileError;
+use crate::error::FileResult;
+use std::io::Read;
+use std::io::Write;
 
 /// Be used to store the content and the comment of a text.
 ///
@@ -133,11 +139,11 @@ impl Text {
 }
 
 impl Encode for Text {
-    fn encode(&self, codec: &mut Codec) -> FileResult<()> {
-        match codec.version() {
+    fn encode<S: Write>(&self, writer: &mut Writer<S>) -> FileResult<()> {
+        match writer.version() {
             (0, 2) => {
-                codec.write_string::<u32>(&self.content)?;
-                codec.write_string::<u32>(&self.comment)?;
+                writer.write_string_with_len::<u32>(&self.content)?;
+                writer.write_string_with_len::<u32>(&self.comment)?;
 
                 Ok(())
             }
@@ -148,11 +154,11 @@ impl Encode for Text {
 }
 
 impl Decode for Text {
-    fn decode(codec: &mut Codec) -> FileResult<Self> {
-        match codec.version() {
+    fn decode<S: Read>(reader: &mut Reader<S>) -> FileResult<Self> {
+        match reader.version() {
             (0, 2) => Ok(Self {
-                content: codec.read_string::<u32>()?,
-                comment: codec.read_string::<u32>()?,
+                content: reader.read_string_with_len::<u32>()?,
+                comment: reader.read_string_with_len::<u32>()?,
             }),
 
             _ => Err(FileError::InvalidVersion),
