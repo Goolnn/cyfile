@@ -10,16 +10,19 @@
 //! to and incorporate the software into their workflow without encountering significant learning
 //! curves.
 
-pub mod codec;
 pub mod error;
 
+mod codec;
 mod date;
+mod export;
 mod note;
 mod page;
 mod project;
 mod text;
 
 pub use date::Date;
+pub use export::ExportArguments;
+pub use export::Exporter;
 pub use note::Note;
 pub use page::Page;
 pub use project::Project;

@@ -3,6 +3,7 @@ use super::Primitive;
 use super::Version;
 use crate::error::FileError;
 use crate::error::FileResult;
+use crate::export::constants::VERSION_LATEST;
 use std::io::Read;
 
 pub trait Decode: Sized {
@@ -19,7 +20,7 @@ impl<S: Read> Reader<S> {
     pub fn new(stream: S) -> Self {
         Self {
             stream,
-            version: (0, 2),
+            version: VERSION_LATEST,
         }
     }
 
