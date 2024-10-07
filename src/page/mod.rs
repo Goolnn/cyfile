@@ -1,4 +1,15 @@
+use crate::codec::Decode;
+use crate::codec::Encode;
+use crate::codec::Reader;
+use crate::codec::Writer;
+use crate::error::FileError;
+use crate::error::FileResult;
 use crate::Note;
+use crate::Text;
+use image::ImageReader;
+use std::io::Cursor;
+use std::io::Read;
+use std::io::Write;
 
 pub struct Page {
     data: Vec<u8>,
@@ -19,112 +30,118 @@ impl Page {
         &self.data
     }
 
-    pub fn notes_mut(&mut self) -> &mut [Note] {
+    pub fn size(&self) -> (usize, usize) {
+        let cursor = Cursor::new(self.data());
+        let reader = ImageReader::new(cursor);
+        let dimensions = reader.into_dimensions().unwrap();
+
+        (dimensions.0 as usize, dimensions.1 as usize)
+    }
+
+    pub fn notes_mut(&mut self) -> &mut Vec<Note> {
         &mut self.notes
     }
 
-    pub fn notes(&self) -> &[Note] {
+    pub fn notes(&self) -> &Vec<Note> {
         &self.notes
     }
-
-    // pub(crate) fn size(&self) -> (usize, usize) {
-    //     if let Ok(image) = ::image::load_from_memory(self.data()) {
-    //         let (width, height) = image.dimensions();
-
-    //         (width as usize, height as usize)
-    //     } else {
-    //         (0, 0)
-    //     }
-    // }
 }
 
-// impl Encode for Page {
-//     fn encode(&self, codec: &mut Codec) -> FileResult<()> {
-//         match codec.version() {
-//             (0, 0) => {
-//                 // 图像数据
-//                 codec.write_object(self.source())?;
+impl Encode for Page {
+    fn encode<S: Write>(&self, writer: &mut Writer<S>) -> FileResult<()> {
+        match writer.version() {
+            (0, 0) => {
+                // 图像数据
+                writer.write_bytes_with_len::<u32>(self.data())?;
 
-//                 // 图像尺寸
-//                 let (page_width, page_height) = self.size();
+                // 图像尺寸
+                let (page_width, page_height) = self.size();
 
-//                 // 标签数量
-//                 codec.write_primitive(self.notes().len() as u8)?;
+                // 标签数量
+                writer.write_primitive(self.notes().len() as u8)?;
 
-//                 for note in self.notes().inner() {
-//                     let note_x = (page_width as f64 * (note.x() + 1.0) / 2.0) as u16;
-//                     let note_y = (page_height as f64 * (1.0 - (note.y() + 1.0) / 2.0)) as u16;
+                for note in self.notes().iter() {
+                    let note_x = (page_width as f64 * (note.x() + 1.0) / 2.0) as u16;
+                    let note_y = (page_height as f64 * (1.0 - (note.y() + 1.0) / 2.0)) as u16;
 
-//                     codec.write_primitive(note_x)?;
-//                     codec.write_primitive(note_y)?;
+                    writer.write_primitive(note_x)?;
+                    writer.write_primitive(note_y)?;
 
-//                     // 合并文本
-//                     let merged_text = note.merge_texts();
+                    // 合并文本
+                    let merged_text = note.merge_texts();
 
-//                     codec.write_string_with_nil::<u16>(&merged_text)?;
-//                 }
+                    writer.write_primitive(merged_text.len() as u16)?;
+                    writer.write_string_with_nil(&merged_text)?;
+                }
 
-//                 Ok(())
-//             }
+                Ok(())
+            }
 
-//             (0, 2) => {
-//                 codec.write_object(self.source())?;
-//                 codec.write_object(self.mask())?;
+            (0, 2) => {
+                writer.write_bytes_with_len::<u32>(self.data())?;
 
-//                 codec.write_object(self.notes())?;
+                for note in self.notes() {
+                    writer.write_object(note)?;
+                }
 
-//                 Ok(())
-//             }
+                Ok(())
+            }
 
-//             _ => Err(FileError::InvalidVersion),
-//         }
-//     }
-// }
+            _ => Err(FileError::InvalidVersion),
+        }
+    }
+}
 
-// impl Decode for Page {
-//     fn decode(codec: &mut Codec) -> FileResult<Self> {
-//         match codec.version() {
-//             (0, 0) => {
-//                 let mut page = Page::with_source(codec.read_data_with_len::<u32>()?);
+impl Decode for Page {
+    fn decode<S: Read>(reader: &mut Reader<S>) -> FileResult<Self> {
+        match reader.version() {
+            (0, 0) => {
+                let data = reader.read_bytes_with_len::<u32>()?;
 
-//                 let (page_width, page_height) = page.size();
+                let mut page = Page::new(data);
 
-//                 let note_count = codec.read_primitive::<u8>()?;
+                let (page_width, page_height) = page.size();
 
-//                 for _ in 0..note_count {
-//                     let note_x = codec.read_primitive::<u16>()? as f64;
-//                     let note_y = codec.read_primitive::<u16>()? as f64;
+                let note_count = reader.read_primitive::<u8>()?;
 
-//                     let content = codec.read_string_with_nil::<u16>()?;
+                for _ in 0..note_count {
+                    let note_x = reader.read_primitive::<u16>()? as f64;
+                    let note_y = reader.read_primitive::<u16>()? as f64;
 
-//                     let mut note = Note::with_coordinate(
-//                         note_x / page_width as f64 * 2.0 - 1.0,
-//                         1.0 - note_y / page_height as f64 * 2.0,
-//                     );
+                    reader.read_primitive::<u16>()?;
 
-//                     note.texts_mut().push_back(Text::with_content(&content));
+                    let content = reader.read_string_with_nil()?;
 
-//                     page.notes_mut().push_back(note);
-//                 }
+                    let mut note = Note::with_coordinate(
+                        note_x / page_width as f64 * 2.0 - 1.0,
+                        1.0 - note_y / page_height as f64 * 2.0,
+                    );
 
-//                 Ok(page)
-//             }
+                    note.texts_mut().push(Text::with_content(&content));
 
-//             (0, 2) => {
-//                 let source = codec.read_data_with_len::<u32>()?;
-//                 let mask = codec.read_data_with_len::<u32>()?;
+                    page.notes_mut().push(note);
+                }
 
-//                 let notes = codec.read_object()?;
+                Ok(page)
+            }
 
-//                 Ok(Self {
-//                     source: Image::from(source),
-//                     mask: Image::from(mask),
+            (0, 2) => {
+                let data = reader.read_bytes_with_len::<u32>()?;
 
-//                     notes,
-//                 })
-//             }
+                let mut page = Page::new(data);
 
-//             _ => Err(FileError::InvalidVersion),
-//         }
-//     }
-// }
+                let note_count = reader.read_primitive::<u8>()?;
+
+                for _ in 0..note_count {
+                    let note = reader.read_object()?;
+
+                    page.notes_mut().push(note);
+                }
+
+                Ok(page)
+            }
+
+            _ => Err(FileError::InvalidVersion),
+        }
+    }
+}
