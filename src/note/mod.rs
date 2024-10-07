@@ -42,6 +42,12 @@ impl Note {
         }
     }
 
+    pub fn with_text(mut self, text: Text) -> Self {
+        self.texts.push(text);
+
+        self
+    }
+
     pub fn set_x(&mut self, x: f64) {
         self.x = x;
     }
