@@ -26,13 +26,19 @@ impl Page {
         }
     }
 
+    pub fn with_note(mut self, note: Note) -> Self {
+        self.notes.push(note);
+
+        self
+    }
+
     pub fn data(&self) -> &[u8] {
         &self.data
     }
 
     pub fn size(&self) -> (usize, usize) {
         let cursor = Cursor::new(self.data());
-        let reader = ImageReader::new(cursor);
+        let reader = ImageReader::new(cursor).with_guessed_format().unwrap();
         let dimensions = reader.into_dimensions().unwrap();
 
         (dimensions.0 as usize, dimensions.1 as usize)
@@ -70,7 +76,7 @@ impl Encode for Page {
                     // 合并文本
                     let merged_text = note.merge_texts();
 
-                    writer.write_primitive(merged_text.len() as u16)?;
+                    writer.write_primitive(merged_text.len() as u16 + 1)?;
                     writer.write_string_with_nil(&merged_text)?;
                 }
 
@@ -79,6 +85,8 @@ impl Encode for Page {
 
             (0, 2) => {
                 writer.write_bytes_with_len::<u32>(self.data())?;
+
+                writer.write_primitive(self.notes().len() as u32)?;
 
                 for note in self.notes() {
                     writer.write_object(note)?;
