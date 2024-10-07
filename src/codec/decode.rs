@@ -1,5 +1,8 @@
-use super::{Length, Primitive, Version};
-use crate::error::{FileError, FileResult};
+use super::Length;
+use super::Primitive;
+use super::Version;
+use crate::error::FileError;
+use crate::error::FileResult;
 use std::io::Read;
 
 pub trait Decode: Sized {
