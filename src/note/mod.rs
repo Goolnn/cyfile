@@ -1,4 +1,11 @@
+use crate::codec::Decode;
+use crate::codec::Encode;
+use crate::codec::Reader;
+use crate::codec::Writer;
+use crate::error::FileResult;
 use crate::Text;
+use std::io::Read;
+use std::io::Write;
 
 #[derive(Default)]
 pub struct Note {
@@ -67,58 +74,66 @@ impl Note {
         &self.texts
     }
 
-    // pub(crate) fn merge_texts(&self) -> String {
-    //     self.texts
-    //         .iter()
-    //         .map(|text| {
-    //             let mut result = String::new();
+    pub(crate) fn merge_texts(&self) -> String {
+        self.texts
+            .iter()
+            .map(|text| {
+                let mut result = String::new();
 
-    //             if text.content().is_empty() && !text.comment().is_empty() {
-    //                 result.push_str(text.comment());
-    //             } else if text.comment().is_empty() && !text.content().is_empty() {
-    //                 result.push_str(text.content());
-    //             } else {
-    //                 result.push_str(format!("{}\n\n{}", text.content(), text.comment()).as_ref());
-    //             }
+                if text.content().is_empty() && !text.comment().is_empty() {
+                    result.push_str(text.comment());
+                } else if text.comment().is_empty() && !text.content().is_empty() {
+                    result.push_str(text.content());
+                } else {
+                    result.push_str(format!("{}\n\n{}", text.content(), text.comment()).as_ref());
+                }
 
-    //             result
-    //         })
-    //         .collect::<Vec<String>>()
-    //         .join("\n\n")
-    // }
+                result
+            })
+            .collect::<Vec<String>>()
+            .join("\n\n")
+    }
 }
 
-// impl Encode for Note {
-//     fn encode(&self, codec: &mut Codec) -> FileResult<()> {
-//         codec.write_primitive(self.x)?;
-//         codec.write_primitive(self.y)?;
+impl Encode for Note {
+    fn encode<S: Write>(&self, writer: &mut Writer<S>) -> FileResult<()> {
+        writer.write_primitive(self.x)?;
+        writer.write_primitive(self.y)?;
 
-//         codec.write_primitive(self.choice)?;
+        writer.write_primitive(self.choice)?;
 
-//         codec.write_primitive(self.texts.len() as u32)?;
+        writer.write_primitive(self.texts.len() as u32)?;
 
-//         codec.write_object(self.texts())?;
+        for text in self.texts() {
+            writer.write_object(text)?;
+        }
 
-//         Ok(())
-//     }
-// }
+        Ok(())
+    }
+}
 
-// impl Decode for Note {
-//     fn decode(codec: &mut Codec) -> FileResult<Self> {
-//         let x = codec.read_primitive()?;
-//         let y = codec.read_primitive()?;
+impl Decode for Note {
+    fn decode<S: Read>(reader: &mut Reader<S>) -> FileResult<Self> {
+        let x = reader.read_primitive()?;
+        let y = reader.read_primitive()?;
 
-//         let choice = codec.read_primitive()?;
+        let choice = reader.read_primitive()?;
 
-//         let texts = codec.read_object()?;
+        let len = reader.read_primitive::<u32>()?;
 
-//         Ok(Self {
-//             x,
-//             y,
+        let mut texts = Vec::new();
 
-//             choice,
+        for _ in 0..len {
+            texts.push(reader.read_object()?);
+        }
 
-//             texts,
-//         })
-//     }
-// }
+        Ok(Self {
+            x,
+            y,
+
+            choice,
+
+            texts,
+        })
+    }
+}
