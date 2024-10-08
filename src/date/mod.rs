@@ -148,3 +148,74 @@ impl Decode for Date {
         }
     }
 }
+
+#[cfg(test)]
+mod codec {
+    use crate::codec::Reader;
+    use crate::codec::Writer;
+    use crate::Date;
+    use std::io::Cursor;
+    use std::io::Seek;
+    use std::io::SeekFrom;
+
+    #[test]
+    fn decode() {
+        let year = 2024u16;
+        let month = 10u8;
+        let day = 8u8;
+
+        let hour = 15u8;
+        let minute = 19u8;
+        let second = 20u8;
+
+        let mut buffer = Vec::new();
+
+        buffer.extend(year.to_le_bytes());
+        buffer.extend(month.to_le_bytes());
+        buffer.extend(day.to_le_bytes());
+
+        buffer.extend(hour.to_le_bytes());
+        buffer.extend(minute.to_le_bytes());
+        buffer.extend(second.to_le_bytes());
+
+        let cursor = Cursor::new(buffer);
+
+        let mut reader = Reader::new(cursor);
+
+        let date = reader.read_object::<Date>().unwrap();
+
+        assert_eq!(date.year(), year);
+        assert_eq!(date.month(), month);
+        assert_eq!(date.day(), day);
+
+        assert_eq!(date.hour(), hour);
+        assert_eq!(date.minute(), minute);
+        assert_eq!(date.second(), second);
+    }
+
+    #[test]
+    fn encode() {
+        let date = Date::now();
+
+        let buffer = Vec::new();
+        let cursor = Cursor::new(buffer);
+
+        let mut writer = Writer::new(cursor);
+
+        writer.write_object(&date).unwrap();
+
+        let mut cursor = writer.into_inner();
+
+        cursor.seek(SeekFrom::Start(0)).unwrap();
+
+        let mut reader = Reader::new(cursor);
+
+        assert_eq!(reader.read_primitive::<u16>().unwrap(), date.year());
+        assert_eq!(reader.read_primitive::<u8>().unwrap(), date.month());
+        assert_eq!(reader.read_primitive::<u8>().unwrap(), date.day());
+
+        assert_eq!(reader.read_primitive::<u8>().unwrap(), date.hour());
+        assert_eq!(reader.read_primitive::<u8>().unwrap(), date.minute());
+        assert_eq!(reader.read_primitive::<u8>().unwrap(), date.second());
+    }
+}
