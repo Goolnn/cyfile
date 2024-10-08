@@ -2,7 +2,6 @@ use crate::codec::Decode;
 use crate::codec::Encode;
 use crate::codec::Reader;
 use crate::codec::Writer;
-use crate::error::FileError;
 use crate::error::FileResult;
 use chrono::Datelike;
 use chrono::Local;
@@ -103,49 +102,37 @@ impl Default for Date {
 
 impl Encode for Date {
     fn encode<S: Write>(&self, writer: &mut Writer<S>) -> FileResult<()> {
-        match writer.version() {
-            (0, 1) | (0, 2) => {
-                writer.write_primitive(self.year)?;
-                writer.write_primitive(self.month)?;
-                writer.write_primitive(self.day)?;
+        writer.write_primitive(self.year)?;
+        writer.write_primitive(self.month)?;
+        writer.write_primitive(self.day)?;
 
-                writer.write_primitive(self.hour)?;
-                writer.write_primitive(self.minute)?;
-                writer.write_primitive(self.second)?;
+        writer.write_primitive(self.hour)?;
+        writer.write_primitive(self.minute)?;
+        writer.write_primitive(self.second)?;
 
-                Ok(())
-            }
-
-            _ => Err(FileError::InvalidVersion),
-        }
+        Ok(())
     }
 }
 
 impl Decode for Date {
     fn decode<S: std::io::Read>(reader: &mut Reader<S>) -> FileResult<Self> {
-        match reader.version() {
-            (0, 1) | (0, 2) => {
-                let year = reader.read_primitive()?;
-                let month = reader.read_primitive()?;
-                let day = reader.read_primitive()?;
+        let year = reader.read_primitive()?;
+        let month = reader.read_primitive()?;
+        let day = reader.read_primitive()?;
 
-                let hour = reader.read_primitive()?;
-                let minute = reader.read_primitive()?;
-                let second = reader.read_primitive()?;
+        let hour = reader.read_primitive()?;
+        let minute = reader.read_primitive()?;
+        let second = reader.read_primitive()?;
 
-                Ok(Self {
-                    year,
-                    month,
-                    day,
+        Ok(Self {
+            year,
+            month,
+            day,
 
-                    hour,
-                    minute,
-                    second,
-                })
-            }
-
-            _ => Err(FileError::InvalidVersion),
-        }
+            hour,
+            minute,
+            second,
+        })
     }
 }
 
