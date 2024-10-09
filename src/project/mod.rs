@@ -12,7 +12,7 @@ use regex::Regex;
 use std::io::Read;
 use std::io::Write;
 
-#[derive(Default)]
+#[derive(Default, PartialEq, Debug, Clone)]
 pub struct Project {
     title: String,
 
