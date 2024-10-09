@@ -7,7 +7,7 @@ use crate::error::FileResult;
 use std::io::Read;
 use std::io::Write;
 
-#[derive(Default, PartialEq, Eq, Debug)]
+#[derive(Default, PartialEq, Eq, Debug, Clone)]
 pub struct Text {
     content: String,
     comment: String,
