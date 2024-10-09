@@ -3,7 +3,7 @@ use super::Primitive;
 use super::Version;
 use crate::error::FileError;
 use crate::error::FileResult;
-use crate::export::constants::VERSION_LATEST;
+use crate::file::constants::VERSION_LATEST;
 use std::io::Write;
 
 pub trait Encode {
@@ -82,6 +82,7 @@ impl<S: Write> Writer<S> {
         }
     }
 
+    #[allow(dead_code)]
     pub fn into_inner(self) -> S {
         self.stream
     }
