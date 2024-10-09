@@ -1,7 +1,3 @@
-mod builder;
-
-pub use builder::ProjectBuilder;
-
 use crate::codec::Decode;
 use crate::codec::Encode;
 use crate::codec::Reader;

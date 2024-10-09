@@ -26,5 +26,4 @@ pub use export::Exporter;
 pub use note::Note;
 pub use page::Page;
 pub use project::Project;
-pub use project::ProjectBuilder;
 pub use text::Text;
