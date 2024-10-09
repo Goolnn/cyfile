@@ -125,7 +125,7 @@ impl Decode for Page {
                         1.0 - note_y / page_height as f64 * 2.0,
                     );
 
-                    note.texts_mut().push(Text::with_content(&content));
+                    note.texts_mut().push(Text::new().with_content(&content));
 
                     page.notes_mut().push(note);
                 }

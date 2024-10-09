@@ -232,20 +232,20 @@ impl Decode for Project {
 
                             // 添加文本
                             if !draft.is_empty() {
-                                note.texts_mut().push(Text::with_content(&draft));
+                                note.texts_mut().push(Text::new().with_content(&draft));
                             }
 
                             if !revision.is_empty() {
-                                note.texts_mut().push(Text::with_content(&revision));
+                                note.texts_mut().push(Text::new().with_content(&revision));
                             }
                         } else {
                             // 添加文本
                             if !draft.is_empty() {
-                                note.texts_mut().push(Text::with_content(&draft));
+                                note.texts_mut().push(Text::new().with_content(&draft));
                             }
 
                             if !revision.is_empty() {
-                                note.texts_mut().push(Text::with_content(&revision));
+                                note.texts_mut().push(Text::new().with_content(&revision));
                             }
                         }
 
