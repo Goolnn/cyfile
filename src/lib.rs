@@ -10,9 +10,9 @@
 //! to and incorporate the software into their workflow without encountering significant learning
 //! curves.
 
+pub mod codec;
 pub mod error;
 
-mod codec;
 mod date;
 mod export;
 mod note;
