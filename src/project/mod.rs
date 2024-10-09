@@ -23,6 +23,29 @@ pub struct Project {
 }
 
 impl Project {
+    pub fn new() -> Self {
+        Self {
+            title: String::new(),
+
+            created_date: Date::now(),
+            saved_date: Date::now(),
+
+            pages: Vec::new(),
+        }
+    }
+
+    pub fn with_title(mut self, title: impl ToString) -> Self {
+        self.title = title.to_string();
+
+        self
+    }
+
+    pub fn with_page(mut self, page: Page) -> Self {
+        self.pages.push(page);
+
+        self
+    }
+
     pub fn set_title(&mut self, title: impl ToString) {
         self.title = title.to_string();
     }
