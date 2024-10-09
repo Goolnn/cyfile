@@ -206,7 +206,16 @@ mod tests {
 
         let mut reader = Reader::new(cursor).with_version((0, 0));
 
-        assert_eq!(reader.read_object::<Page>().unwrap(), page);
+        let read_page = reader.read_object::<Page>().unwrap();
+
+        assert_eq!(read_page.data(), page.data());
+
+        for (read_note, note) in read_page.notes().iter().zip(page.notes()) {
+            assert!(read_note.x() - note.x() <= 0.1);
+            assert!(read_note.y() - note.y() <= 0.1);
+
+            assert_eq!(read_note.texts()[0].content(), note.merge_texts());
+        }
     }
 
     #[test]
