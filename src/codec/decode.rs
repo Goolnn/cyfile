@@ -24,11 +24,10 @@ impl<S: Read> Reader<S> {
         }
     }
 
-    pub fn with_version(stream: S, version: impl Into<Version>) -> Self {
-        Self {
-            stream,
-            version: version.into(),
-        }
+    pub fn with_version(mut self, version: impl Into<Version>) -> Self {
+        self.version = version.into();
+
+        self
     }
 
     pub fn version(&self) -> Version {
