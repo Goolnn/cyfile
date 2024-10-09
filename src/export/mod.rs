@@ -43,7 +43,7 @@ impl Exporter {
         file.write_all(&version)?;
 
         // 写入项目数据
-        let mut writer = Writer::with_version(file, self.arguments.version);
+        let mut writer = Writer::new(file).with_version(self.arguments.version);
 
         writer.write_object(&self.project)?;
 
