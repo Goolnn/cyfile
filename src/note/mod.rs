@@ -7,7 +7,7 @@ use crate::Text;
 use std::io::Read;
 use std::io::Write;
 
-#[derive(Default)]
+#[derive(Default, PartialEq, Debug)]
 pub struct Note {
     x: f64,
     y: f64,
