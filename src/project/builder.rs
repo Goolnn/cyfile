@@ -1,3 +1,4 @@
+use crate::codec::Reader;
 use crate::Date;
 use crate::Page;
 use crate::Project;
@@ -65,5 +66,12 @@ impl ProjectBuilder<Create> {
 }
 
 impl ProjectBuilder<Open> {
-    // TODO
+    pub fn build(self) -> Project {
+        let mut reader = Reader::new(self.state.file);
+
+        reader.read_bytes(15).unwrap();
+        reader.read_bytes(2).unwrap();
+
+        reader.read_object::<Project>().unwrap()
+    }
 }
