@@ -31,63 +31,16 @@ impl Text {
         Self::default()
     }
 
-    /// Creates a new `Text` with content and comment.
-    ///
-    /// # Exampls
-    ///
-    /// ```
-    /// use cyfile::Text;
-    ///
-    /// let text = Text::with_content_and_comment("Content of the text", "Comment of the text");
-    ///
-    /// assert_eq!(text.content(), "Content of the text");
-    /// assert_eq!(text.comment(), "Comment of the text");
-    /// ```
-    pub fn with_content_and_comment(content: &str, comment: &str) -> Self {
-        Self {
-            content: content.to_string(),
-            comment: comment.to_string(),
-        }
+    pub fn with_content(mut self, content: impl ToString) -> Self {
+        self.content = content.to_string();
+
+        self
     }
 
-    /// Creates a new `Text` with content. The comment is still empty before setting.
-    ///
-    /// # Exampls
-    ///
-    /// ```
-    /// use cyfile::Text;
-    ///
-    /// let text = Text::with_content("Content of the text");
-    ///
-    /// assert_eq!(text.content(), "Content of the text");
-    /// assert!(text.comment().is_empty());
-    /// ```
-    pub fn with_content(content: &str) -> Self {
-        Self {
-            content: content.to_string(),
+    pub fn with_comment(mut self, comment: impl ToString) -> Self {
+        self.comment = comment.to_string();
 
-            ..Self::default()
-        }
-    }
-
-    /// Creates a new `Text` with comment. The content is still empty before setting.
-    ///
-    /// # Exampls
-    ///
-    /// ```
-    /// use cyfile::Text;
-    ///
-    /// let text = Text::with_comment("Comment of the text");
-    ///
-    /// assert!(text.content().is_empty());
-    /// assert_eq!(text.comment(), "Comment of the text");
-    /// ```
-    pub fn with_comment(comment: &str) -> Self {
-        Self {
-            comment: comment.to_string(),
-
-            ..Self::default()
-        }
+        self
     }
 
     /// Set content of the `Text`.
