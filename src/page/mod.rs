@@ -140,7 +140,7 @@ impl Decode for Page {
 
                 let mut page = Page::new(data);
 
-                let note_count = reader.read_primitive::<u8>()?;
+                let note_count = reader.read_primitive::<u32>()?;
 
                 for _ in 0..note_count {
                     let note = reader.read_object()?;
