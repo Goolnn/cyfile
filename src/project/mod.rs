@@ -308,3 +308,180 @@ impl Decode for Project {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::codec::Reader;
+    use crate::codec::Writer;
+    use crate::Note;
+    use crate::Page;
+    use crate::Project;
+    use crate::Text;
+    use std::fs;
+    use std::io::Cursor;
+    use std::io::Seek;
+
+    #[test]
+    fn codec_for_version_0_0() {
+        let image = fs::read(r"tests\images\0.png").unwrap();
+
+        let project = Project::new()
+            .with_title("工程")
+            .with_page(
+                Page::new(image.clone())
+                    .with_note(
+                        Note::new()
+                            .with_text(Text::new().with_content("content_1_1_1"))
+                            .with_text(Text::new().with_content("content_1_1_2")),
+                    )
+                    .with_note(
+                        Note::new()
+                            .with_text(Text::new().with_content("content_1_2_1"))
+                            .with_text(Text::new().with_content("content_1_2_2"))
+                            .with_text(Text::new().with_content("content_1_2_3")),
+                    ),
+            )
+            .with_page(
+                Page::new(image).with_note(
+                    Note::new()
+                        .with_text(Text::new().with_content("content_2_1_1"))
+                        .with_text(Text::new().with_content("content_2_1_2")),
+                ),
+            );
+
+        let buffer = Vec::new();
+        let cursor = Cursor::new(buffer);
+
+        let mut writer = Writer::new(cursor).with_version((0, 0));
+
+        writer.write_object(&project).unwrap();
+
+        let mut cursor = writer.into_inner();
+
+        cursor.seek(std::io::SeekFrom::Start(0)).unwrap();
+
+        let mut reader = Reader::new(cursor).with_version((0, 0));
+
+        let read_project = reader.read_object::<Project>().unwrap();
+
+        assert!(read_project.title().is_empty());
+
+        assert_eq!(read_project.created_date(), project.created_date());
+        assert_eq!(read_project.saved_date(), project.saved_date());
+
+        for (read_page, page) in read_project.pages().iter().zip(project.pages()) {
+            assert_eq!(read_page.data(), page.data());
+
+            for (read_note, note) in read_page.notes().iter().zip(page.notes()) {
+                assert!(read_note.x() - note.x() <= 0.1);
+                assert!(read_note.y() - note.y() <= 0.1);
+
+                assert_eq!(read_note.texts()[0].content(), note.merge_texts());
+            }
+        }
+    }
+
+    #[test]
+    fn codec_for_version_0_1() {
+        let image = fs::read(r"tests\images\0.png").unwrap();
+
+        let project = Project::new()
+            .with_title("工程")
+            .with_page(
+                Page::new(image.clone())
+                    .with_note(
+                        Note::new()
+                            .with_text(Text::new().with_content("content_1_1_1"))
+                            .with_text(Text::new().with_content("content_1_1_2")),
+                    )
+                    .with_note(
+                        Note::new()
+                            .with_text(Text::new().with_content("content_1_2_1"))
+                            .with_text(Text::new().with_content("content_1_2_2"))
+                            .with_text(Text::new().with_content("content_1_2_3")),
+                    ),
+            )
+            .with_page(
+                Page::new(image).with_note(
+                    Note::new()
+                        .with_text(Text::new().with_content("content_2_1_1"))
+                        .with_text(Text::new().with_content("content_2_1_2")),
+                ),
+            );
+
+        let buffer = Vec::new();
+        let cursor = Cursor::new(buffer);
+
+        let mut writer = Writer::new(cursor).with_version((0, 1));
+
+        writer.write_object(&project).unwrap();
+
+        let mut cursor = writer.into_inner();
+
+        cursor.seek(std::io::SeekFrom::Start(0)).unwrap();
+
+        let mut reader = Reader::new(cursor).with_version((0, 1));
+
+        let read_project = reader.read_object::<Project>().unwrap();
+
+        assert!(read_project.title().is_empty());
+
+        assert_eq!(read_project.created_date(), project.created_date());
+        assert_eq!(read_project.saved_date(), project.saved_date());
+
+        for (read_page, page) in read_project.pages().iter().zip(project.pages()) {
+            assert_eq!(read_page.data(), page.data());
+
+            for (read_note, note) in read_page.notes().iter().zip(page.notes()) {
+                assert!(read_note.x() - note.x() <= 0.1);
+                assert!(read_note.y() - note.y() <= 0.1);
+
+                assert_eq!(read_note.texts()[0].content(), note.merge_texts());
+            }
+        }
+    }
+
+    #[test]
+    fn codec_for_version_0_2() {
+        let image = fs::read(r"tests\images\0.png").unwrap();
+
+        let project = Project::new()
+            .with_title("工程")
+            .with_page(
+                Page::new(image.clone())
+                    .with_note(
+                        Note::new()
+                            .with_text(Text::new().with_content("content_1_1_1"))
+                            .with_text(Text::new().with_content("content_1_1_2")),
+                    )
+                    .with_note(
+                        Note::new()
+                            .with_text(Text::new().with_content("content_1_2_1"))
+                            .with_text(Text::new().with_content("content_1_2_2"))
+                            .with_text(Text::new().with_content("content_1_2_3")),
+                    ),
+            )
+            .with_page(
+                Page::new(image).with_note(
+                    Note::new()
+                        .with_text(Text::new().with_content("content_2_1_1"))
+                        .with_text(Text::new().with_content("content_2_1_2")),
+                ),
+            );
+
+        let buffer = Vec::new();
+        let cursor = Cursor::new(buffer);
+
+        let mut writer = Writer::new(cursor).with_version((0, 2));
+
+        writer.write_object(&project).unwrap();
+
+        let mut cursor = writer.into_inner();
+
+        cursor.seek(std::io::SeekFrom::Start(0)).unwrap();
+
+        let mut reader = Reader::new(cursor).with_version((0, 2));
+
+        assert_eq!(reader.read_object::<Project>().unwrap(), project);
+    }
+}
