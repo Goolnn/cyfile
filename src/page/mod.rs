@@ -120,7 +120,7 @@ impl Decode for Page {
 
                     let content = reader.read_string_with_nil()?;
 
-                    let mut note = Note::with_coordinate(
+                    let mut note = Note::new().with_coordinate(
                         note_x / page_width as f64 * 2.0 - 1.0,
                         1.0 - note_y / page_height as f64 * 2.0,
                     );
