@@ -136,3 +136,51 @@ impl Decode for Note {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::Note;
+    use crate::codec::Reader;
+    use crate::codec::Writer;
+    use crate::Text;
+    use std::io::Cursor;
+    use std::io::Seek;
+    use std::io::SeekFrom;
+
+    #[test]
+    fn codec() {
+        let note = Note::new()
+            .with_coordinate(0.5, 0.5)
+            .with_choice(1)
+            .with_text(
+                Text::new()
+                    .with_content("content_1")
+                    .with_comment("comment_1"),
+            )
+            .with_text(
+                Text::new()
+                    .with_content("content_2")
+                    .with_comment("comment_2"),
+            )
+            .with_text(
+                Text::new()
+                    .with_content("content_3")
+                    .with_comment("comment_3"),
+            );
+
+        let buffer = Vec::new();
+        let cursor = Cursor::new(buffer);
+
+        let mut writer = Writer::new(cursor);
+
+        writer.write_object(&note).unwrap();
+
+        let mut cursor = writer.into_inner();
+
+        cursor.seek(SeekFrom::Start(0)).unwrap();
+
+        let mut reader = Reader::new(cursor);
+
+        assert_eq!(reader.read_object::<Note>().unwrap(), note);
+    }
+}
