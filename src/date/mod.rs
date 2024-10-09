@@ -16,7 +16,7 @@ pub type Hour = u8;
 pub type Minute = u8;
 pub type Second = u8;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub struct Date {
     year: Year,
     month: Month,
