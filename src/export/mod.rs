@@ -4,7 +4,6 @@ mod arguments;
 
 pub use arguments::ExportArguments;
 
-use crate::codec::Encode;
 use crate::codec::Writer;
 use crate::error::FileError;
 use crate::error::FileResult;
@@ -25,8 +24,8 @@ impl Exporter {
     }
 
     pub fn export(&self) -> FileResult<()> {
-        if self.arguments.filepath.is_file() {
-            return Err(FileError::PathNotFile);
+        if self.arguments.filepath.is_dir() {
+            return Err(FileError::PathIsDirectory);
         }
 
         let mut file = File::create(&self.arguments.filepath)?;
@@ -46,7 +45,7 @@ impl Exporter {
         // 写入项目数据
         let mut writer = Writer::with_version(file, self.arguments.version);
 
-        self.project.encode(&mut writer)?;
+        writer.write_object(&self.project)?;
 
         Ok(())
     }
