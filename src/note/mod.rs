@@ -22,24 +22,17 @@ impl Note {
         Self::default()
     }
 
-    pub fn with_coordinate_and_choice(x: f64, y: f64, choice: u32) -> Self {
-        Self {
-            x,
-            y,
+    pub fn with_coordinate(mut self, x: f64, y: f64) -> Self {
+        self.x = x;
+        self.y = y;
 
-            choice,
-
-            ..Self::default()
-        }
+        self
     }
 
-    pub fn with_coordinate(x: f64, y: f64) -> Self {
-        Self {
-            x,
-            y,
+    pub fn with_choice(mut self, choice: u32) -> Self {
+        self.choice = choice;
 
-            ..Self::default()
-        }
+        self
     }
 
     pub fn with_text(mut self, text: Text) -> Self {
