@@ -94,68 +94,30 @@ impl Decode for Text {
 
 #[cfg(test)]
 mod tests {
+    use crate::codec::Reader;
+    use crate::codec::Writer;
     use crate::Text;
+    use std::io::Cursor;
+    use std::io::Seek;
+    use std::io::SeekFrom;
 
     #[test]
-    fn test_new() {
-        let text = Text::new();
+    fn codec() {
+        let text = Text::new().with_content("Content").with_comment("Comment");
 
-        assert!(text.content().is_empty());
-        assert!(text.comment().is_empty());
-    }
+        let buffer = Vec::new();
+        let cursor = Cursor::new(buffer);
 
-    #[test]
-    fn test_with_content_and_comment() {
-        let text = Text::with_content_and_comment("Content of the text", "Comment of the text");
+        let mut writer = Writer::new(cursor);
 
-        assert_eq!(text.content(), "Content of the text");
-        assert_eq!(text.comment(), "Comment of the text");
-    }
+        writer.write_object(&text).unwrap();
 
-    #[test]
-    fn test_with_content() {
-        let text = Text::with_content("Content of the text");
+        let mut cursor = writer.into_inner();
 
-        assert_eq!(text.content(), "Content of the text");
-        assert!(text.comment().is_empty());
-    }
+        cursor.seek(SeekFrom::Start(0)).unwrap();
 
-    #[test]
-    fn test_with_comment() {
-        let text = Text::with_comment("Comment of the text");
+        let mut reader = Reader::new(cursor);
 
-        assert!(text.content().is_empty());
-        assert_eq!(text.comment(), "Comment of the text");
-    }
-
-    #[test]
-    fn test_set_content() {
-        let mut text = Text::new();
-
-        text.set_content("content");
-
-        assert_eq!(text.content(), "content");
-        assert!(text.comment().is_empty());
-    }
-
-    #[test]
-    fn test_set_comment() {
-        let mut text = Text::new();
-
-        text.set_comment("comment");
-
-        assert!(text.content().is_empty());
-        assert_eq!(text.comment(), "comment");
-    }
-
-    #[test]
-    fn test_set_content_and_comment() {
-        let mut text = Text::new();
-
-        text.set_content("content");
-        text.set_comment("comment");
-
-        assert_eq!(text.content(), "content");
-        assert_eq!(text.comment(), "comment");
+        assert_eq!(reader.read_object::<Text>().unwrap(), text);
     }
 }
