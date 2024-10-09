@@ -14,19 +14,6 @@ pub struct Text {
 }
 
 impl Text {
-    /// Creates a new empty `Text`.
-    ///
-    /// Given that the `Text` is empty, the content and the comment will not allocate any initial
-    /// buffer. If you have an idea of what the content and the comment is, consider the
-    /// [`Text::with_content_and_comment`], [`Text::with_content`] and [`Text::with_comment`].
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use cyfile::Text;
-    ///
-    /// let text = Text::new();
-    /// ```
     pub fn new() -> Self {
         Self::default()
     }
@@ -43,22 +30,18 @@ impl Text {
         self
     }
 
-    /// Set content of the `Text`.
     pub fn set_content(&mut self, content: &str) {
         self.content = content.to_string();
     }
 
-    /// Set comment of the `Text`.
     pub fn set_comment(&mut self, comment: &str) {
         self.comment = comment.to_string();
     }
 
-    /// Return content of the `Text`.
     pub fn content(&self) -> &str {
         &self.content
     }
 
-    /// Return comment of the `Text`.
     pub fn comment(&self) -> &str {
         &self.comment
     }
