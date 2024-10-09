@@ -11,6 +11,7 @@ use std::io::Cursor;
 use std::io::Read;
 use std::io::Write;
 
+#[derive(Debug, Clone, PartialEq)]
 pub struct Page {
     data: Vec<u8>,
 
@@ -151,5 +152,88 @@ impl Decode for Page {
 
             _ => Err(FileError::InvalidVersion),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::codec::Reader;
+    use crate::codec::Writer;
+    use crate::Note;
+    use crate::Page;
+    use crate::Text;
+    use std::fs;
+    use std::io::Cursor;
+    use std::io::Seek;
+    use std::io::SeekFrom;
+
+    #[test]
+    fn codec_for_version_0_0() {
+        let image = fs::read(r"tests\images\0.png").unwrap();
+        let page = Page::new(image)
+            .with_note(
+                Note::new()
+                    .with_coordinate(0.5, 0.5)
+                    .with_text(Text::new().with_content("content_1_1"))
+                    .with_text(Text::new().with_content("content_1_2"))
+                    .with_text(Text::new().with_content("content_1_3")),
+            )
+            .with_note(
+                Note::new()
+                    .with_coordinate(-0.5, -0.5)
+                    .with_text(Text::new().with_content("content_2_1"))
+                    .with_text(Text::new().with_content("content_2_2"))
+                    .with_text(Text::new().with_content("content_2_3")),
+            );
+
+        let buffer = Vec::new();
+        let cursor = Cursor::new(buffer);
+
+        let mut writer = Writer::new(cursor).with_version((0, 0));
+
+        writer.write_object(&page).unwrap();
+
+        let mut cursor = writer.into_inner();
+
+        cursor.seek(SeekFrom::Start(0)).unwrap();
+
+        let mut reader = Reader::new(cursor).with_version((0, 0));
+
+        assert_eq!(reader.read_object::<Page>().unwrap(), page);
+    }
+
+    #[test]
+    fn codec_for_version_0_2() {
+        let image = fs::read(r"tests\images\0.png").unwrap();
+        let page = Page::new(image)
+            .with_note(
+                Note::new()
+                    .with_coordinate(0.5, 0.5)
+                    .with_text(Text::new().with_content("content_1_1"))
+                    .with_text(Text::new().with_content("content_1_2"))
+                    .with_text(Text::new().with_content("content_1_3")),
+            )
+            .with_note(
+                Note::new()
+                    .with_coordinate(-0.5, -0.5)
+                    .with_text(Text::new().with_content("content_2_1"))
+                    .with_text(Text::new().with_content("content_2_2"))
+                    .with_text(Text::new().with_content("content_2_3")),
+            );
+
+        let buffer = Vec::new();
+        let cursor = Cursor::new(buffer);
+
+        let mut writer = Writer::new(cursor).with_version((0, 2));
+
+        writer.write_object(&page).unwrap();
+
+        let mut cursor = writer.into_inner();
+
+        cursor.seek(SeekFrom::Start(0)).unwrap();
+
+        let mut reader = Reader::new(cursor).with_version((0, 2));
+
+        assert_eq!(reader.read_object::<Page>().unwrap(), page);
     }
 }
