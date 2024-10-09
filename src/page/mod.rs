@@ -7,11 +7,12 @@ use crate::error::FileResult;
 use crate::Note;
 use crate::Text;
 use image::ImageReader;
+use std::fmt::Debug;
 use std::io::Cursor;
 use std::io::Read;
 use std::io::Write;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct Page {
     data: Vec<u8>,
 
@@ -152,6 +153,12 @@ impl Decode for Page {
 
             _ => Err(FileError::InvalidVersion),
         }
+    }
+}
+
+impl Debug for Page {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Page").field("notes", &self.notes).finish()
     }
 }
 
