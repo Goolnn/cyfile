@@ -7,34 +7,7 @@ use crate::error::FileResult;
 use std::io::Read;
 use std::io::Write;
 
-/// Be used to store the content and the comment of a text.
-///
-/// The `Text` type generally does not exist independently but rather as a child of a
-/// [`Text`](Text) type.
-///
-/// # Examples
-///
-/// You can create a `Text` with content and comment use [`Text::with_content_and_comment`], and to
-/// get the content and the comment of a `Text`, you can use [`content`](Text::content) and
-/// [`content`](Text::content):
-///
-/// ```
-/// use cyfile::Text;
-///
-/// let text = Text::with_content_and_comment("Content of the text", "Comment of the text");
-///
-/// assert_eq!(text.content(), "Content of the text");
-/// assert_eq!(text.comment(), "Comment of the text");
-/// ```
-///
-/// # Encode
-///
-/// Support version: `0.2`
-///
-/// # Decode
-///
-/// Support version: `0.2`
-#[derive(Default)]
+#[derive(Default, PartialEq, Eq, Debug)]
 pub struct Text {
     content: String,
     comment: String,
