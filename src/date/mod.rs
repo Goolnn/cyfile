@@ -137,7 +137,7 @@ impl Decode for Date {
 }
 
 #[cfg(test)]
-mod codec {
+mod tests {
     use crate::codec::Reader;
     use crate::codec::Writer;
     use crate::Date;
