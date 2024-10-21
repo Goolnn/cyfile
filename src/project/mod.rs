@@ -208,11 +208,23 @@ impl Decode for Project {
                             1.0 - note_y / page_height as f64 * 2.0,
                         );
 
-                        reader.read_primitive::<u16>()?;
-                        let draft = reader.read_string_with_nil()?;
+                        // 初稿数据
+                        let draft_len = reader.read_primitive::<u16>()? as usize;
 
-                        reader.read_primitive::<u16>()?;
-                        let revision = reader.read_string_with_nil()?;
+                        let mut draft_bytes = reader.read_bytes(draft_len)?;
+
+                        draft_bytes.pop();
+
+                        let draft = String::from_utf8(draft_bytes).unwrap();
+
+                        // 校对数据
+                        let revision_len = reader.read_primitive::<u16>()? as usize;
+
+                        let mut revision_bytes = reader.read_bytes(revision_len)?;
+
+                        revision_bytes.pop();
+
+                        let revision = String::from_utf8(revision_bytes).unwrap();
 
                         if draft.contains("DOCTYPE HTML PUBLIC")
                             || revision.contains("DOCTYPE HTML PUBLIC")
