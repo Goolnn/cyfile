@@ -8,6 +8,7 @@ use crate::Date;
 use crate::Note;
 use crate::Page;
 use crate::Text;
+use once_cell::sync::Lazy;
 use regex::Regex;
 use std::io::Read;
 use std::io::Write;
@@ -217,22 +218,17 @@ impl Decode for Project {
                             || revision.contains("DOCTYPE HTML PUBLIC")
                         {
                             // 解析 HTML 文本
-                            let regex = match Regex::new(r"<span.*?>|</span>") {
-                                Ok(regex) => regex,
-                                Err(_) => return Err(FileError::Undefined),
-                            };
+                            static SPAN: Lazy<Regex> =
+                                Lazy::new(|| Regex::new(r"<span.*?>|</span>").unwrap());
 
-                            let draft = regex.replace_all(&draft, "").to_string();
-                            let revision = regex.replace_all(&revision, "").to_string();
+                            let draft = SPAN.replace_all(&draft, "").to_string();
+                            let revision = SPAN.replace_all(&revision, "").to_string();
 
-                            let regex = match Regex::new(r"<p.*?>(.*)</p>") {
-                                Ok(regex) => regex,
-                                Err(_) => return Err(FileError::Undefined),
-                            };
+                            static PARA: Lazy<Regex> =
+                                Lazy::new(|| Regex::new(r"<p.*?>(.*)</p>").unwrap());
 
                             let extract = |text| {
-                                regex
-                                    .captures_iter(text)
+                                PARA.captures_iter(text)
                                     .map(|capture| {
                                         let (_, [text]) = capture.extract();
 
