@@ -1,10 +1,12 @@
 mod constants;
 mod export;
+mod version;
 
 pub use constants::HEADER_DATA;
 pub use constants::VERSIONS;
 pub use constants::VERSION_LATEST;
 pub use export::ExportArguments;
+pub use version::Version;
 
 use crate::codec::Reader;
 use crate::codec::Writer;
@@ -34,13 +36,10 @@ impl File {
             anyhow::bail!(FileError::InvalidHeader);
         }
 
-        let version = (version[0], version[1]);
+        let version = Version::from(version);
 
-        if !constants::VERSIONS.contains(&version) {
-            anyhow::bail!(FileError::UnsupportedVersion {
-                major: version.0,
-                minor: version.1
-            });
+        if !constants::VERSIONS.contains(&version.into()) {
+            anyhow::bail!(FileError::UnsupportedVersion { version });
         }
 
         let mut reader = Reader::new(stream).with_version(version);
@@ -71,16 +70,13 @@ impl File {
         file.write_all(&HEADER_DATA)?;
 
         // 写入版本数据
-        if !VERSIONS.contains(&arguments.version) {
+        if !VERSIONS.contains(&arguments.version.into()) {
             anyhow::bail!(FileError::UnsupportedVersion {
-                major: arguments.version.0,
-                minor: arguments.version.1
+                version: arguments.version
             });
         }
 
-        let version = [arguments.version.0, arguments.version.1];
-
-        file.write_all(&version)?;
+        file.write_all(&[arguments.version.major, arguments.version.minor])?;
 
         // 写入项目数据
         let mut writer = Writer::new(file).with_version(arguments.version);

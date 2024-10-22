@@ -56,7 +56,7 @@ impl Page {
 
 impl Encode for Page {
     fn encode<S: Write>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
-        match writer.version() {
+        match writer.version().into() {
             (0, 0) => {
                 // 图像数据
                 writer.write_bytes_with_len::<u32>(self.data())?;
@@ -96,14 +96,16 @@ impl Encode for Page {
                 Ok(())
             }
 
-            (major, minor) => anyhow::bail!(FileError::UnsupportedVersion { major, minor }),
+            version => anyhow::bail!(FileError::UnsupportedVersion {
+                version: version.into()
+            }),
         }
     }
 }
 
 impl Decode for Page {
     fn decode<S: Read>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
-        match reader.version() {
+        match reader.version().into() {
             (0, 0) => {
                 let data = reader.read_bytes_with_len::<u32>()?;
 
@@ -150,7 +152,9 @@ impl Decode for Page {
                 Ok(page)
             }
 
-            (major, minor) => anyhow::bail!(FileError::UnsupportedVersion { major, minor }),
+            version => anyhow::bail!(FileError::UnsupportedVersion {
+                version: version.into()
+            }),
         }
     }
 }

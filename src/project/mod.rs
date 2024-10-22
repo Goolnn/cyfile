@@ -73,7 +73,7 @@ impl Project {
 
 impl Encode for Project {
     fn encode<S: Write>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
-        match writer.version() {
+        match writer.version().into() {
             (0, 0) => {
                 writer.write_primitive(self.pages().len() as u8)?;
 
@@ -144,14 +144,16 @@ impl Encode for Project {
                 Ok(())
             }
 
-            (major, minor) => anyhow::bail!(FileError::UnsupportedVersion { major, minor }),
+            version => anyhow::bail!(FileError::UnsupportedVersion {
+                version: version.into()
+            }),
         }
     }
 }
 
 impl Decode for Project {
     fn decode<S: Read>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
-        match reader.version() {
+        match reader.version().into() {
             (0, 0) => {
                 let page_count = reader.read_primitive::<u8>()?;
 
@@ -311,7 +313,9 @@ impl Decode for Project {
                 })
             }
 
-            (major, minor) => anyhow::bail!(FileError::UnsupportedVersion { major, minor }),
+            version => anyhow::bail!(FileError::UnsupportedVersion {
+                version: version.into()
+            }),
         }
     }
 }

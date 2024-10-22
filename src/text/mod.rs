@@ -48,7 +48,7 @@ impl Text {
 
 impl Encode for Text {
     fn encode<S: Write>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
-        match writer.version() {
+        match writer.version().into() {
             (0, 2) => {
                 writer.write_string_with_len::<u32>(&self.content)?;
                 writer.write_string_with_len::<u32>(&self.comment)?;
@@ -56,20 +56,24 @@ impl Encode for Text {
                 Ok(())
             }
 
-            (major, minor) => anyhow::bail!(FileError::UnsupportedVersion { major, minor }),
+            version => anyhow::bail!(FileError::UnsupportedVersion {
+                version: version.into()
+            }),
         }
     }
 }
 
 impl Decode for Text {
     fn decode<S: Read>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
-        match reader.version() {
+        match reader.version().into() {
             (0, 2) => Ok(Self {
                 content: reader.read_string_with_len::<u32>()?,
                 comment: reader.read_string_with_len::<u32>()?,
             }),
 
-            (major, minor) => anyhow::bail!(FileError::UnsupportedVersion { major, minor }),
+            version => anyhow::bail!(FileError::UnsupportedVersion {
+                version: version.into()
+            }),
         }
     }
 }

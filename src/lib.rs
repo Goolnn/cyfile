@@ -23,6 +23,7 @@ mod text;
 pub use date::Date;
 pub use file::ExportArguments;
 pub use file::File;
+pub use file::Version;
 pub use note::Note;
 pub use page::Page;
 pub use project::Project;

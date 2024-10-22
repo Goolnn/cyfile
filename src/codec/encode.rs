@@ -1,7 +1,7 @@
 use crate::codec::Length;
 use crate::codec::Primitive;
-use crate::codec::Version;
 use crate::file::VERSION_LATEST;
+use crate::Version;
 use std::io::Write;
 
 pub trait Encode {
@@ -18,7 +18,7 @@ impl<S: Write> Writer<S> {
     pub fn new(stream: S) -> Self {
         Self {
             stream,
-            version: VERSION_LATEST,
+            version: VERSION_LATEST.into(),
         }
     }
 

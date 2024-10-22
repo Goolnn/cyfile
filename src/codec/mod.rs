@@ -30,8 +30,6 @@ impl Length for u32 {}
 impl Length for u64 {}
 impl Length for u128 {}
 
-pub type Version = (u8, u8);
-
 #[cfg(test)]
 mod tests {
     use crate::codec::Reader;
