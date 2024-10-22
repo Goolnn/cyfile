@@ -138,9 +138,9 @@ impl Decode for Note {
 
 #[cfg(test)]
 mod tests {
-    use super::Note;
     use crate::codec::Reader;
     use crate::codec::Writer;
+    use crate::Note;
     use crate::Text;
     use std::io::Cursor;
     use std::io::Seek;

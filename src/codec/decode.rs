@@ -1,6 +1,6 @@
-use super::Length;
-use super::Primitive;
-use super::Version;
+use crate::codec::Length;
+use crate::codec::Primitive;
+use crate::codec::Version;
 use crate::file::constants::VERSION_LATEST;
 use std::io::Read;
 

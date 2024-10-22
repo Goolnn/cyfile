@@ -1,10 +1,9 @@
 mod decode;
 mod encode;
 
-pub(crate) use decode::Decode;
-pub(crate) use encode::Encode;
-
+pub use decode::Decode;
 pub use decode::Reader;
+pub use encode::Encode;
 pub use encode::Writer;
 
 pub trait Primitive {}
@@ -35,8 +34,8 @@ pub type Version = (u8, u8);
 
 #[cfg(test)]
 mod tests {
-    use super::Writer;
     use crate::codec::Reader;
+    use crate::codec::Writer;
     use std::io::Cursor;
     use std::io::Seek;
     use std::io::SeekFrom;
