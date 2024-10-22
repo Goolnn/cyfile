@@ -2,7 +2,6 @@ use crate::codec::Decode;
 use crate::codec::Encode;
 use crate::codec::Reader;
 use crate::codec::Writer;
-use crate::error::FileResult;
 use chrono::Datelike;
 use chrono::Local;
 use chrono::Timelike;
@@ -101,7 +100,7 @@ impl Default for Date {
 }
 
 impl Encode for Date {
-    fn encode<S: Write>(&self, writer: &mut Writer<S>) -> FileResult<()> {
+    fn encode<S: Write>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
         writer.write_primitive(self.year)?;
         writer.write_primitive(self.month)?;
         writer.write_primitive(self.day)?;
@@ -115,7 +114,7 @@ impl Encode for Date {
 }
 
 impl Decode for Date {
-    fn decode<S: std::io::Read>(reader: &mut Reader<S>) -> FileResult<Self> {
+    fn decode<S: std::io::Read>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
         let year = reader.read_primitive()?;
         let month = reader.read_primitive()?;
         let day = reader.read_primitive()?;

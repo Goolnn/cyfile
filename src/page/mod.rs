@@ -3,7 +3,6 @@ use crate::codec::Encode;
 use crate::codec::Reader;
 use crate::codec::Writer;
 use crate::error::FileError;
-use crate::error::FileResult;
 use crate::Note;
 use crate::Text;
 use image::ImageReader;
@@ -56,7 +55,7 @@ impl Page {
 }
 
 impl Encode for Page {
-    fn encode<S: Write>(&self, writer: &mut Writer<S>) -> FileResult<()> {
+    fn encode<S: Write>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
         match writer.version() {
             (0, 0) => {
                 // 图像数据
@@ -97,13 +96,13 @@ impl Encode for Page {
                 Ok(())
             }
 
-            _ => Err(FileError::InvalidVersion),
+            (major, minor) => anyhow::bail!(FileError::UnsupportedVersion { major, minor }),
         }
     }
 }
 
 impl Decode for Page {
-    fn decode<S: Read>(reader: &mut Reader<S>) -> FileResult<Self> {
+    fn decode<S: Read>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
         match reader.version() {
             (0, 0) => {
                 let data = reader.read_bytes_with_len::<u32>()?;
@@ -151,7 +150,7 @@ impl Decode for Page {
                 Ok(page)
             }
 
-            _ => Err(FileError::InvalidVersion),
+            (major, minor) => anyhow::bail!(FileError::UnsupportedVersion { major, minor }),
         }
     }
 }

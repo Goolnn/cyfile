@@ -1,13 +1,11 @@
 use super::Length;
 use super::Primitive;
 use super::Version;
-use crate::error::FileError;
-use crate::error::FileResult;
 use crate::file::constants::VERSION_LATEST;
 use std::io::Read;
 
 pub trait Decode: Sized {
-    fn decode<S: Read>(reader: &mut Reader<S>) -> FileResult<Self>;
+    fn decode<S: Read>(reader: &mut Reader<S>) -> anyhow::Result<Self>;
 }
 
 pub struct Reader<S: Read> {
@@ -34,48 +32,40 @@ impl<S: Read> Reader<S> {
         self.version
     }
 
-    pub fn read_object<T: Decode>(&mut self) -> FileResult<T> {
+    pub fn read_object<T: Decode>(&mut self) -> anyhow::Result<T> {
         T::decode(self)
     }
 
-    pub fn read_primitive<T: Primitive>(&mut self) -> FileResult<T> {
+    pub fn read_primitive<T: Primitive>(&mut self) -> anyhow::Result<T> {
         let mut buffer = vec![0u8; size_of::<T>()];
 
-        if self.stream.read(&mut buffer)? != buffer.len() {
-            return Err(FileError::ReadFailed);
-        }
+        self.stream.read_exact(&mut buffer)?;
 
         unsafe { Ok(std::ptr::read(buffer.as_ptr() as *const T)) }
     }
 
-    pub fn read_bytes(&mut self, len: usize) -> FileResult<Vec<u8>> {
+    pub fn read_bytes(&mut self, len: usize) -> anyhow::Result<Vec<u8>> {
         let mut buffer = vec![0u8; len];
 
-        if self.stream.read(&mut buffer)? != buffer.len() {
-            Err(FileError::Undefined)
-        } else {
-            Ok(buffer)
-        }
+        self.stream.read_exact(&mut buffer)?;
+
+        Ok(buffer)
     }
 
-    pub fn read_bytes_with_len<T: Length>(&mut self) -> FileResult<Vec<u8>> {
+    pub fn read_bytes_with_len<T: Length>(&mut self) -> anyhow::Result<Vec<u8>> {
         let len = self.read_len::<T>()?;
 
         self.read_bytes(len)
     }
 
-    pub fn read_string_with_len<T: Length>(&mut self) -> FileResult<String> {
+    pub fn read_string_with_len<T: Length>(&mut self) -> anyhow::Result<String> {
         let len = self.read_len::<T>()?;
         let buffer = self.read_bytes(len)?;
 
-        if let Ok(string) = String::from_utf8(buffer) {
-            Ok(string)
-        } else {
-            Err(FileError::ReadFailed)
-        }
+        Ok(String::from_utf8(buffer)?)
     }
 
-    pub fn read_string_with_nil(&mut self) -> FileResult<String> {
+    pub fn read_string_with_nil(&mut self) -> anyhow::Result<String> {
         let mut buffer = Vec::new();
 
         loop {
@@ -88,18 +78,14 @@ impl<S: Read> Reader<S> {
             buffer.push(byte);
         }
 
-        if let Ok(string) = String::from_utf8(buffer) {
-            Ok(string)
-        } else {
-            Err(FileError::ReadFailed)
-        }
+        Ok(String::from_utf8(buffer)?)
     }
 
-    fn read_len<T: Length>(&mut self) -> FileResult<usize> {
+    fn read_len<T: Length>(&mut self) -> anyhow::Result<usize> {
         if let Ok(len) = self.read_primitive::<T>()?.try_into() {
             Ok(len)
         } else {
-            Err(FileError::ReadFailed)
+            anyhow::bail!("failed to convert length while reading");
         }
     }
 

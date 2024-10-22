@@ -1,48 +1,17 @@
-use std::error::Error;
-use std::fmt::Display;
-use std::io;
+use std::path::PathBuf;
+use thiserror::Error;
 
-pub type FileResult<T> = Result<T, FileError>;
-
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Error)]
 pub enum FileError {
+    #[error("invalid header")]
     InvalidHeader,
-    InvalidVersion,
-    InvalidStructure,
 
-    PathIsDirectory,
-    PathNotExists,
-    PathNotFile,
+    #[error("unsupported version: {major}.{minor}")]
+    UnsupportedVersion { major: u8, minor: u8 },
 
-    WriteFailed,
-    ReadFailed,
+    #[error("\"{}\" is directory", path.display())]
+    PathIsDirectory { path: PathBuf },
 
-    Undefined,
-}
-
-impl From<io::Error> for FileError {
-    fn from(_: io::Error) -> Self {
-        Self::Undefined
-    }
-}
-
-impl Error for FileError {}
-
-impl Display for FileError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::InvalidHeader => write!(f, "invalid header"),
-            Self::InvalidVersion => write!(f, "invalid version"),
-            Self::InvalidStructure => write!(f, "invalid structure"),
-
-            Self::PathIsDirectory => write!(f, "path is directory"),
-            Self::PathNotExists => write!(f, "path not exists"),
-            Self::PathNotFile => write!(f, "path not file"),
-
-            Self::WriteFailed => write!(f, "write failed"),
-            Self::ReadFailed => write!(f, "read failed"),
-
-            Self::Undefined => write!(f, "undefined"),
-        }
-    }
+    #[error("\"{}\" is not a file", path.display())]
+    PathNotFile { path: PathBuf },
 }

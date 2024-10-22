@@ -7,7 +7,6 @@ pub use arguments::ExportArguments;
 use crate::codec::Reader;
 use crate::codec::Writer;
 use crate::error::FileError;
-use crate::error::FileResult;
 use crate::file::constants::HEADER_DATA;
 use crate::file::constants::VERSIONS;
 use crate::Project;
@@ -24,7 +23,7 @@ impl File {
         File { project }
     }
 
-    pub fn open(mut stream: impl Read) -> FileResult<File> {
+    pub fn open(mut stream: impl Read) -> anyhow::Result<File> {
         let mut header = [0u8; 15];
         let mut version = [0u8; 2];
 
@@ -32,13 +31,16 @@ impl File {
         stream.read_exact(&mut version)?;
 
         if header != constants::HEADER_DATA {
-            return Err(FileError::InvalidHeader);
+            anyhow::bail!(FileError::InvalidHeader);
         }
 
         let version = (version[0], version[1]);
 
         if !constants::VERSIONS.contains(&version) {
-            return Err(FileError::InvalidVersion);
+            anyhow::bail!(FileError::UnsupportedVersion {
+                major: version.0,
+                minor: version.1
+            });
         }
 
         let mut reader = Reader::new(stream).with_version(version);
@@ -56,9 +58,11 @@ impl File {
         &self.project
     }
 
-    pub fn export(&self, arguments: ExportArguments) -> FileResult<()> {
+    pub fn export(&self, arguments: ExportArguments) -> anyhow::Result<()> {
         if arguments.filepath.is_dir() {
-            return Err(FileError::PathIsDirectory);
+            anyhow::bail!(FileError::PathIsDirectory {
+                path: arguments.filepath
+            })
         }
 
         let mut file = fs::File::create(&arguments.filepath)?;
@@ -68,7 +72,10 @@ impl File {
 
         // 写入版本数据
         if !VERSIONS.contains(&arguments.version) {
-            return Err(FileError::InvalidVersion);
+            anyhow::bail!(FileError::UnsupportedVersion {
+                major: arguments.version.0,
+                minor: arguments.version.1
+            });
         }
 
         let version = [arguments.version.0, arguments.version.1];

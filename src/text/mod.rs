@@ -3,7 +3,6 @@ use crate::codec::Encode;
 use crate::codec::Reader;
 use crate::codec::Writer;
 use crate::error::FileError;
-use crate::error::FileResult;
 use std::io::Read;
 use std::io::Write;
 
@@ -48,7 +47,7 @@ impl Text {
 }
 
 impl Encode for Text {
-    fn encode<S: Write>(&self, writer: &mut Writer<S>) -> FileResult<()> {
+    fn encode<S: Write>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
         match writer.version() {
             (0, 2) => {
                 writer.write_string_with_len::<u32>(&self.content)?;
@@ -57,20 +56,20 @@ impl Encode for Text {
                 Ok(())
             }
 
-            _ => Err(FileError::InvalidVersion),
+            (major, minor) => anyhow::bail!(FileError::UnsupportedVersion { major, minor }),
         }
     }
 }
 
 impl Decode for Text {
-    fn decode<S: Read>(reader: &mut Reader<S>) -> FileResult<Self> {
+    fn decode<S: Read>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
         match reader.version() {
             (0, 2) => Ok(Self {
                 content: reader.read_string_with_len::<u32>()?,
                 comment: reader.read_string_with_len::<u32>()?,
             }),
 
-            _ => Err(FileError::InvalidVersion),
+            (major, minor) => anyhow::bail!(FileError::UnsupportedVersion { major, minor }),
         }
     }
 }

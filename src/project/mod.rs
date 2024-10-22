@@ -3,7 +3,6 @@ use crate::codec::Encode;
 use crate::codec::Reader;
 use crate::codec::Writer;
 use crate::error::FileError;
-use crate::error::FileResult;
 use crate::Date;
 use crate::Note;
 use crate::Page;
@@ -73,7 +72,7 @@ impl Project {
 }
 
 impl Encode for Project {
-    fn encode<S: Write>(&self, writer: &mut Writer<S>) -> FileResult<()> {
+    fn encode<S: Write>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
         match writer.version() {
             (0, 0) => {
                 writer.write_primitive(self.pages().len() as u8)?;
@@ -145,13 +144,13 @@ impl Encode for Project {
                 Ok(())
             }
 
-            _ => Err(FileError::InvalidVersion),
+            (major, minor) => anyhow::bail!(FileError::UnsupportedVersion { major, minor }),
         }
     }
 }
 
 impl Decode for Project {
-    fn decode<S: Read>(reader: &mut Reader<S>) -> FileResult<Self> {
+    fn decode<S: Read>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
         match reader.version() {
             (0, 0) => {
                 let page_count = reader.read_primitive::<u8>()?;
@@ -312,7 +311,7 @@ impl Decode for Project {
                 })
             }
 
-            _ => Err(FileError::InvalidVersion),
+            (major, minor) => anyhow::bail!(FileError::UnsupportedVersion { major, minor }),
         }
     }
 }

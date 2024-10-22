@@ -2,7 +2,6 @@ use crate::codec::Decode;
 use crate::codec::Encode;
 use crate::codec::Reader;
 use crate::codec::Writer;
-use crate::error::FileResult;
 use crate::Text;
 use std::io::Read;
 use std::io::Write;
@@ -95,7 +94,7 @@ impl Note {
 }
 
 impl Encode for Note {
-    fn encode<S: Write>(&self, writer: &mut Writer<S>) -> FileResult<()> {
+    fn encode<S: Write>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
         writer.write_primitive(self.x)?;
         writer.write_primitive(self.y)?;
 
@@ -112,7 +111,7 @@ impl Encode for Note {
 }
 
 impl Decode for Note {
-    fn decode<S: Read>(reader: &mut Reader<S>) -> FileResult<Self> {
+    fn decode<S: Read>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
         let x = reader.read_primitive()?;
         let y = reader.read_primitive()?;
 
