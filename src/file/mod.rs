@@ -1,14 +1,14 @@
-pub mod constants;
+mod constants;
+mod export;
 
-mod arguments;
-
-pub use arguments::ExportArguments;
+pub use constants::HEADER_DATA;
+pub use constants::VERSIONS;
+pub use constants::VERSION_LATEST;
+pub use export::ExportArguments;
 
 use crate::codec::Reader;
 use crate::codec::Writer;
 use crate::error::FileError;
-use crate::file::constants::HEADER_DATA;
-use crate::file::constants::VERSIONS;
 use crate::Project;
 use std::fs;
 use std::io::Read;

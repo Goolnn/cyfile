@@ -1,7 +1,7 @@
 use crate::codec::Length;
 use crate::codec::Primitive;
 use crate::codec::Version;
-use crate::file::constants::VERSION_LATEST;
+use crate::file::VERSION_LATEST;
 use std::io::Read;
 
 pub trait Decode: Sized {
