@@ -12,10 +12,11 @@ use once_cell::sync::Lazy;
 use regex::Regex;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::fmt::Debug;
 use std::io::Read;
 use std::io::Write;
 
-#[derive(Default, PartialEq, Debug, Clone)]
+#[derive(Default, PartialEq, Clone)]
 pub struct Project {
     cover: Vec<u8>,
 
@@ -497,6 +498,28 @@ impl Encode for Vec<Page> {
         }
 
         Ok(())
+    }
+}
+
+impl Debug for Project {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Project")
+            .field(
+                "cover",
+                if self.cover.is_empty() {
+                    &"Empty"
+                } else {
+                    &"Exists"
+                },
+            )
+            .field("category", &self.category)
+            .field("title", &self.title)
+            .field("number", &self.number)
+            .field("created_date", &self.created_date)
+            .field("saved_date", &self.saved_date)
+            .field("credits", &self.credits)
+            .field("pages", &self.pages)
+            .finish()
     }
 }
 
