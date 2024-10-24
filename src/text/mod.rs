@@ -2,7 +2,6 @@ use crate::codec::Decode;
 use crate::codec::Encode;
 use crate::codec::Reader;
 use crate::codec::Writer;
-use crate::error::FileError;
 use std::io::Read;
 use std::io::Write;
 
@@ -48,18 +47,18 @@ impl Text {
 
 impl Encode for Text {
     fn encode<S: Write>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
-                writer.write_string_with_len::<u32>(&self.content)?;
-                writer.write_string_with_len::<u32>(&self.comment)?;
+        writer.write_string_with_len::<u32>(&self.content)?;
+        writer.write_string_with_len::<u32>(&self.comment)?;
 
-                Ok(())
+        Ok(())
     }
 }
 
 impl Decode for Text {
     fn decode<S: Read>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
         Ok(Self {
-                content: reader.read_string_with_len::<u32>()?,
-                comment: reader.read_string_with_len::<u32>()?,
+            content: reader.read_string_with_len::<u32>()?,
+            comment: reader.read_string_with_len::<u32>()?,
         })
     }
 }
@@ -74,7 +73,7 @@ mod tests {
     use std::io::SeekFrom;
 
     #[test]
-    fn codec() {
+    fn codec() -> anyhow::Result<()> {
         let text = Text::new().with_content("Content").with_comment("Comment");
 
         let buffer = Vec::new();
@@ -82,14 +81,16 @@ mod tests {
 
         let mut writer = Writer::new(cursor);
 
-        writer.write_object(&text).unwrap();
+        writer.write_object(&text)?;
 
         let mut cursor = writer.into_inner();
 
-        cursor.seek(SeekFrom::Start(0)).unwrap();
+        cursor.seek(SeekFrom::Start(0))?;
 
         let mut reader = Reader::new(cursor);
 
-        assert_eq!(reader.read_object::<Text>().unwrap(), text);
+        assert_eq!(reader.read_object::<Text>()?, text);
+
+        Ok(())
     }
 }
