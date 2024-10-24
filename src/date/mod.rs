@@ -99,6 +99,20 @@ impl Default for Date {
     }
 }
 
+impl Decode for Date {
+    fn decode<S: std::io::Read>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
+        Ok(Self {
+            year: reader.read_primitive()?,
+            month: reader.read_primitive()?,
+            day: reader.read_primitive()?,
+
+            hour: reader.read_primitive()?,
+            minute: reader.read_primitive()?,
+            second: reader.read_primitive()?,
+        })
+    }
+}
+
 impl Encode for Date {
     fn encode<S: Write>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
         writer.write_primitive(self.year)?;
@@ -110,28 +124,6 @@ impl Encode for Date {
         writer.write_primitive(self.second)?;
 
         Ok(())
-    }
-}
-
-impl Decode for Date {
-    fn decode<S: std::io::Read>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
-        let year = reader.read_primitive()?;
-        let month = reader.read_primitive()?;
-        let day = reader.read_primitive()?;
-
-        let hour = reader.read_primitive()?;
-        let minute = reader.read_primitive()?;
-        let second = reader.read_primitive()?;
-
-        Ok(Self {
-            year,
-            month,
-            day,
-
-            hour,
-            minute,
-            second,
-        })
     }
 }
 
