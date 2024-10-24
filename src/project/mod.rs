@@ -334,7 +334,7 @@ mod tests {
 
     #[test]
     fn codec_for_version_0_0() {
-        let image = fs::read(r"tests\images\0.png").unwrap();
+        let image = fs::read(r"tests/images/0.png").unwrap();
 
         let project = Project::new()
             .with_title("工程")
@@ -394,7 +394,7 @@ mod tests {
 
     #[test]
     fn codec_for_version_0_1() {
-        let image = fs::read(r"tests\images\0.png").unwrap();
+        let image = fs::read(r"tests/images/0.png").unwrap();
 
         let project = Project::new()
             .with_title("工程")
@@ -454,7 +454,7 @@ mod tests {
 
     #[test]
     fn codec_for_version_0_2() {
-        let image = fs::read(r"tests\images\0.png").unwrap();
+        let image = fs::read(r"tests/images/0.png").unwrap();
 
         let project = Project::new()
             .with_title("工程")

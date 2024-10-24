@@ -179,7 +179,7 @@ mod tests {
 
     #[test]
     fn codec_for_version_0_0() {
-        let image = fs::read(r"tests\images\0.png").unwrap();
+        let image = fs::read(r"tests/images/0.png").unwrap();
         let page = Page::new(image)
             .with_note(
                 Note::new()
@@ -223,7 +223,7 @@ mod tests {
 
     #[test]
     fn codec_for_version_0_2() {
-        let image = fs::read(r"tests\images\0.png").unwrap();
+        let image = fs::read(r"tests/images/0.png").unwrap();
         let page = Page::new(image)
             .with_note(
                 Note::new()
