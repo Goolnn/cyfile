@@ -135,17 +135,16 @@ impl Decode for Project {
     fn decode<S: Read>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
         match reader.version().into() {
             (0, 0) => {
-                let page_count = reader.read_primitive::<u8>()?;
+                let pages = reader.read_object::<Vec<Page>>()?;
 
-                let mut pages = Vec::with_capacity(page_count as usize);
-
-                for _ in 0..page_count {
-                    pages.push(reader.read_object()?);
-                }
+                let cover = if !pages.is_empty() {
+                    pages[0].data().to_vec()
+                } else {
+                    Vec::new()
+                };
 
                 Ok(Self {
-                    title: String::new(),
-
+                    cover,
                     pages,
 
                     ..Self::default()
@@ -261,19 +260,21 @@ impl Decode for Project {
                     }
                 }
 
+                let cover = if !pages.is_empty() {
+                    pages[0].data().to_vec()
+                } else {
+                    Vec::new()
+                };
+
                 Ok(Self {
-                    cover: Vec::new(),
-
-                    category: String::new(),
-                    title: String::new(),
-                    number: (0, 0),
-
-                    credits: HashMap::new(),
+                    cover,
 
                     created_date: date,
                     saved_date: date,
 
                     pages,
+
+                    ..Self::default()
                 })
             }
 
