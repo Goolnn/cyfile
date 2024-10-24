@@ -13,6 +13,6 @@ pub enum FileError {
     #[error("\"{}\" is directory", path.display())]
     PathIsDirectory { path: PathBuf },
 
-    #[error("\"{}\" is not a file", path.display())]
+    #[error("\"{}\" is not file", path.display())]
     PathNotFile { path: PathBuf },
 }
