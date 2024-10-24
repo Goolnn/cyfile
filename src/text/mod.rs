@@ -29,11 +29,11 @@ impl Text {
         self
     }
 
-    pub fn set_content(&mut self, content: &str) {
+    pub fn set_content(&mut self, content: impl ToString) {
         self.content = content.to_string();
     }
 
-    pub fn set_comment(&mut self, comment: &str) {
+    pub fn set_comment(&mut self, comment: impl ToString) {
         self.comment = comment.to_string();
     }
 
