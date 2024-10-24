@@ -39,3 +39,47 @@ impl Encode for Credit {
         writer.write_primitive(*self as u8)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::codec::Writer;
+    use crate::Credit;
+    use std::io::Cursor;
+    use std::io::Seek;
+    use std::io::SeekFrom;
+
+    #[test]
+    fn codec() {
+        let artists = Credit::Artists;
+        let translators = Credit::Translators;
+        let proofreaders = Credit::Proofreaders;
+        let retouchers = Credit::Retouchers;
+        let typesetters = Credit::Typesetters;
+        let supervisors = Credit::Supervisors;
+
+        let buffer = Vec::new();
+        let cursor = Cursor::new(buffer);
+
+        let mut writer = Writer::new(cursor);
+
+        writer.write_object(&artists).unwrap();
+        writer.write_object(&translators).unwrap();
+        writer.write_object(&proofreaders).unwrap();
+        writer.write_object(&retouchers).unwrap();
+        writer.write_object(&typesetters).unwrap();
+        writer.write_object(&supervisors).unwrap();
+
+        let mut cursor = writer.into_inner();
+
+        cursor.seek(SeekFrom::Start(0)).unwrap();
+
+        let mut reader = crate::codec::Reader::new(cursor);
+
+        assert_eq!(reader.read_object::<Credit>().unwrap(), artists);
+        assert_eq!(reader.read_object::<Credit>().unwrap(), translators);
+        assert_eq!(reader.read_object::<Credit>().unwrap(), proofreaders);
+        assert_eq!(reader.read_object::<Credit>().unwrap(), retouchers);
+        assert_eq!(reader.read_object::<Credit>().unwrap(), typesetters);
+        assert_eq!(reader.read_object::<Credit>().unwrap(), supervisors);
+    }
+}
