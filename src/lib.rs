@@ -13,6 +13,7 @@
 pub mod error;
 
 mod codec;
+mod credit;
 mod date;
 mod file;
 mod note;
@@ -20,6 +21,7 @@ mod page;
 mod project;
 mod text;
 
+pub use credit::Credit;
 pub use date::Date;
 pub use file::ExportArguments;
 pub use file::File;
