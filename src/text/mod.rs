@@ -48,33 +48,19 @@ impl Text {
 
 impl Encode for Text {
     fn encode<S: Write>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
-        match writer.version().into() {
-            (0, 2) => {
                 writer.write_string_with_len::<u32>(&self.content)?;
                 writer.write_string_with_len::<u32>(&self.comment)?;
 
                 Ok(())
-            }
-
-            version => anyhow::bail!(FileError::UnsupportedVersion {
-                version: version.into()
-            }),
-        }
     }
 }
 
 impl Decode for Text {
     fn decode<S: Read>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
-        match reader.version().into() {
-            (0, 2) => Ok(Self {
+        Ok(Self {
                 content: reader.read_string_with_len::<u32>()?,
                 comment: reader.read_string_with_len::<u32>()?,
-            }),
-
-            version => anyhow::bail!(FileError::UnsupportedVersion {
-                version: version.into()
-            }),
-        }
+        })
     }
 }
 
