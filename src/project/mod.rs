@@ -344,9 +344,16 @@ impl Decode for HashSet<String> {
 
 impl Decode for Vec<Page> {
     fn decode<S: Read>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
-        let page_count = reader.read_primitive::<u32>()?;
+        let page_count = match reader.version().into() {
+            (0, 0) => reader.read_primitive::<u8>()? as usize,
+            (0, 2) => reader.read_primitive::<u32>()? as usize,
 
-        let mut pages = Vec::with_capacity(page_count as usize);
+            version => anyhow::bail!(FileError::UnsupportedVersion {
+                version: version.into()
+            }),
+        };
+
+        let mut pages = Vec::with_capacity(page_count);
 
         for _ in 0..page_count {
             pages.push(reader.read_object()?);
@@ -475,7 +482,14 @@ impl Encode for HashSet<String> {
 
 impl Encode for Vec<Page> {
     fn encode<S: Write>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
-        writer.write_primitive(self.len() as u32)?;
+        match writer.version().into() {
+            (0, 0) => writer.write_primitive(self.len() as u8)?,
+            (0, 2) => writer.write_primitive(self.len() as u32)?,
+
+            version => anyhow::bail!(FileError::UnsupportedVersion {
+                version: version.into()
+            }),
+        }
 
         for page in self.iter() {
             writer.write_object(page)?;
