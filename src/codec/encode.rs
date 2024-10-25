@@ -9,16 +9,24 @@ use std::io::SeekFrom;
 use std::io::Write;
 
 pub trait Encode {
-    fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> anyhow::Result<()>;
+    fn encode<S>(&self, writer: &mut Writer<S>) -> anyhow::Result<()>
+    where
+        S: Write + Seek;
 }
 
-pub struct Writer<S: Write + Seek> {
+pub struct Writer<S>
+where
+    S: Write + Seek,
+{
     stream: S,
 
     version: Version,
 }
 
-impl<S: Write + Seek> Writer<S> {
+impl<S> Writer<S>
+where
+    S: Write + Seek,
+{
     pub fn new(stream: S) -> Self {
         Self {
             stream,
@@ -36,11 +44,17 @@ impl<S: Write + Seek> Writer<S> {
         self.version
     }
 
-    pub fn write_object<T: Encode>(&mut self, object: &T) -> anyhow::Result<()> {
+    pub fn write_object<T>(&mut self, object: &T) -> anyhow::Result<()>
+    where
+        T: Encode,
+    {
         object.encode(self)
     }
 
-    pub fn write_primitive<T: Primitive>(&mut self, data: T) -> anyhow::Result<()> {
+    pub fn write_primitive<T>(&mut self, data: T) -> anyhow::Result<()>
+    where
+        T: Primitive,
+    {
         let ptr = &data as *const T as *const u8;
         let len = std::mem::size_of::<T>();
 
@@ -57,15 +71,18 @@ impl<S: Write + Seek> Writer<S> {
         Ok(())
     }
 
-    pub fn write_bytes_with_len<T: Length>(
-        &mut self,
-        data: impl AsRef<[u8]>,
-    ) -> anyhow::Result<()> {
+    pub fn write_bytes_with_len<T>(&mut self, data: impl AsRef<[u8]>) -> anyhow::Result<()>
+    where
+        T: Length,
+    {
         self.write_len::<T>(data.as_ref().len())?;
         self.write_bytes(data)
     }
 
-    pub fn write_string_with_len<T: Length>(&mut self, data: &str) -> anyhow::Result<()> {
+    pub fn write_string_with_len<T>(&mut self, data: &str) -> anyhow::Result<()>
+    where
+        T: Length,
+    {
         self.write_len::<T>(data.len())?;
         self.write_bytes(data.as_bytes())
     }
@@ -75,7 +92,10 @@ impl<S: Write + Seek> Writer<S> {
         self.write_primitive::<u8>(0)
     }
 
-    fn write_len<T: Length>(&mut self, len: usize) -> anyhow::Result<()> {
+    fn write_len<T>(&mut self, len: usize) -> anyhow::Result<()>
+    where
+        T: Length,
+    {
         if let Ok(len) = len.try_into() {
             self.write_primitive::<T>(len)
         } else {
