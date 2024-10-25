@@ -367,7 +367,7 @@ impl Decode for Vec<Page> {
 }
 
 impl Encode for Project {
-    fn encode<S: Write>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
+    fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
         match writer.version().into() {
             (0, 0) => {
                 writer.write_primitive(self.pages().len() as u8)?;
@@ -450,7 +450,7 @@ impl Encode for Project {
 }
 
 impl Encode for (u32, u32) {
-    fn encode<S: Write>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
+    fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
         writer.write_primitive(self.0)?;
         writer.write_primitive(self.1)?;
 
@@ -459,7 +459,7 @@ impl Encode for (u32, u32) {
 }
 
 impl Encode for HashMap<Credit, HashSet<String>> {
-    fn encode<S: Write>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
+    fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
         writer.write_primitive(self.len() as u8)?;
 
         for (credit, names) in self.iter() {
@@ -472,7 +472,7 @@ impl Encode for HashMap<Credit, HashSet<String>> {
 }
 
 impl Encode for HashSet<String> {
-    fn encode<S: Write>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
+    fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
         writer.write_primitive(self.len() as u8)?;
 
         for name in self.iter() {
@@ -484,7 +484,7 @@ impl Encode for HashSet<String> {
 }
 
 impl Encode for Vec<Page> {
-    fn encode<S: Write>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
+    fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
         match writer.version().into() {
             (0, 0) => writer.write_primitive(self.len() as u8)?,
             (0, 2) => writer.write_primitive(self.len() as u32)?,

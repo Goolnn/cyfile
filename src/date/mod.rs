@@ -116,7 +116,7 @@ impl Decode for Date {
 }
 
 impl Encode for Date {
-    fn encode<S: Write>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
+    fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
         writer.write_primitive(self.year)?;
         writer.write_primitive(self.month)?;
         writer.write_primitive(self.day)?;

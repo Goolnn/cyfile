@@ -47,7 +47,7 @@ impl Text {
 }
 
 impl Encode for Text {
-    fn encode<S: Write>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
+    fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
         writer.write_string_with_len::<u32>(&self.content)?;
         writer.write_string_with_len::<u32>(&self.comment)?;
 

@@ -36,7 +36,7 @@ impl Decode for Credit {
 }
 
 impl Encode for Credit {
-    fn encode<S: Write>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
+    fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
         writer.write_primitive(*self as u8)
     }
 }

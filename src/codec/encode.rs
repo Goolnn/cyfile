@@ -2,19 +2,23 @@ use crate::codec::Length;
 use crate::codec::Primitive;
 use crate::file::VERSION_LATEST;
 use crate::Version;
+use std::fs::File;
+use std::io::Result;
+use std::io::Seek;
+use std::io::SeekFrom;
 use std::io::Write;
 
 pub trait Encode {
-    fn encode<S: Write>(&self, writer: &mut Writer<S>) -> anyhow::Result<()>;
+    fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> anyhow::Result<()>;
 }
 
-pub struct Writer<S: Write> {
+pub struct Writer<S: Write + Seek> {
     stream: S,
 
     version: Version,
 }
 
-impl<S: Write> Writer<S> {
+impl<S: Write + Seek> Writer<S> {
     pub fn new(stream: S) -> Self {
         Self {
             stream,
@@ -82,5 +86,11 @@ impl<S: Write> Writer<S> {
     #[allow(dead_code)]
     pub fn into_inner(self) -> S {
         self.stream
+    }
+}
+
+impl Seek for Writer<File> {
+    fn seek(&mut self, pos: SeekFrom) -> Result<u64> {
+        self.stream.seek(pos)
     }
 }

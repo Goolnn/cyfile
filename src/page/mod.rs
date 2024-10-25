@@ -56,7 +56,7 @@ impl Page {
 }
 
 impl Encode for Page {
-    fn encode<S: Write>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
+    fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
         match writer.version().into() {
             (0, 0) => {
                 // 图像数据
