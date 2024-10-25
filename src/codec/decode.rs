@@ -8,16 +8,24 @@ use std::io::Seek;
 use std::io::SeekFrom;
 
 pub trait Decode: Sized {
-    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> anyhow::Result<Self>;
+    fn decode<S>(reader: &mut Reader<S>) -> anyhow::Result<Self>
+    where
+        S: Read + Seek;
 }
 
-pub struct Reader<S: Read + Seek> {
+pub struct Reader<S>
+where
+    S: Read + Seek,
+{
     stream: S,
 
     version: Version,
 }
 
-impl<S: Read + Seek> Reader<S> {
+impl<S> Reader<S>
+where
+    S: Read + Seek,
+{
     pub fn new(stream: S) -> Self {
         Self {
             stream,
@@ -35,11 +43,17 @@ impl<S: Read + Seek> Reader<S> {
         self.version
     }
 
-    pub fn read_object<T: Decode>(&mut self) -> anyhow::Result<T> {
+    pub fn read_object<T>(&mut self) -> anyhow::Result<T>
+    where
+        T: Decode,
+    {
         T::decode(self)
     }
 
-    pub fn read_primitive<T: Primitive>(&mut self) -> anyhow::Result<T> {
+    pub fn read_primitive<T>(&mut self) -> anyhow::Result<T>
+    where
+        T: Primitive,
+    {
         let mut buffer = vec![0u8; size_of::<T>()];
 
         self.stream.read_exact(&mut buffer)?;
@@ -55,13 +69,19 @@ impl<S: Read + Seek> Reader<S> {
         Ok(buffer)
     }
 
-    pub fn read_bytes_with_len<T: Length>(&mut self) -> anyhow::Result<Vec<u8>> {
+    pub fn read_bytes_with_len<T>(&mut self) -> anyhow::Result<Vec<u8>>
+    where
+        T: Length,
+    {
         let len = self.read_len::<T>()?;
 
         self.read_bytes(len)
     }
 
-    pub fn read_string_with_len<T: Length>(&mut self) -> anyhow::Result<String> {
+    pub fn read_string_with_len<T>(&mut self) -> anyhow::Result<String>
+    where
+        T: Length,
+    {
         let len = self.read_len::<T>()?;
         let buffer = self.read_bytes(len)?;
 
@@ -84,7 +104,10 @@ impl<S: Read + Seek> Reader<S> {
         Ok(String::from_utf8(buffer)?)
     }
 
-    fn read_len<T: Length>(&mut self) -> anyhow::Result<usize> {
+    fn read_len<T>(&mut self) -> anyhow::Result<usize>
+    where
+        T: Length,
+    {
         if let Ok(len) = self.read_primitive::<T>()?.try_into() {
             Ok(len)
         } else {
@@ -98,7 +121,10 @@ impl<S: Read + Seek> Reader<S> {
     }
 }
 
-impl<S: Read + Seek> Seek for Reader<S> {
+impl<S> Seek for Reader<S>
+where
+    S: Read + Seek,
+{
     fn seek(&mut self, pos: SeekFrom) -> Result<u64> {
         self.stream.seek(pos)
     }
