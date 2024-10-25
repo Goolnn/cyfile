@@ -73,6 +73,58 @@ mod tests {
     use std::io::SeekFrom;
 
     #[test]
+    fn new() {
+        let text = Text::new();
+
+        assert!(text.content().is_empty());
+        assert!(text.comment().is_empty());
+    }
+
+    #[test]
+    fn with_content() {
+        let text = Text::new().with_content("Content");
+
+        assert_eq!(text.content(), "Content");
+        assert!(text.comment().is_empty());
+    }
+
+    #[test]
+    fn with_comment() {
+        let text = Text::new().with_comment("Comment");
+
+        assert!(text.content().is_empty());
+        assert_eq!(text.comment(), "Comment");
+    }
+
+    #[test]
+    fn with_content_and_comment() {
+        let text = Text::new().with_content("Content").with_comment("Comment");
+
+        assert_eq!(text.content(), "Content");
+        assert_eq!(text.comment(), "Comment");
+    }
+
+    #[test]
+    fn set_content() {
+        let mut text = Text::new().with_content("Content").with_comment("Comment");
+
+        text.set_content("New content");
+
+        assert_eq!(text.content(), "New content");
+        assert_eq!(text.comment(), "Comment");
+    }
+
+    #[test]
+    fn set_comment() {
+        let mut text = Text::new().with_content("Content").with_comment("Comment");
+
+        text.set_comment("New comment");
+
+        assert_eq!(text.content(), "Content");
+        assert_eq!(text.comment(), "New comment");
+    }
+
+    #[test]
     fn codec() -> anyhow::Result<()> {
         let text = Text::new().with_content("Content").with_comment("Comment");
 
