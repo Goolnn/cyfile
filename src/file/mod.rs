@@ -14,6 +14,7 @@ use crate::error::FileError;
 use crate::Project;
 use std::fs;
 use std::io::Read;
+use std::io::Seek;
 use std::io::Write;
 
 pub struct File {
@@ -25,7 +26,7 @@ impl File {
         File { project }
     }
 
-    pub fn open(mut stream: impl Read) -> anyhow::Result<File> {
+    pub fn open(mut stream: impl Read + Seek) -> anyhow::Result<File> {
         let mut header = [0u8; 15];
         let mut version = [0u8; 2];
 

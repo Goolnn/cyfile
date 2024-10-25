@@ -14,6 +14,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::fmt::Debug;
 use std::io::Read;
+use std::io::Seek;
 use std::io::Write;
 
 #[derive(Default, PartialEq, Clone)]
@@ -133,7 +134,7 @@ impl Project {
 }
 
 impl Decode for Project {
-    fn decode<S: Read>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
+    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
         match reader.version().into() {
             (0, 0) => {
                 let pages = reader.read_object::<Vec<Page>>()?;
@@ -303,7 +304,7 @@ impl Decode for Project {
 }
 
 impl Decode for (u32, u32) {
-    fn decode<S: Read>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
+    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
         let begin_number = reader.read_primitive()?;
         let ent_number = reader.read_primitive()?;
 
@@ -312,7 +313,7 @@ impl Decode for (u32, u32) {
 }
 
 impl Decode for HashMap<Credit, HashSet<String>> {
-    fn decode<S: Read>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
+    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
         let mut credits = HashMap::new();
 
         let credit_count = reader.read_primitive::<u8>()?;
@@ -329,7 +330,7 @@ impl Decode for HashMap<Credit, HashSet<String>> {
 }
 
 impl Decode for HashSet<String> {
-    fn decode<S: Read>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
+    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
         let mut names = HashSet::new();
 
         let name_count = reader.read_primitive::<u8>()?;
@@ -345,7 +346,7 @@ impl Decode for HashSet<String> {
 }
 
 impl Decode for Vec<Page> {
-    fn decode<S: Read>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
+    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
         let page_count = match reader.version().into() {
             (0, 0) => reader.read_primitive::<u8>()? as usize,
             (0, 2) => reader.read_primitive::<u32>()? as usize,

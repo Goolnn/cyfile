@@ -3,6 +3,7 @@ use crate::codec::Encode;
 use crate::codec::Reader;
 use crate::codec::Writer;
 use std::io::Read;
+use std::io::Seek;
 use std::io::Write;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -29,7 +30,7 @@ impl From<u8> for Credit {
 }
 
 impl Decode for Credit {
-    fn decode<S: Read>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
+    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
         Ok(reader.read_primitive::<u8>()?.into())
     }
 }

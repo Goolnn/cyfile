@@ -5,6 +5,8 @@ use crate::codec::Writer;
 use chrono::Datelike;
 use chrono::Local;
 use chrono::Timelike;
+use std::io::Read;
+use std::io::Seek;
 use std::io::Write;
 
 pub type Year = u16;
@@ -100,7 +102,7 @@ impl Default for Date {
 }
 
 impl Decode for Date {
-    fn decode<S: std::io::Read>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
+    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
         Ok(Self {
             year: reader.read_primitive()?,
             month: reader.read_primitive()?,

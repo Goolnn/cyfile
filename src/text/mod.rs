@@ -3,6 +3,7 @@ use crate::codec::Encode;
 use crate::codec::Reader;
 use crate::codec::Writer;
 use std::io::Read;
+use std::io::Seek;
 use std::io::Write;
 
 #[derive(Default, PartialEq, Eq, Debug, Clone)]
@@ -55,7 +56,7 @@ impl Encode for Text {
 }
 
 impl Decode for Text {
-    fn decode<S: Read>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
+    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
         Ok(Self {
             content: reader.read_string_with_len::<u32>()?,
             comment: reader.read_string_with_len::<u32>()?,

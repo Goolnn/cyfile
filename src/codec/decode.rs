@@ -3,18 +3,21 @@ use crate::codec::Primitive;
 use crate::file::VERSION_LATEST;
 use crate::Version;
 use std::io::Read;
+use std::io::Result;
+use std::io::Seek;
+use std::io::SeekFrom;
 
 pub trait Decode: Sized {
-    fn decode<S: Read>(reader: &mut Reader<S>) -> anyhow::Result<Self>;
+    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> anyhow::Result<Self>;
 }
 
-pub struct Reader<S: Read> {
+pub struct Reader<S: Read + Seek> {
     stream: S,
 
     version: Version,
 }
 
-impl<S: Read> Reader<S> {
+impl<S: Read + Seek> Reader<S> {
     pub fn new(stream: S) -> Self {
         Self {
             stream,
@@ -92,5 +95,11 @@ impl<S: Read> Reader<S> {
     #[allow(dead_code)]
     pub fn into_inner(self) -> S {
         self.stream
+    }
+}
+
+impl<S: Read + Seek> Seek for Reader<S> {
+    fn seek(&mut self, pos: SeekFrom) -> Result<u64> {
+        self.stream.seek(pos)
     }
 }

@@ -9,6 +9,7 @@ use image::ImageReader;
 use std::fmt::Debug;
 use std::io::Cursor;
 use std::io::Read;
+use std::io::Seek;
 use std::io::Write;
 
 #[derive(Clone, PartialEq)]
@@ -104,7 +105,7 @@ impl Encode for Page {
 }
 
 impl Decode for Page {
-    fn decode<S: Read>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
+    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
         match reader.version().into() {
             (0, 0) => {
                 let data = reader.read_bytes_with_len::<u32>()?;

@@ -4,6 +4,7 @@ use crate::codec::Reader;
 use crate::codec::Writer;
 use crate::Text;
 use std::io::Read;
+use std::io::Seek;
 use std::io::Write;
 
 #[derive(Default, PartialEq, Debug, Clone)]
@@ -111,7 +112,7 @@ impl Encode for Note {
 }
 
 impl Decode for Note {
-    fn decode<S: Read>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
+    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
         let x = reader.read_primitive()?;
         let y = reader.read_primitive()?;
 
