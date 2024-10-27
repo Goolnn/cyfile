@@ -92,6 +92,22 @@ impl Project {
         self
     }
 
+    pub fn set_cover(&mut self, cover: Vec<u8>) {
+        self.cover = cover;
+    }
+
+    pub fn set_category(&mut self, category: impl ToString) {
+        self.category = category.to_string();
+    }
+
+    pub fn set_title(&mut self, title: impl ToString) {
+        self.title = title.to_string();
+    }
+
+    pub fn set_number(&mut self, number: (u32, u32)) {
+        self.number = number;
+    }
+
     pub fn cover(&self) -> &[u8] {
         &self.cover
     }
