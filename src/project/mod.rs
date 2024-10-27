@@ -8,8 +8,8 @@ use crate::Date;
 use crate::Note;
 use crate::Page;
 use crate::Text;
-use once_cell::sync::Lazy;
-use regex::Regex;
+use scraper::Html;
+use scraper::Selector;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::fmt::Debug;
@@ -197,7 +197,7 @@ impl Decode for Project {
 
                         draft_bytes.pop();
 
-                        let draft = String::from_utf8(draft_bytes).unwrap();
+                        let mut draft = String::from_utf8(draft_bytes).unwrap();
 
                         // 校对数据
                         let revision_len = reader.read_primitive::<u16>()? as usize;
@@ -206,56 +206,36 @@ impl Decode for Project {
 
                         revision_bytes.pop();
 
-                        let revision = String::from_utf8(revision_bytes).unwrap();
+                        let mut revision = String::from_utf8(revision_bytes).unwrap();
 
                         if draft.contains("DOCTYPE HTML PUBLIC")
                             || revision.contains("DOCTYPE HTML PUBLIC")
                         {
-                            // 解析 HTML 文本
-                            static SPAN: Lazy<Regex> =
-                                Lazy::new(|| Regex::new(r"<span.*?>|</span>").unwrap());
+                            let draft_parser = Html::parse_document(&draft);
+                            let revision_parser = Html::parse_document(&revision);
 
-                            let draft = SPAN.replace_all(&draft, "").to_string();
-                            let revision = SPAN.replace_all(&revision, "").to_string();
+                            let selector = Selector::parse("p").unwrap();
 
-                            static PARA: Lazy<Regex> =
-                                Lazy::new(|| Regex::new(r"<p.*?>(.*)</p>").unwrap());
+                            draft = draft_parser
+                                .select(&selector)
+                                .map(|paragraph| paragraph.text().collect::<String>())
+                                .collect::<Vec<String>>()
+                                .join("\n");
 
-                            let extract = |text| {
-                                PARA.captures_iter(text)
-                                    .map(|capture| {
-                                        let (_, [text]) = capture.extract();
+                            revision = revision_parser
+                                .select(&selector)
+                                .map(|paragraph| paragraph.text().collect::<String>())
+                                .collect::<Vec<String>>()
+                                .join("\n");
+                        }
 
-                                        if text == "<br />" {
-                                            String::new()
-                                        } else {
-                                            text.replace("<br />", "\n")
-                                        }
-                                    })
-                                    .collect::<Vec<String>>()
-                                    .join("\n")
-                            };
+                        // 添加文本
+                        if !draft.is_empty() {
+                            note.texts_mut().push(Text::new().with_content(&draft));
+                        }
 
-                            let draft = extract(&draft);
-                            let revision = extract(&revision);
-
-                            // 添加文本
-                            if !draft.is_empty() {
-                                note.texts_mut().push(Text::new().with_content(&draft));
-                            }
-
-                            if !revision.is_empty() {
-                                note.texts_mut().push(Text::new().with_content(&revision));
-                            }
-                        } else {
-                            // 添加文本
-                            if !draft.is_empty() {
-                                note.texts_mut().push(Text::new().with_content(&draft));
-                            }
-
-                            if !revision.is_empty() {
-                                note.texts_mut().push(Text::new().with_content(&revision));
-                            }
+                        if !revision.is_empty() {
+                            note.texts_mut().push(Text::new().with_content(&revision));
                         }
 
                         page.notes_mut().push(note);
