@@ -28,6 +28,12 @@ impl Page {
         }
     }
 
+    pub fn with_notes(mut self, notes: Vec<Note>) -> Self {
+        self.notes = notes;
+
+        self
+    }
+
     pub fn with_note(mut self, note: Note) -> Self {
         self.notes.push(note);
 
@@ -38,20 +44,20 @@ impl Page {
         &self.data
     }
 
-    pub fn size(&self) -> (usize, usize) {
-        let cursor = Cursor::new(self.data());
-        let reader = ImageReader::new(cursor).with_guessed_format().unwrap();
-        let dimensions = reader.into_dimensions().unwrap();
-
-        (dimensions.0 as usize, dimensions.1 as usize)
-    }
-
     pub fn notes_mut(&mut self) -> &mut Vec<Note> {
         &mut self.notes
     }
 
     pub fn notes(&self) -> &Vec<Note> {
         &self.notes
+    }
+
+    pub fn size(&self) -> anyhow::Result<(usize, usize)> {
+        let cursor = Cursor::new(self.data());
+        let reader = ImageReader::new(cursor).with_guessed_format()?;
+        let dimensions = reader.into_dimensions()?;
+
+        Ok((dimensions.0 as usize, dimensions.1 as usize))
     }
 }
 
@@ -63,7 +69,7 @@ impl Encode for Page {
                 writer.write_bytes_with_len::<u32>(self.data())?;
 
                 // 图像尺寸
-                let (page_width, page_height) = self.size();
+                let (page_width, page_height) = self.size()?;
 
                 // 标签数量
                 writer.write_primitive(self.notes().len() as u8)?;
@@ -112,7 +118,7 @@ impl Decode for Page {
 
                 let mut page = Page::new(data);
 
-                let (page_width, page_height) = page.size();
+                let (page_width, page_height) = page.size()?;
 
                 let note_count = reader.read_primitive::<u8>()?;
 
