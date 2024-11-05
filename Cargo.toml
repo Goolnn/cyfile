@@ -10,5 +10,5 @@ crate-type = ["lib"]
 anyhow = "1.0.92"
 chrono = "0.4.38"
 image = "0.25.4"
-scraper = "0.20.0"
+scraper = "0.21.0"
 thiserror = "1.0.65"
