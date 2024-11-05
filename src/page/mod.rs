@@ -40,6 +40,14 @@ impl Page {
         self
     }
 
+    pub fn set_data(&mut self, data: Vec<u8>) {
+        self.data = data;
+    }
+
+    pub fn set_notes(&mut self, notes: Vec<Note>) {
+        self.notes = notes;
+    }
+
     pub fn data(&self) -> &[u8] {
         &self.data
     }
