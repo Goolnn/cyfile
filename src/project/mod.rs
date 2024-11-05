@@ -26,6 +26,8 @@ pub struct Project {
 
     number: (u32, u32),
 
+    summary: String,
+
     created_date: Date,
     saved_date: Date,
 
@@ -43,6 +45,8 @@ impl Project {
             title: String::new(),
 
             number: (0, 0),
+
+            summary: String::new(),
 
             created_date: Date::now(),
             saved_date: Date::now(),
@@ -77,11 +81,29 @@ impl Project {
         self
     }
 
+    pub fn with_summary(mut self, summary: impl ToString) -> Self {
+        self.summary = summary.to_string();
+
+        self
+    }
+
+    pub fn with_credits(mut self, credits: HashMap<Credit, HashSet<String>>) -> Self {
+        self.credits = credits;
+
+        self
+    }
+
     pub fn with_credit(mut self, credit: Credit, name: impl ToString) -> Self {
         self.credits
             .entry(credit)
             .or_default()
             .insert(name.to_string());
+
+        self
+    }
+
+    pub fn with_pages(mut self, pages: Vec<Page>) -> Self {
+        self.pages = pages;
 
         self
     }
@@ -108,6 +130,18 @@ impl Project {
         self.number = number;
     }
 
+    pub fn set_summary(&mut self, summary: impl ToString) {
+        self.summary = summary.to_string();
+    }
+
+    pub fn set_credits(&mut self, credits: HashMap<Credit, HashSet<String>>) {
+        self.credits = credits;
+    }
+
+    pub fn set_pages(&mut self, pages: Vec<Page>) {
+        self.pages = pages;
+    }
+
     pub fn cover(&self) -> &[u8] {
         &self.cover
     }
@@ -122,6 +156,10 @@ impl Project {
 
     pub fn number(&self) -> (u32, u32) {
         self.number
+    }
+
+    pub fn summary(&self) -> &str {
+        &self.summary
     }
 
     pub fn created_date(&self) -> Date {
@@ -195,7 +233,7 @@ impl Decode for Project {
 
                     let page = &mut pages[i as usize];
 
-                    let (page_width, page_height) = page.size();
+                    let (page_width, page_height) = page.size()?;
 
                     for _ in 0..note_count {
                         let note_x = reader.read_primitive::<u16>()? as f64;
@@ -283,6 +321,8 @@ impl Decode for Project {
                 title: reader.read_string_with_len::<u32>()?,
 
                 number: reader.read_object()?,
+
+                summary: String::new(),
 
                 created_date: reader.read_object()?,
                 saved_date: reader.read_object()?,
@@ -393,7 +433,7 @@ impl Encode for Project {
                 // 标记数据
                 for page in self.pages() {
                     // 图像尺寸
-                    let (page_width, page_height) = page.size();
+                    let (page_width, page_height) = page.size()?;
 
                     // 标记数量
                     writer.write_primitive(page.notes().len() as u8)?;
