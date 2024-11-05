@@ -59,6 +59,10 @@ impl Note {
         self.choice = choice;
     }
 
+    pub fn set_texts(&mut self, texts: Vec<Text>) {
+        self.texts = texts;
+    }
+
     pub fn x(&self) -> f64 {
         self.x
     }
