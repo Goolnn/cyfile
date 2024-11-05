@@ -35,6 +35,12 @@ impl Note {
         self
     }
 
+    pub fn with_texts(mut self, texts: Vec<Text>) -> Self {
+        self.texts = texts;
+
+        self
+    }
+
     pub fn with_text(mut self, text: Text) -> Self {
         self.texts.push(text);
 
