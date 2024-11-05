@@ -7,7 +7,7 @@ edition = "2021"
 crate-type = ["lib"]
 
 [dependencies]
-anyhow = "1.0.91"
+anyhow = "1.0.92"
 chrono = "0.4.38"
 image = "0.25.4"
 scraper = "0.20.0"
