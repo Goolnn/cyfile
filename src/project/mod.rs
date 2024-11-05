@@ -26,7 +26,7 @@ pub struct Project {
 
     number: (u32, u32),
 
-    summary: String,
+    comment: String,
 
     created_date: Date,
     saved_date: Date,
@@ -46,7 +46,7 @@ impl Project {
 
             number: (0, 0),
 
-            summary: String::new(),
+            comment: String::new(),
 
             created_date: Date::now(),
             saved_date: Date::now(),
@@ -81,8 +81,8 @@ impl Project {
         self
     }
 
-    pub fn with_summary(mut self, summary: impl ToString) -> Self {
-        self.summary = summary.to_string();
+    pub fn with_comment(mut self, comment: impl ToString) -> Self {
+        self.comment = comment.to_string();
 
         self
     }
@@ -130,8 +130,8 @@ impl Project {
         self.number = number;
     }
 
-    pub fn set_summary(&mut self, summary: impl ToString) {
-        self.summary = summary.to_string();
+    pub fn set_comment(&mut self, comment: impl ToString) {
+        self.comment = comment.to_string();
     }
 
     pub fn set_credits(&mut self, credits: HashMap<Credit, HashSet<String>>) {
@@ -158,8 +158,8 @@ impl Project {
         self.number
     }
 
-    pub fn summary(&self) -> &str {
-        &self.summary
+    pub fn comment(&self) -> &str {
+        &self.comment
     }
 
     pub fn created_date(&self) -> Date {
@@ -322,7 +322,7 @@ impl Decode for Project {
 
                 number: reader.read_object()?,
 
-                summary: String::new(),
+                comment: String::new(),
 
                 created_date: reader.read_object()?,
                 saved_date: reader.read_object()?,
