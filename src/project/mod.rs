@@ -87,6 +87,18 @@ impl Project {
         self
     }
 
+    pub(crate) fn with_created_date(mut self, created_date: Date) -> Self {
+        self.created_date = created_date;
+
+        self
+    }
+
+    pub(crate) fn with_updated_date(mut self, updated_date: Date) -> Self {
+        self.updated_date = updated_date;
+
+        self
+    }
+
     pub fn with_credits(mut self, credits: HashMap<Credit, HashSet<String>>) -> Self {
         self.credits = credits;
 
