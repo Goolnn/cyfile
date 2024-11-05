@@ -101,12 +101,7 @@ impl Encode for Page {
 
             (0, 2) => {
                 writer.write_bytes_with_len::<u32>(self.data())?;
-
-                writer.write_primitive(self.notes().len() as u32)?;
-
-                for note in self.notes() {
-                    writer.write_object(note)?;
-                }
+                writer.write_objects::<u32, Note>(self.notes())?;
 
                 Ok(())
             }
@@ -153,16 +148,9 @@ impl Decode for Page {
 
             (0, 2) => {
                 let data = reader.read_bytes_with_len::<u32>()?;
+                let notes = reader.read_objects::<u32, Note>()?;
 
-                let mut page = Page::new(data);
-
-                let note_count = reader.read_primitive::<u32>()?;
-
-                for _ in 0..note_count {
-                    let note = reader.read_object()?;
-
-                    page.notes_mut().push(note);
-                }
+                let page = Page::new(data).with_notes(notes);
 
                 Ok(page)
             }

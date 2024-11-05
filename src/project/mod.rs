@@ -383,20 +383,14 @@ impl Decode for HashSet<String> {
 
 impl Decode for Vec<Page> {
     fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
-        let page_count = match reader.version().into() {
-            (0, 0) => reader.read_primitive::<u8>()? as usize,
-            (0, 2) => reader.read_primitive::<u32>()? as usize,
+        let pages = match reader.version().into() {
+            (0, 0) => reader.read_objects::<u8, Page>(),
+            (0, 2) => reader.read_objects::<u32, Page>(),
 
             version => anyhow::bail!(FileError::UnsupportedVersion {
                 version: version.into()
             }),
-        };
-
-        let mut pages = Vec::with_capacity(page_count);
-
-        for _ in 0..page_count {
-            pages.push(reader.read_object()?);
-        }
+        }?;
 
         Ok(pages)
     }
@@ -406,11 +400,7 @@ impl Encode for Project {
     fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
         match writer.version().into() {
             (0, 0) => {
-                writer.write_primitive(self.pages().len() as u8)?;
-
-                for page in self.pages() {
-                    writer.write_object(page)?;
-                }
+                writer.write_objects::<u8, Page>(&self.pages)?;
 
                 Ok(())
             }
@@ -522,16 +512,12 @@ impl Encode for HashSet<String> {
 impl Encode for Vec<Page> {
     fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
         match writer.version().into() {
-            (0, 0) => writer.write_primitive(self.len() as u8)?,
-            (0, 2) => writer.write_primitive(self.len() as u32)?,
+            (0, 0) => writer.write_objects::<u8, Page>(self)?,
+            (0, 2) => writer.write_objects::<u32, Page>(self)?,
 
             version => anyhow::bail!(FileError::UnsupportedVersion {
                 version: version.into()
             }),
-        }
-
-        for page in self.iter() {
-            writer.write_object(page)?;
         }
 
         Ok(())

@@ -50,6 +50,22 @@ where
         T::decode(self)
     }
 
+    pub fn read_objects<L, T>(&mut self) -> anyhow::Result<Vec<T>>
+    where
+        L: Length,
+        T: Decode,
+    {
+        let len = self.read_len::<L>()?;
+
+        let mut objects = Vec::with_capacity(len);
+
+        for _ in 0..len {
+            objects.push(self.read_object()?);
+        }
+
+        Ok(objects)
+    }
+
     pub fn read_primitive<T>(&mut self) -> anyhow::Result<T>
     where
         T: Primitive,

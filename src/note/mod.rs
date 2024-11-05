@@ -111,11 +111,7 @@ impl Encode for Note {
 
         writer.write_primitive(self.choice)?;
 
-        writer.write_primitive(self.texts.len() as u32)?;
-
-        for text in self.texts() {
-            writer.write_object(text)?;
-        }
+        writer.write_objects::<u32, Text>(self.texts())?;
 
         Ok(())
     }
@@ -128,13 +124,7 @@ impl Decode for Note {
 
         let choice = reader.read_primitive()?;
 
-        let len = reader.read_primitive::<u32>()?;
-
-        let mut texts = Vec::new();
-
-        for _ in 0..len {
-            texts.push(reader.read_object()?);
-        }
+        let texts = reader.read_objects::<u32, Text>()?;
 
         Ok(Self {
             x,

@@ -51,6 +51,20 @@ where
         object.encode(self)
     }
 
+    pub fn write_objects<L, T>(&mut self, objects: &Vec<T>) -> anyhow::Result<()>
+    where
+        L: Length,
+        T: Encode,
+    {
+        self.write_len::<L>(objects.len())?;
+
+        for object in objects {
+            object.encode(self)?;
+        }
+
+        Ok(())
+    }
+
     pub fn write_primitive<T>(&mut self, data: T) -> anyhow::Result<()>
     where
         T: Primitive,
