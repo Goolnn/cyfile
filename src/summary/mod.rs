@@ -1,7 +1,8 @@
 use crate::Date;
+use crate::Project;
 
 pub struct Summary {
-    pub cover: Option<Vec<u8>>,
+    pub cover: Vec<u8>,
 
     pub category: String,
     pub title: String,
@@ -14,4 +15,15 @@ pub struct Summary {
     pub updated_date: Date,
 }
 
-impl Summary {}
+impl From<Summary> for Project {
+    fn from(value: Summary) -> Self {
+        Self::new()
+            .with_cover(value.cover)
+            .with_category(value.category)
+            .with_title(value.title)
+            .with_number(value.number)
+            .with_comment(value.comment)
+            .with_created_date(value.created_date)
+            .with_updated_date(value.updated_date)
+    }
+}
