@@ -1,5 +1,4 @@
 use cyfile::Credit;
-use cyfile::File;
 use cyfile::Note;
 use cyfile::Page;
 use cyfile::Project;
@@ -34,7 +33,5 @@ fn main() {
         .with_credit(Credit::Supervisors, "Chaibai")
         .with_page(page);
 
-    let file = File::create(project);
-
-    println!("{:#?}", file.project());
+    println!("{:#?}", project);
 }

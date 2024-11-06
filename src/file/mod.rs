@@ -14,19 +14,15 @@ use crate::error::FileError;
 use crate::Project;
 use std::fs;
 use std::io::Read;
-use std::io::Seek;
 use std::io::Write;
+use std::path::Path;
 
-pub struct File {
-    project: Project,
-}
+pub struct File;
 
 impl File {
-    pub fn create(project: Project) -> File {
-        File { project }
-    }
+    pub fn open(path: impl AsRef<Path>) -> anyhow::Result<Project> {
+        let mut stream = fs::File::open(path)?;
 
-    pub fn open(mut stream: impl Read + Seek) -> anyhow::Result<File> {
         let mut header = [0u8; 15];
         let mut version = [0u8; 2];
 
@@ -47,18 +43,10 @@ impl File {
 
         let project = reader.read_object()?;
 
-        Ok(File { project })
+        Ok(project)
     }
 
-    pub fn project_mut(&mut self) -> &mut Project {
-        &mut self.project
-    }
-
-    pub fn project(&self) -> &Project {
-        &self.project
-    }
-
-    pub fn export(&self, arguments: ExportArguments) -> anyhow::Result<()> {
+    pub fn export(project: &Project, arguments: ExportArguments) -> anyhow::Result<()> {
         if arguments.filepath.is_dir() {
             anyhow::bail!(FileError::PathIsDirectory {
                 path: arguments.filepath
@@ -82,7 +70,7 @@ impl File {
         // 写入项目数据
         let mut writer = Writer::new(file).with_version(arguments.version);
 
-        writer.write_object(&self.project)?;
+        writer.write_object(project)?;
 
         Ok(())
     }
