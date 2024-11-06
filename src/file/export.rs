@@ -1,4 +1,4 @@
-use crate::file::constants::VERSION_LATEST;
+use crate::file::data::VERSION_LATEST;
 use crate::Version;
 use std::path::Path;
 use std::path::PathBuf;

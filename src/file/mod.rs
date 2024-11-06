@@ -1,10 +1,10 @@
-mod constants;
+mod data;
 mod export;
 mod version;
 
-pub use constants::HEADER_DATA;
-pub use constants::VERSIONS;
-pub use constants::VERSION_LATEST;
+pub use data::HEADER_DATA;
+pub use data::VERSIONS;
+pub use data::VERSION_LATEST;
 pub use export::ExportArguments;
 pub use version::Version;
 
@@ -33,13 +33,13 @@ impl File {
         stream.read_exact(&mut header)?;
         stream.read_exact(&mut version)?;
 
-        if header != constants::HEADER_DATA {
+        if header != data::HEADER_DATA {
             anyhow::bail!(FileError::InvalidHeader);
         }
 
         let version = Version::from(version);
 
-        if !constants::VERSIONS.contains(&version.into()) {
+        if !data::VERSIONS.contains(&version.into()) {
             anyhow::bail!(FileError::UnsupportedVersion { version });
         }
 
