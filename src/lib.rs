@@ -19,7 +19,6 @@ mod file;
 mod note;
 mod page;
 mod project;
-mod summary;
 mod text;
 
 pub use credit::Credit;
@@ -30,5 +29,4 @@ pub use file::Version;
 pub use note::Note;
 pub use page::Page;
 pub use project::Project;
-pub use summary::Summary;
 pub use text::Text;
