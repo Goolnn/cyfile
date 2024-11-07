@@ -90,7 +90,13 @@ impl Encode for Page {
                     writer.write_primitive(note_y)?;
 
                     // 合并文本
-                    let merged_text = note.merge_texts();
+                    let (content, comment) = note.merge_texts();
+
+                    let merged_text = [content, comment]
+                        .into_iter()
+                        .filter(|text| !text.is_empty())
+                        .collect::<Vec<String>>()
+                        .join("\n\n");
 
                     writer.write_primitive(merged_text.len() as u16 + 1)?;
                     writer.write_string_with_nil(&merged_text)?;
@@ -220,7 +226,15 @@ mod tests {
             assert!(read_note.x() - note.x() <= 0.1);
             assert!(read_note.y() - note.y() <= 0.1);
 
-            assert_eq!(read_note.texts()[0].content(), note.merge_texts());
+            let (content, comment) = note.merge_texts();
+
+            let merged_text = [content, comment]
+                .into_iter()
+                .filter(|text| !text.is_empty())
+                .collect::<Vec<String>>()
+                .join("\n\n");
+
+            assert_eq!(read_note.texts()[0].content(), merged_text);
         }
     }
 

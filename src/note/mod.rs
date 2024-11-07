@@ -83,24 +83,34 @@ impl Note {
         &self.texts
     }
 
-    pub(crate) fn merge_texts(&self) -> String {
-        self.texts
+    pub(crate) fn merge_texts(&self) -> (String, String) {
+        let content = self
+            .texts
             .iter()
-            .map(|text| {
-                let mut result = String::new();
-
-                if text.content().is_empty() && !text.comment().is_empty() {
-                    result.push_str(text.comment());
-                } else if text.comment().is_empty() && !text.content().is_empty() {
-                    result.push_str(text.content());
+            .filter_map(|text| {
+                if !text.content().is_empty() {
+                    Some(text.content())
                 } else {
-                    result.push_str(format!("{}\n\n{}", text.content(), text.comment()).as_ref());
+                    None
                 }
-
-                result
             })
-            .collect::<Vec<String>>()
-            .join("\n\n")
+            .collect::<Vec<&str>>()
+            .join("\n\n");
+
+        let comment = self
+            .texts
+            .iter()
+            .filter_map(|text| {
+                if !text.comment().is_empty() {
+                    Some(text.comment())
+                } else {
+                    None
+                }
+            })
+            .collect::<Vec<&str>>()
+            .join("\n\n");
+
+        (content, comment)
     }
 }
 

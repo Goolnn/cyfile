@@ -443,14 +443,14 @@ impl Encode for Project {
                         writer.write_primitive(note_y)?;
 
                         // 合并文本
-                        let merged_text = note.merge_texts();
+                        let (content, comment) = note.merge_texts();
 
                         // 初译数据
-                        writer.write_primitive(merged_text.len() as u16 + 1)?;
-                        writer.write_string_with_nil(&merged_text)?;
+                        writer.write_primitive(content.len() as u16 + 1)?;
+                        writer.write_string_with_nil(&content)?;
                         // 校对数据
-                        writer.write_primitive(1u16)?;
-                        writer.write_string_with_nil("")?;
+                        writer.write_primitive(comment.len() as u16 + 1)?;
+                        writer.write_string_with_nil(&comment)?;
                     }
                 }
 
@@ -620,7 +620,10 @@ mod tests {
                 assert!(read_note.x() - note.x() <= 0.1);
                 assert!(read_note.y() - note.y() <= 0.1);
 
-                assert_eq!(read_note.texts()[0].content(), note.merge_texts());
+                let (content, comment) = note.merge_texts();
+
+                assert_eq!(read_note.texts()[0].content(), content);
+                assert_eq!(read_note.texts()[0].comment(), comment);
             }
         }
     }
@@ -680,7 +683,10 @@ mod tests {
                 assert!(read_note.x() - note.x() <= 0.1);
                 assert!(read_note.y() - note.y() <= 0.1);
 
-                assert_eq!(read_note.texts()[0].content(), note.merge_texts());
+                let (content, comment) = note.merge_texts();
+
+                assert_eq!(read_note.texts()[0].content(), content);
+                assert_eq!(read_note.texts()[0].comment(), comment);
             }
         }
     }
