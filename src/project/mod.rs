@@ -262,9 +262,11 @@ impl Decode for Project {
 
                         let mut revision = String::from_utf8(revision_bytes).unwrap();
 
-                        if draft.contains("DOCTYPE HTML PUBLIC")
-                            || revision.contains("DOCTYPE HTML PUBLIC")
-                        {
+                        // 判断是否为 HTML
+                        let draft_is_html = draft.contains("DOCTYPE HTML PUBLIC");
+                        let revision_is_html = revision.contains("DOCTYPE HTML PUBLIC");
+
+                        if draft_is_html || revision_is_html {
                             let draft_parser = Html::parse_document(&draft);
                             let revision_parser = Html::parse_document(&revision);
 
