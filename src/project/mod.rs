@@ -557,13 +557,366 @@ impl Debug for Project {
 mod tests {
     use crate::codec::Reader;
     use crate::codec::Writer;
+    use crate::Credit;
     use crate::Note;
     use crate::Page;
     use crate::Project;
     use crate::Text;
+    use std::collections::HashSet;
     use std::fs;
     use std::io::Cursor;
     use std::io::Seek;
+
+    #[test]
+    fn new() {
+        let project = Project::new();
+
+        assert!(project.cover().is_empty());
+
+        assert!(project.category().is_empty());
+        assert!(project.title().is_empty());
+
+        assert_eq!(project.number(), (0, 0));
+
+        assert!(project.comment().is_empty());
+
+        assert!(project.credits().is_empty());
+
+        assert!(project.pages().is_empty());
+    }
+
+    #[test]
+    fn with_cover() {
+        let cover = fs::read(r"tests/images/0.png").unwrap();
+        let project = Project::new().with_cover(cover.clone());
+
+        assert_eq!(project.cover(), cover.as_slice());
+    }
+
+    #[test]
+    fn with_category() {
+        let project = Project::new().with_category("类别");
+
+        assert_eq!(project.category(), "类别");
+    }
+
+    #[test]
+    fn with_title() {
+        let project = Project::new().with_title("标题");
+
+        assert_eq!(project.title(), "标题");
+    }
+
+    #[test]
+    fn with_number() {
+        let project = Project::new().with_number((1, 2));
+
+        assert_eq!(project.number(), (1, 2));
+    }
+
+    #[test]
+    fn with_comment() {
+        let project = Project::new().with_comment("备注");
+
+        assert_eq!(project.comment(), "备注");
+    }
+
+    #[test]
+    fn with_credits() {
+        let mut credits = std::collections::HashMap::new();
+
+        credits.insert(Credit::Artists, HashSet::from_iter(["作者".to_string()]));
+        credits.insert(
+            Credit::Translators,
+            HashSet::from_iter(["译者".to_string()]),
+        );
+        credits.insert(
+            Credit::Proofreaders,
+            HashSet::from_iter(["校对".to_string()]),
+        );
+        credits.insert(Credit::Retouchers, HashSet::from_iter(["修图".to_string()]));
+        credits.insert(
+            Credit::Typesetters,
+            HashSet::from_iter(["嵌字".to_string()]),
+        );
+        credits.insert(
+            Credit::Supervisors,
+            HashSet::from_iter(["监修".to_string()]),
+        );
+
+        let project = Project::new().with_credits(credits.clone());
+
+        assert_eq!(project.credits(), &credits);
+    }
+
+    #[test]
+    fn with_credit() {
+        let project = Project::new()
+            .with_credit(Credit::Artists, "作者")
+            .with_credit(Credit::Translators, "译者")
+            .with_credit(Credit::Proofreaders, "校对")
+            .with_credit(Credit::Retouchers, "修图")
+            .with_credit(Credit::Typesetters, "嵌字")
+            .with_credit(Credit::Supervisors, "监修");
+
+        assert!(project.credits().contains_key(&Credit::Artists));
+        assert!(project.credits().contains_key(&Credit::Translators));
+        assert!(project.credits().contains_key(&Credit::Proofreaders));
+        assert!(project.credits().contains_key(&Credit::Retouchers));
+        assert!(project.credits().contains_key(&Credit::Typesetters));
+        assert!(project.credits().contains_key(&Credit::Supervisors));
+
+        assert!(project.credits()[&Credit::Artists].contains("作者"));
+        assert!(project.credits()[&Credit::Translators].contains("译者"));
+        assert!(project.credits()[&Credit::Proofreaders].contains("校对"));
+        assert!(project.credits()[&Credit::Retouchers].contains("修图"));
+        assert!(project.credits()[&Credit::Typesetters].contains("嵌字"));
+        assert!(project.credits()[&Credit::Supervisors].contains("监修"));
+    }
+
+    #[test]
+    fn with_pages() {
+        let image = fs::read(r"tests/images/0.png").unwrap();
+
+        let project = Project::new().with_pages(vec![
+            Page::new(image.clone()).with_note(
+                Note::new()
+                    .with_text(Text::new().with_content("content_1_1_1"))
+                    .with_text(Text::new().with_content("content_1_1_2")),
+            ),
+            Page::new(image.clone()).with_note(
+                Note::new()
+                    .with_text(Text::new().with_content("content_2_1_1"))
+                    .with_text(Text::new().with_content("content_2_1_2")),
+            ),
+        ]);
+
+        assert_eq!(project.pages().len(), 2);
+
+        assert_eq!(project.pages()[0].data(), image.as_slice());
+        assert_eq!(project.pages()[1].data(), image.as_slice());
+
+        assert_eq!(project.pages()[0].notes().len(), 1);
+        assert_eq!(project.pages()[1].notes().len(), 1);
+
+        assert_eq!(project.pages()[0].notes()[0].texts().len(), 2);
+        assert_eq!(project.pages()[1].notes()[0].texts().len(), 2);
+
+        assert_eq!(
+            project.pages()[0].notes()[0].texts()[0].content(),
+            "content_1_1_1"
+        );
+        assert_eq!(
+            project.pages()[0].notes()[0].texts()[1].content(),
+            "content_1_1_2"
+        );
+
+        assert_eq!(
+            project.pages()[1].notes()[0].texts()[0].content(),
+            "content_2_1_1"
+        );
+        assert_eq!(
+            project.pages()[1].notes()[0].texts()[1].content(),
+            "content_2_1_2"
+        );
+    }
+
+    #[test]
+    fn with_page() {
+        let image = fs::read(r"tests/images/0.png").unwrap();
+
+        let project = Project::new()
+            .with_page(
+                Page::new(image.clone())
+                    .with_note(
+                        Note::new()
+                            .with_text(Text::new().with_content("content_1_1_1"))
+                            .with_text(Text::new().with_content("content_1_1_2")),
+                    )
+                    .with_note(
+                        Note::new()
+                            .with_text(Text::new().with_content("content_1_2_1"))
+                            .with_text(Text::new().with_content("content_1_2_2"))
+                            .with_text(Text::new().with_content("content_1_2_3")),
+                    ),
+            )
+            .with_page(
+                Page::new(image.clone()).with_note(
+                    Note::new()
+                        .with_text(Text::new().with_content("content_2_1_1"))
+                        .with_text(Text::new().with_content("content_2_1_2")),
+                ),
+            );
+
+        assert_eq!(project.pages().len(), 2);
+
+        assert_eq!(project.pages()[0].data(), image.as_slice());
+        assert_eq!(project.pages()[1].data(), image.as_slice());
+
+        assert_eq!(project.pages()[0].notes().len(), 2);
+        assert_eq!(project.pages()[1].notes().len(), 1);
+
+        assert_eq!(project.pages()[0].notes()[0].texts().len(), 2);
+        assert_eq!(project.pages()[0].notes()[1].texts().len(), 3);
+
+        assert_eq!(project.pages()[1].notes()[0].texts().len(), 2);
+
+        assert_eq!(
+            project.pages()[0].notes()[0].texts()[0].content(),
+            "content_1_1_1"
+        );
+        assert_eq!(
+            project.pages()[0].notes()[0].texts()[1].content(),
+            "content_1_1_2"
+        );
+
+        assert_eq!(
+            project.pages()[0].notes()[1].texts()[0].content(),
+            "content_1_2_1"
+        );
+        assert_eq!(
+            project.pages()[0].notes()[1].texts()[1].content(),
+            "content_1_2_2"
+        );
+        assert_eq!(
+            project.pages()[0].notes()[1].texts()[2].content(),
+            "content_1_2_3"
+        );
+
+        assert_eq!(
+            project.pages()[1].notes()[0].texts()[0].content(),
+            "content_2_1_1"
+        );
+        assert_eq!(
+            project.pages()[1].notes()[0].texts()[1].content(),
+            "content_2_1_2"
+        );
+    }
+
+    #[test]
+    fn set_cover() {
+        let cover = fs::read(r"tests/images/0.png").unwrap();
+        let mut project = Project::new();
+
+        project.set_cover(cover.clone());
+
+        assert_eq!(project.cover(), cover.as_slice());
+    }
+
+    #[test]
+    fn set_category() {
+        let mut project = Project::new();
+
+        project.set_category("类别");
+
+        assert_eq!(project.category(), "类别");
+    }
+
+    #[test]
+    fn set_title() {
+        let mut project = Project::new();
+
+        project.set_title("标题");
+
+        assert_eq!(project.title(), "标题");
+    }
+
+    #[test]
+    fn set_number() {
+        let mut project = Project::new();
+
+        project.set_number((1, 2));
+
+        assert_eq!(project.number(), (1, 2));
+    }
+
+    #[test]
+    fn set_comment() {
+        let mut project = Project::new();
+
+        project.set_comment("备注");
+
+        assert_eq!(project.comment(), "备注");
+    }
+
+    #[test]
+    fn set_credits() {
+        let mut project = Project::new();
+
+        let mut credits = std::collections::HashMap::new();
+
+        credits.insert(Credit::Artists, HashSet::from_iter(["作者".to_string()]));
+        credits.insert(
+            Credit::Translators,
+            HashSet::from_iter(["译者".to_string()]),
+        );
+        credits.insert(
+            Credit::Proofreaders,
+            HashSet::from_iter(["校对".to_string()]),
+        );
+        credits.insert(Credit::Retouchers, HashSet::from_iter(["修图".to_string()]));
+        credits.insert(
+            Credit::Typesetters,
+            HashSet::from_iter(["嵌字".to_string()]),
+        );
+        credits.insert(
+            Credit::Supervisors,
+            HashSet::from_iter(["监修".to_string()]),
+        );
+
+        project.set_credits(credits.clone());
+
+        assert_eq!(project.credits(), &credits);
+    }
+
+    #[test]
+    fn set_pages() {
+        let image = fs::read(r"tests/images/0.png").unwrap();
+
+        let mut project = Project::new();
+
+        project.set_pages(vec![
+            Page::new(image.clone()).with_note(
+                Note::new()
+                    .with_text(Text::new().with_content("content_1_1_1"))
+                    .with_text(Text::new().with_content("content_1_1_2")),
+            ),
+            Page::new(image.clone()).with_note(
+                Note::new()
+                    .with_text(Text::new().with_content("content_2_1_1"))
+                    .with_text(Text::new().with_content("content_2_1_2")),
+            ),
+        ]);
+
+        assert_eq!(project.pages().len(), 2);
+
+        assert_eq!(project.pages()[0].data(), image.as_slice());
+        assert_eq!(project.pages()[1].data(), image.as_slice());
+
+        assert_eq!(project.pages()[0].notes().len(), 1);
+        assert_eq!(project.pages()[1].notes().len(), 1);
+
+        assert_eq!(project.pages()[0].notes()[0].texts().len(), 2);
+        assert_eq!(project.pages()[1].notes()[0].texts().len(), 2);
+
+        assert_eq!(
+            project.pages()[0].notes()[0].texts()[0].content(),
+            "content_1_1_1"
+        );
+        assert_eq!(
+            project.pages()[0].notes()[0].texts()[1].content(),
+            "content_1_1_2"
+        );
+
+        assert_eq!(
+            project.pages()[1].notes()[0].texts()[0].content(),
+            "content_2_1_1"
+        );
+        assert_eq!(
+            project.pages()[1].notes()[0].texts()[1].content(),
+            "content_2_1_2"
+        );
+    }
 
     #[test]
     fn codec_for_version_0_0() {
