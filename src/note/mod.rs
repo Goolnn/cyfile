@@ -114,19 +114,6 @@ impl Note {
     }
 }
 
-impl Encode for Note {
-    fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
-        writer.write_primitive(self.x)?;
-        writer.write_primitive(self.y)?;
-
-        writer.write_primitive(self.choice)?;
-
-        writer.write_objects::<u32, Text>(self.texts())?;
-
-        Ok(())
-    }
-}
-
 impl Decode for Note {
     fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
         let x = reader.read_primitive()?;
@@ -147,6 +134,19 @@ impl Decode for Note {
     }
 }
 
+impl Encode for Note {
+    fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
+        writer.write_primitive(self.x)?;
+        writer.write_primitive(self.y)?;
+
+        writer.write_primitive(self.choice)?;
+
+        writer.write_objects::<u32, Text>(self.texts())?;
+
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::codec::Reader;
@@ -156,6 +156,184 @@ mod tests {
     use std::io::Cursor;
     use std::io::Seek;
     use std::io::SeekFrom;
+
+    #[test]
+    fn new() {
+        let note = Note::new();
+
+        assert_eq!(note.x(), 0.0);
+        assert_eq!(note.y(), 0.0);
+
+        assert_eq!(note.choice(), 0);
+
+        assert!(note.texts().is_empty());
+    }
+
+    #[test]
+    fn with_coordinate() {
+        let note = Note::new().with_coordinate(0.5, 0.5);
+
+        assert_eq!(note.x(), 0.5);
+        assert_eq!(note.y(), 0.5);
+
+        assert_eq!(note.choice(), 0);
+
+        assert!(note.texts().is_empty());
+    }
+
+    #[test]
+    fn with_choice() {
+        let note = Note::new().with_choice(1);
+
+        assert_eq!(note.x(), 0.0);
+        assert_eq!(note.y(), 0.0);
+
+        assert_eq!(note.choice(), 1);
+
+        assert!(note.texts().is_empty());
+    }
+
+    #[test]
+    fn with_texts() {
+        let note = Note::new().with_texts(vec![
+            Text::new()
+                .with_content("content_1")
+                .with_comment("comment_1"),
+            Text::new()
+                .with_content("content_2")
+                .with_comment("comment_2"),
+            Text::new()
+                .with_content("content_3")
+                .with_comment("comment_3"),
+        ]);
+
+        assert_eq!(note.x(), 0.0);
+        assert_eq!(note.y(), 0.0);
+
+        assert_eq!(note.choice(), 0);
+
+        assert_eq!(note.texts().len(), 3);
+
+        assert_eq!(note.texts()[0].content(), "content_1");
+        assert_eq!(note.texts()[0].comment(), "comment_1");
+
+        assert_eq!(note.texts()[1].content(), "content_2");
+        assert_eq!(note.texts()[1].comment(), "comment_2");
+
+        assert_eq!(note.texts()[2].content(), "content_3");
+        assert_eq!(note.texts()[2].comment(), "comment_3");
+    }
+
+    #[test]
+    fn with_text() {
+        let note = Note::new()
+            .with_text(
+                Text::new()
+                    .with_content("content_1")
+                    .with_comment("comment_1"),
+            )
+            .with_text(
+                Text::new()
+                    .with_content("content_2")
+                    .with_comment("comment_2"),
+            )
+            .with_text(
+                Text::new()
+                    .with_content("content_3")
+                    .with_comment("comment_3"),
+            );
+
+        assert_eq!(note.x(), 0.0);
+        assert_eq!(note.y(), 0.0);
+
+        assert_eq!(note.choice(), 0);
+
+        assert_eq!(note.texts().len(), 3);
+
+        assert_eq!(note.texts()[0].content(), "content_1");
+        assert_eq!(note.texts()[0].comment(), "comment_1");
+
+        assert_eq!(note.texts()[1].content(), "content_2");
+        assert_eq!(note.texts()[1].comment(), "comment_2");
+
+        assert_eq!(note.texts()[2].content(), "content_3");
+        assert_eq!(note.texts()[2].comment(), "comment_3");
+    }
+
+    #[test]
+    fn set_x() {
+        let mut note = Note::new();
+
+        note.set_x(0.5);
+
+        assert_eq!(note.x(), 0.5);
+        assert_eq!(note.y(), 0.0);
+
+        assert_eq!(note.choice(), 0);
+
+        assert!(note.texts().is_empty());
+    }
+
+    #[test]
+    fn set_y() {
+        let mut note = Note::new();
+
+        note.set_y(0.5);
+
+        assert_eq!(note.x(), 0.0);
+        assert_eq!(note.y(), 0.5);
+
+        assert_eq!(note.choice(), 0);
+
+        assert!(note.texts().is_empty());
+    }
+
+    #[test]
+    fn set_choice() {
+        let mut note = Note::new();
+
+        note.set_choice(1);
+
+        assert_eq!(note.x(), 0.0);
+        assert_eq!(note.y(), 0.0);
+
+        assert_eq!(note.choice(), 1);
+
+        assert!(note.texts().is_empty());
+    }
+
+    #[test]
+    fn set_texts() {
+        let mut note = Note::new();
+
+        note.set_texts(vec![
+            Text::new()
+                .with_content("content_1")
+                .with_comment("comment_1"),
+            Text::new()
+                .with_content("content_2")
+                .with_comment("comment_2"),
+            Text::new()
+                .with_content("content_3")
+                .with_comment("comment_3"),
+        ]);
+
+        assert_eq!(note.x(), 0.0);
+        assert_eq!(note.y(), 0.0);
+
+        assert_eq!(note.choice(), 0);
+
+        assert_eq!(note.texts().len(), 3);
+
+        assert_eq!(note.texts()[0].content(), "content_1");
+        assert_eq!(note.texts()[0].comment(), "comment_1");
+
+        assert_eq!(note.texts()[1].content(), "content_2");
+        assert_eq!(note.texts()[1].comment(), "comment_2");
+
+        assert_eq!(note.texts()[2].content(), "content_3");
+        assert_eq!(note.texts()[2].comment(), "comment_3");
+    }
 
     #[test]
     fn codec() {
