@@ -69,6 +69,55 @@ impl Page {
     }
 }
 
+impl Decode for Page {
+    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
+        match reader.version().into() {
+            (0, 0) => {
+                let data = reader.read_bytes_with_len::<u32>()?;
+
+                let mut page = Page::new(data);
+
+                let (page_width, page_height) = page.size()?;
+
+                let note_count = reader.read_primitive::<u8>()?;
+
+                for _ in 0..note_count {
+                    let note_x = reader.read_primitive::<u16>()? as f64;
+                    let note_y = reader.read_primitive::<u16>()? as f64;
+
+                    reader.read_primitive::<u16>()?;
+
+                    let content = reader.read_string_with_nil()?;
+
+                    let mut note = Note::new().with_coordinate(
+                        note_x / page_width as f64 * 2.0 - 1.0,
+                        1.0 - note_y / page_height as f64 * 2.0,
+                    );
+
+                    note.texts_mut().push(Text::new().with_content(&content));
+
+                    page.notes_mut().push(note);
+                }
+
+                Ok(page)
+            }
+
+            (0, 2) => {
+                let data = reader.read_bytes_with_len::<u32>()?;
+                let notes = reader.read_objects::<u32, Note>()?;
+
+                let page = Page::new(data).with_notes(notes);
+
+                Ok(page)
+            }
+
+            version => anyhow::bail!(FileError::UnsupportedVersion {
+                version: version.into()
+            }),
+        }
+    }
+}
+
 impl Encode for Page {
     fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
         match writer.version().into() {
@@ -110,55 +159,6 @@ impl Encode for Page {
                 writer.write_objects::<u32, Note>(self.notes())?;
 
                 Ok(())
-            }
-
-            version => anyhow::bail!(FileError::UnsupportedVersion {
-                version: version.into()
-            }),
-        }
-    }
-}
-
-impl Decode for Page {
-    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
-        match reader.version().into() {
-            (0, 0) => {
-                let data = reader.read_bytes_with_len::<u32>()?;
-
-                let mut page = Page::new(data);
-
-                let (page_width, page_height) = page.size()?;
-
-                let note_count = reader.read_primitive::<u8>()?;
-
-                for _ in 0..note_count {
-                    let note_x = reader.read_primitive::<u16>()? as f64;
-                    let note_y = reader.read_primitive::<u16>()? as f64;
-
-                    reader.read_primitive::<u16>()?;
-
-                    let content = reader.read_string_with_nil()?;
-
-                    let mut note = Note::new().with_coordinate(
-                        note_x / page_width as f64 * 2.0 - 1.0,
-                        1.0 - note_y / page_height as f64 * 2.0,
-                    );
-
-                    note.texts_mut().push(Text::new().with_content(&content));
-
-                    page.notes_mut().push(note);
-                }
-
-                Ok(page)
-            }
-
-            (0, 2) => {
-                let data = reader.read_bytes_with_len::<u32>()?;
-                let notes = reader.read_objects::<u32, Note>()?;
-
-                let page = Page::new(data).with_notes(notes);
-
-                Ok(page)
             }
 
             version => anyhow::bail!(FileError::UnsupportedVersion {
