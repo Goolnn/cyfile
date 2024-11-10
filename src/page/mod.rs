@@ -187,6 +187,78 @@ mod tests {
     use std::io::SeekFrom;
 
     #[test]
+    fn new() {
+        let image = fs::read(r"tests/images/0.png").unwrap();
+        let page = Page::new(image.clone());
+
+        assert_eq!(page.data(), image.as_slice());
+        assert_eq!(page.notes().len(), 0);
+    }
+
+    #[test]
+    fn with_notes() {
+        let image = fs::read(r"tests/images/0.png").unwrap();
+        let page = Page::new(image.clone()).with_notes(vec![
+            Note::new().with_coordinate(0.5, 0.5),
+            Note::new().with_coordinate(-0.5, -0.5),
+        ]);
+
+        assert_eq!(page.data(), image.as_slice());
+
+        assert_eq!(page.notes().len(), 2);
+
+        assert_eq!(page.notes()[0].x(), 0.5);
+        assert_eq!(page.notes()[0].y(), 0.5);
+
+        assert_eq!(page.notes()[1].x(), -0.5);
+        assert_eq!(page.notes()[1].y(), -0.5);
+    }
+
+    #[test]
+    fn with_note() {
+        let image = fs::read(r"tests/images/0.png").unwrap();
+        let page = Page::new(image.clone())
+            .with_note(Note::new().with_coordinate(0.5, 0.5))
+            .with_note(Note::new().with_coordinate(-0.5, -0.5));
+
+        assert_eq!(page.data(), image.as_slice());
+
+        assert_eq!(page.notes().len(), 2);
+
+        assert_eq!(page.notes()[0].x(), 0.5);
+        assert_eq!(page.notes()[0].y(), 0.5);
+
+        assert_eq!(page.notes()[1].x(), -0.5);
+        assert_eq!(page.notes()[1].y(), -0.5);
+    }
+
+    #[test]
+    fn set_data() {
+        let image = fs::read(r"tests/images/0.png").unwrap();
+        let mut page = Page::new(image.clone());
+
+        let new_image = fs::read(r"tests/images/1.png").unwrap();
+        page.set_data(new_image.clone());
+
+        assert_eq!(page.data(), new_image.as_slice());
+    }
+
+    #[test]
+    fn set_notes() {
+        let image = fs::read(r"tests/images/0.png").unwrap();
+        let mut page = Page::new(image.clone());
+
+        let notes = vec![
+            Note::new().with_coordinate(0.5, 0.5),
+            Note::new().with_coordinate(-0.5, -0.5),
+        ];
+
+        page.set_notes(notes.clone());
+
+        assert_eq!(page.notes(), &notes);
+    }
+
+    #[test]
     fn codec_for_version_0_0() {
         let image = fs::read(r"tests/images/0.png").unwrap();
         let page = Page::new(image)
