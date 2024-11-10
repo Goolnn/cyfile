@@ -46,18 +46,6 @@ impl Text {
     }
 }
 
-impl Encode for Text {
-    fn encode<S>(&self, writer: &mut Writer<S>) -> anyhow::Result<()>
-    where
-        S: Write + Seek,
-    {
-        writer.write_string_with_len::<u32>(&self.content)?;
-        writer.write_string_with_len::<u32>(&self.comment)?;
-
-        Ok(())
-    }
-}
-
 impl Decode for Text {
     fn decode<S>(reader: &mut Reader<S>) -> anyhow::Result<Self>
     where
@@ -67,6 +55,18 @@ impl Decode for Text {
             content: reader.read_string_with_len::<u32>()?,
             comment: reader.read_string_with_len::<u32>()?,
         })
+    }
+}
+
+impl Encode for Text {
+    fn encode<S>(&self, writer: &mut Writer<S>) -> anyhow::Result<()>
+    where
+        S: Write + Seek,
+    {
+        writer.write_string_with_len::<u32>(&self.content)?;
+        writer.write_string_with_len::<u32>(&self.comment)?;
+
+        Ok(())
     }
 }
 
