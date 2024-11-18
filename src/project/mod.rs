@@ -166,7 +166,7 @@ impl Project {
         self.created_date
     }
 
-    pub fn updated_data(&self) -> Date {
+    pub fn updated_date(&self) -> Date {
         self.updated_date
     }
 
@@ -964,7 +964,7 @@ mod tests {
         assert!(read_project.title().is_empty());
 
         assert_eq!(read_project.created_date(), project.created_date());
-        assert_eq!(read_project.updated_data(), project.updated_data());
+        assert_eq!(read_project.updated_date(), project.updated_date());
 
         for (read_page, page) in read_project.pages().iter().zip(project.pages()) {
             assert_eq!(read_page.data(), page.data());
@@ -1027,7 +1027,7 @@ mod tests {
         assert!(read_project.title().is_empty());
 
         assert_eq!(read_project.created_date(), project.created_date());
-        assert_eq!(read_project.updated_data(), project.updated_data());
+        assert_eq!(read_project.updated_date(), project.updated_date());
 
         for (read_page, page) in read_project.pages().iter().zip(project.pages()) {
             assert_eq!(read_page.data(), page.data());
