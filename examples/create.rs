@@ -1,4 +1,3 @@
-use cyfile::Credit;
 use cyfile::Note;
 use cyfile::Page;
 use cyfile::Project;
@@ -23,14 +22,6 @@ fn main() {
         .with_cover(cover)
         .with_category("Main Story")
         .with_title("Create")
-        .with_credit(Credit::Artists, "Ayaka")
-        .with_credit(Credit::Translators, "Chongbenbao")
-        .with_credit(Credit::Proofreaders, "Jiangguo")
-        .with_credit(Credit::Retouchers, "Baishi")
-        .with_credit(Credit::Retouchers, "Zheerhui")
-        .with_credit(Credit::Typesetters, "Zheerhui")
-        .with_credit(Credit::Typesetters, "Goolnn")
-        .with_credit(Credit::Supervisors, "Chaibai")
         .with_page(page);
 
     println!("{:#?}", project);

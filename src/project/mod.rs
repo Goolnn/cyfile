@@ -3,14 +3,12 @@ use crate::codec::Encode;
 use crate::codec::Reader;
 use crate::codec::Writer;
 use crate::error::FileError;
-use crate::Credit;
 use crate::Date;
 use crate::Note;
 use crate::Page;
 use crate::Text;
 use scraper::Html;
 use scraper::Selector;
-use std::collections::HashMap;
 use std::collections::HashSet;
 use std::fmt::Debug;
 use std::io::Read;
@@ -31,8 +29,6 @@ pub struct Project {
     created_date: Date,
     updated_date: Date,
 
-    credits: HashMap<Credit, HashSet<String>>,
-
     pages: Vec<Page>,
 }
 
@@ -50,8 +46,6 @@ impl Project {
 
             created_date: Date::now(),
             updated_date: Date::now(),
-
-            credits: HashMap::new(),
 
             pages: Vec::new(),
         }
@@ -83,21 +77,6 @@ impl Project {
 
     pub fn with_comment(mut self, comment: impl ToString) -> Self {
         self.comment = comment.to_string();
-
-        self
-    }
-
-    pub fn with_credits(mut self, credits: HashMap<Credit, HashSet<String>>) -> Self {
-        self.credits = credits;
-
-        self
-    }
-
-    pub fn with_credit(mut self, credit: Credit, name: impl ToString) -> Self {
-        self.credits
-            .entry(credit)
-            .or_default()
-            .insert(name.to_string());
 
         self
     }
@@ -134,10 +113,6 @@ impl Project {
         self.comment = comment.to_string();
     }
 
-    pub fn set_credits(&mut self, credits: HashMap<Credit, HashSet<String>>) {
-        self.credits = credits;
-    }
-
     pub fn set_pages(&mut self, pages: Vec<Page>) {
         self.pages = pages;
     }
@@ -168,14 +143,6 @@ impl Project {
 
     pub fn updated_date(&self) -> Date {
         self.updated_date
-    }
-
-    pub fn credits_mut(&mut self) -> &mut HashMap<Credit, HashSet<String>> {
-        &mut self.credits
-    }
-
-    pub fn credits(&self) -> &HashMap<Credit, HashSet<String>> {
-        &self.credits
     }
 
     pub fn pages_mut(&mut self) -> &mut Vec<Page> {
@@ -334,8 +301,6 @@ impl Decode for Project {
                 created_date: reader.read_object()?,
                 updated_date: reader.read_object()?,
 
-                credits: reader.read_object()?,
-
                 pages: reader.read_object()?,
             }),
 
@@ -352,23 +317,6 @@ impl Decode for (u32, u32) {
         let ent_number = reader.read_primitive()?;
 
         Ok((begin_number, ent_number))
-    }
-}
-
-impl Decode for HashMap<Credit, HashSet<String>> {
-    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
-        let mut credits = HashMap::new();
-
-        let credit_count = reader.read_primitive::<u8>()?;
-
-        for _ in 0..credit_count {
-            let credit = reader.read_object()?;
-            let names = reader.read_object()?;
-
-            credits.insert(credit, names);
-        }
-
-        Ok(credits)
     }
 }
 
@@ -468,8 +416,6 @@ impl Encode for Project {
                 writer.write_object(&self.created_date)?;
                 writer.write_object(&self.updated_date)?;
 
-                writer.write_object(&self.credits)?;
-
                 writer.write_object(&self.pages)?;
 
                 Ok(())
@@ -486,19 +432,6 @@ impl Encode for (u32, u32) {
     fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
         writer.write_primitive(self.0)?;
         writer.write_primitive(self.1)?;
-
-        Ok(())
-    }
-}
-
-impl Encode for HashMap<Credit, HashSet<String>> {
-    fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
-        writer.write_primitive(self.len() as u8)?;
-
-        for (credit, names) in self.iter() {
-            writer.write_object(credit)?;
-            writer.write_object(names)?;
-        }
 
         Ok(())
     }
@@ -547,7 +480,6 @@ impl Debug for Project {
             .field("number", &self.number)
             .field("created_date", &self.created_date)
             .field("updated_date", &self.updated_date)
-            .field("credits", &self.credits)
             .field("pages", &self.pages)
             .finish()
     }
@@ -557,12 +489,10 @@ impl Debug for Project {
 mod tests {
     use crate::codec::Reader;
     use crate::codec::Writer;
-    use crate::Credit;
     use crate::Note;
     use crate::Page;
     use crate::Project;
     use crate::Text;
-    use std::collections::HashSet;
     use std::fs;
     use std::io::Cursor;
     use std::io::Seek;
@@ -579,8 +509,6 @@ mod tests {
         assert_eq!(project.number(), (0, 0));
 
         assert!(project.comment().is_empty());
-
-        assert!(project.credits().is_empty());
 
         assert!(project.pages().is_empty());
     }
@@ -619,59 +547,6 @@ mod tests {
         let project = Project::new().with_comment("备注");
 
         assert_eq!(project.comment(), "备注");
-    }
-
-    #[test]
-    fn with_credits() {
-        let mut credits = std::collections::HashMap::new();
-
-        credits.insert(Credit::Artists, HashSet::from_iter(["作者".to_string()]));
-        credits.insert(
-            Credit::Translators,
-            HashSet::from_iter(["译者".to_string()]),
-        );
-        credits.insert(
-            Credit::Proofreaders,
-            HashSet::from_iter(["校对".to_string()]),
-        );
-        credits.insert(Credit::Retouchers, HashSet::from_iter(["修图".to_string()]));
-        credits.insert(
-            Credit::Typesetters,
-            HashSet::from_iter(["嵌字".to_string()]),
-        );
-        credits.insert(
-            Credit::Supervisors,
-            HashSet::from_iter(["监修".to_string()]),
-        );
-
-        let project = Project::new().with_credits(credits.clone());
-
-        assert_eq!(project.credits(), &credits);
-    }
-
-    #[test]
-    fn with_credit() {
-        let project = Project::new()
-            .with_credit(Credit::Artists, "作者")
-            .with_credit(Credit::Translators, "译者")
-            .with_credit(Credit::Proofreaders, "校对")
-            .with_credit(Credit::Retouchers, "修图")
-            .with_credit(Credit::Typesetters, "嵌字")
-            .with_credit(Credit::Supervisors, "监修");
-
-        assert!(project.credits().contains_key(&Credit::Artists));
-        assert!(project.credits().contains_key(&Credit::Translators));
-        assert!(project.credits().contains_key(&Credit::Proofreaders));
-        assert!(project.credits().contains_key(&Credit::Retouchers));
-        assert!(project.credits().contains_key(&Credit::Typesetters));
-        assert!(project.credits().contains_key(&Credit::Supervisors));
-
-        assert!(project.credits()[&Credit::Artists].contains("作者"));
-        assert!(project.credits()[&Credit::Translators].contains("译者"));
-        assert!(project.credits()[&Credit::Proofreaders].contains("校对"));
-        assert!(project.credits()[&Credit::Retouchers].contains("修图"));
-        assert!(project.credits()[&Credit::Typesetters].contains("嵌字"));
-        assert!(project.credits()[&Credit::Supervisors].contains("监修"));
     }
 
     #[test]
@@ -837,36 +712,6 @@ mod tests {
         project.set_comment("备注");
 
         assert_eq!(project.comment(), "备注");
-    }
-
-    #[test]
-    fn set_credits() {
-        let mut project = Project::new();
-
-        let mut credits = std::collections::HashMap::new();
-
-        credits.insert(Credit::Artists, HashSet::from_iter(["作者".to_string()]));
-        credits.insert(
-            Credit::Translators,
-            HashSet::from_iter(["译者".to_string()]),
-        );
-        credits.insert(
-            Credit::Proofreaders,
-            HashSet::from_iter(["校对".to_string()]),
-        );
-        credits.insert(Credit::Retouchers, HashSet::from_iter(["修图".to_string()]));
-        credits.insert(
-            Credit::Typesetters,
-            HashSet::from_iter(["嵌字".to_string()]),
-        );
-        credits.insert(
-            Credit::Supervisors,
-            HashSet::from_iter(["监修".to_string()]),
-        );
-
-        project.set_credits(credits.clone());
-
-        assert_eq!(project.credits(), &credits);
     }
 
     #[test]
