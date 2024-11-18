@@ -1,5 +1,5 @@
-use crate::codec::Length;
-use crate::codec::Primitive;
+use crate::codec::bound::Length;
+use crate::codec::bound::Primitive;
 use crate::file::VERSION_LATEST;
 use crate::Version;
 use std::fs::File;
