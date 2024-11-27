@@ -14,15 +14,16 @@ use crate::error::FileError;
 use crate::Project;
 use std::fs;
 use std::io::Read;
+use std::io::Seek;
 use std::io::Write;
-use std::path::Path;
 
 pub struct File;
 
 impl File {
-    pub fn open(path: impl AsRef<Path>) -> anyhow::Result<Project> {
-        let mut stream = fs::File::open(path)?;
-
+    pub fn open<Stream>(mut stream: Stream) -> anyhow::Result<Project>
+    where
+        Stream: Read + Seek,
+    {
         let mut header = [0u8; 15];
         let mut version = [0u8; 2];
 
