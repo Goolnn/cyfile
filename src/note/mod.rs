@@ -12,7 +12,7 @@ pub struct Note {
     x: f64,
     y: f64,
 
-    choice: u32,
+    comfirm: Option<Text>,
 
     texts: Vec<Text>,
 }
@@ -29,8 +29,8 @@ impl Note {
         self
     }
 
-    pub fn with_choice(mut self, choice: u32) -> Self {
-        self.choice = choice;
+    pub fn with_comfirm(mut self, comfirm: Text) -> Self {
+        self.comfirm = Some(comfirm);
 
         self
     }
@@ -55,8 +55,8 @@ impl Note {
         self.y = y;
     }
 
-    pub fn set_choice(&mut self, choice: u32) {
-        self.choice = choice;
+    pub fn set_comfirm(&mut self, comfirm: Option<Text>) {
+        self.comfirm = comfirm;
     }
 
     pub fn set_texts(&mut self, texts: Vec<Text>) {
@@ -71,8 +71,8 @@ impl Note {
         self.y
     }
 
-    pub fn choice(&self) -> u32 {
-        self.choice
+    pub fn comfirm(&self) -> Option<&Text> {
+        self.comfirm.as_ref()
     }
 
     pub fn texts_mut(&mut self) -> &mut Vec<Text> {
@@ -119,7 +119,7 @@ impl Decode for Note {
         let x = reader.read_primitive()?;
         let y = reader.read_primitive()?;
 
-        let choice = reader.read_primitive()?;
+        let comfirm = reader.read_object()?;
 
         let texts = reader.read_objects::<u32, Text>()?;
 
@@ -127,10 +127,25 @@ impl Decode for Note {
             x,
             y,
 
-            choice,
+            comfirm,
 
             texts,
         })
+    }
+}
+
+impl Decode for Option<Text> {
+    fn decode<S>(reader: &mut Reader<S>) -> anyhow::Result<Self>
+    where
+        S: Read + Seek,
+    {
+        if reader.read_primitive()? {
+            let text = reader.read_object()?;
+
+            Ok(Some(text))
+        } else {
+            Ok(None)
+        }
     }
 }
 
@@ -139,9 +154,24 @@ impl Encode for Note {
         writer.write_primitive(self.x)?;
         writer.write_primitive(self.y)?;
 
-        writer.write_primitive(self.choice)?;
+        writer.write_object(&self.comfirm)?;
 
         writer.write_objects::<u32, Text>(self.texts())?;
+
+        Ok(())
+    }
+}
+
+impl Encode for Option<Text> {
+    fn encode<S>(&self, writer: &mut Writer<S>) -> anyhow::Result<()>
+    where
+        S: Write + Seek,
+    {
+        writer.write_primitive(self.is_some())?;
+
+        if let Some(text) = self {
+            writer.write_object(text)?;
+        }
 
         Ok(())
     }
@@ -164,7 +194,7 @@ mod tests {
         assert_eq!(note.x(), 0.0);
         assert_eq!(note.y(), 0.0);
 
-        assert_eq!(note.choice(), 0);
+        assert_eq!(note.comfirm(), None);
 
         assert!(note.texts().is_empty());
     }
@@ -176,19 +206,20 @@ mod tests {
         assert_eq!(note.x(), 0.5);
         assert_eq!(note.y(), 0.5);
 
-        assert_eq!(note.choice(), 0);
+        assert_eq!(note.comfirm(), None);
 
         assert!(note.texts().is_empty());
     }
 
     #[test]
-    fn with_choice() {
-        let note = Note::new().with_choice(1);
+    fn with_comfirm() {
+        let comfirm = Text::new();
+        let note = Note::new().with_comfirm(comfirm.clone());
 
         assert_eq!(note.x(), 0.0);
         assert_eq!(note.y(), 0.0);
 
-        assert_eq!(note.choice(), 1);
+        assert_eq!(note.comfirm(), Some(&comfirm));
 
         assert!(note.texts().is_empty());
     }
@@ -210,7 +241,7 @@ mod tests {
         assert_eq!(note.x(), 0.0);
         assert_eq!(note.y(), 0.0);
 
-        assert_eq!(note.choice(), 0);
+        assert_eq!(note.comfirm(), None);
 
         assert_eq!(note.texts().len(), 3);
 
@@ -246,7 +277,7 @@ mod tests {
         assert_eq!(note.x(), 0.0);
         assert_eq!(note.y(), 0.0);
 
-        assert_eq!(note.choice(), 0);
+        assert_eq!(note.comfirm(), None);
 
         assert_eq!(note.texts().len(), 3);
 
@@ -269,7 +300,7 @@ mod tests {
         assert_eq!(note.x(), 0.5);
         assert_eq!(note.y(), 0.0);
 
-        assert_eq!(note.choice(), 0);
+        assert_eq!(note.comfirm(), None);
 
         assert!(note.texts().is_empty());
     }
@@ -283,21 +314,22 @@ mod tests {
         assert_eq!(note.x(), 0.0);
         assert_eq!(note.y(), 0.5);
 
-        assert_eq!(note.choice(), 0);
+        assert_eq!(note.comfirm(), None);
 
         assert!(note.texts().is_empty());
     }
 
     #[test]
-    fn set_choice() {
+    fn set_comfirm() {
         let mut note = Note::new();
+        let comfirm = Text::new();
 
-        note.set_choice(1);
+        note.set_comfirm(Some(comfirm.clone()));
 
         assert_eq!(note.x(), 0.0);
         assert_eq!(note.y(), 0.0);
 
-        assert_eq!(note.choice(), 1);
+        assert_eq!(note.comfirm(), Some(&comfirm));
 
         assert!(note.texts().is_empty());
     }
@@ -321,7 +353,7 @@ mod tests {
         assert_eq!(note.x(), 0.0);
         assert_eq!(note.y(), 0.0);
 
-        assert_eq!(note.choice(), 0);
+        assert_eq!(note.comfirm(), None);
 
         assert_eq!(note.texts().len(), 3);
 
@@ -339,7 +371,11 @@ mod tests {
     fn codec() {
         let note = Note::new()
             .with_coordinate(0.5, 0.5)
-            .with_choice(1)
+            .with_comfirm(
+                Text::new()
+                    .with_content("comfirm_content")
+                    .with_comment("comfirm_comment"),
+            )
             .with_text(
                 Text::new()
                     .with_content("content_1")
