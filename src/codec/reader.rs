@@ -1,17 +1,12 @@
 use crate::codec::bound::Length;
 use crate::codec::bound::Primitive;
+use crate::codec::Codec;
 use crate::file::VERSION_LATEST;
 use crate::Version;
 use std::io::Read;
 use std::io::Result;
 use std::io::Seek;
 use std::io::SeekFrom;
-
-pub trait Decode: Sized {
-    fn decode<S>(reader: &mut Reader<S>) -> anyhow::Result<Self>
-    where
-        S: Read + Seek;
-}
 
 pub struct Reader<S>
 where
@@ -45,7 +40,7 @@ where
 
     pub fn read_object<T>(&mut self) -> anyhow::Result<T>
     where
-        T: Decode,
+        T: Codec,
     {
         T::decode(self)
     }
@@ -53,7 +48,7 @@ where
     pub fn read_objects<L, T>(&mut self) -> anyhow::Result<Vec<T>>
     where
         L: Length,
-        T: Decode,
+        T: Codec,
     {
         let len = self.read_len::<L>()?;
 

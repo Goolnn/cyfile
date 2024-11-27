@@ -1,5 +1,4 @@
-use crate::codec::Decode;
-use crate::codec::Encode;
+use crate::codec::Codec;
 use crate::codec::Reader;
 use crate::codec::Writer;
 use crate::error::FileError;
@@ -69,7 +68,7 @@ impl Page {
     }
 }
 
-impl Decode for Page {
+impl Codec for Page {
     fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
         match reader.version().into() {
             (0, 0) => {
@@ -116,9 +115,7 @@ impl Decode for Page {
             }),
         }
     }
-}
 
-impl Encode for Page {
     fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
         match writer.version().into() {
             (0, 0) => {

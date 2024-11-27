@@ -1,5 +1,4 @@
-use crate::codec::Decode;
-use crate::codec::Encode;
+use crate::codec::Codec;
 use crate::codec::Reader;
 use crate::codec::Writer;
 use std::io::Read;
@@ -46,7 +45,7 @@ impl Text {
     }
 }
 
-impl Decode for Text {
+impl Codec for Text {
     fn decode<S>(reader: &mut Reader<S>) -> anyhow::Result<Self>
     where
         S: Read + Seek,
@@ -56,9 +55,7 @@ impl Decode for Text {
             comment: reader.read_string_with_len::<u32>()?,
         })
     }
-}
 
-impl Encode for Text {
     fn encode<S>(&self, writer: &mut Writer<S>) -> anyhow::Result<()>
     where
         S: Write + Seek,

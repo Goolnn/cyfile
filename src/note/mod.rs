@@ -1,5 +1,4 @@
-use crate::codec::Decode;
-use crate::codec::Encode;
+use crate::codec::Codec;
 use crate::codec::Reader;
 use crate::codec::Writer;
 use crate::Text;
@@ -114,7 +113,7 @@ impl Note {
     }
 }
 
-impl Decode for Note {
+impl Codec for Note {
     fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
         let x = reader.read_primitive()?;
         let y = reader.read_primitive()?;
@@ -132,24 +131,7 @@ impl Decode for Note {
             texts,
         })
     }
-}
 
-impl Decode for Option<Text> {
-    fn decode<S>(reader: &mut Reader<S>) -> anyhow::Result<Self>
-    where
-        S: Read + Seek,
-    {
-        if reader.read_primitive()? {
-            let text = reader.read_object()?;
-
-            Ok(Some(text))
-        } else {
-            Ok(None)
-        }
-    }
-}
-
-impl Encode for Note {
     fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
         writer.write_primitive(self.x)?;
         writer.write_primitive(self.y)?;
@@ -162,7 +144,20 @@ impl Encode for Note {
     }
 }
 
-impl Encode for Option<Text> {
+impl Codec for Option<Text> {
+    fn decode<S>(reader: &mut Reader<S>) -> anyhow::Result<Self>
+    where
+        S: Read + Seek,
+    {
+        if reader.read_primitive()? {
+            let text = reader.read_object()?;
+
+            Ok(Some(text))
+        } else {
+            Ok(None)
+        }
+    }
+
     fn encode<S>(&self, writer: &mut Writer<S>) -> anyhow::Result<()>
     where
         S: Write + Seek,

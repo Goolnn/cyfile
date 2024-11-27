@@ -1,11 +1,23 @@
 mod bound;
-mod decode;
-mod encode;
+mod reader;
+mod writer;
 
-pub use decode::Decode;
-pub use decode::Reader;
-pub use encode::Encode;
-pub use encode::Writer;
+pub use reader::Reader;
+pub use writer::Writer;
+
+use std::io::Read;
+use std::io::Seek;
+use std::io::Write;
+
+pub trait Codec: Sized {
+    fn encode<S>(&self, writer: &mut Writer<S>) -> anyhow::Result<()>
+    where
+        S: Write + Seek;
+
+    fn decode<S>(reader: &mut Reader<S>) -> anyhow::Result<Self>
+    where
+        S: Read + Seek;
+}
 
 #[cfg(test)]
 mod tests {

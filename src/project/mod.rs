@@ -1,5 +1,4 @@
-use crate::codec::Decode;
-use crate::codec::Encode;
+use crate::codec::Codec;
 use crate::codec::Reader;
 use crate::codec::Writer;
 use crate::error::FileError;
@@ -154,7 +153,7 @@ impl Project {
     }
 }
 
-impl Decode for Project {
+impl Codec for Project {
     fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
         match reader.version().into() {
             (0, 0) => {
@@ -309,49 +308,7 @@ impl Decode for Project {
             }),
         }
     }
-}
 
-impl Decode for (u32, u32) {
-    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
-        let begin_number = reader.read_primitive()?;
-        let ent_number = reader.read_primitive()?;
-
-        Ok((begin_number, ent_number))
-    }
-}
-
-impl Decode for HashSet<String> {
-    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
-        let mut names = HashSet::new();
-
-        let name_count = reader.read_primitive::<u8>()?;
-
-        for _ in 0..name_count {
-            let name = reader.read_string_with_len::<u32>()?;
-
-            names.insert(name);
-        }
-
-        Ok(names)
-    }
-}
-
-impl Decode for Vec<Page> {
-    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
-        let pages = match reader.version().into() {
-            (0, 0) => reader.read_objects::<u8, Page>(),
-            (0, 2) => reader.read_objects::<u32, Page>(),
-
-            version => anyhow::bail!(FileError::UnsupportedVersion {
-                version: version.into()
-            }),
-        }?;
-
-        Ok(pages)
-    }
-}
-
-impl Encode for Project {
     fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
         match writer.version().into() {
             (0, 0) => {
@@ -428,7 +385,14 @@ impl Encode for Project {
     }
 }
 
-impl Encode for (u32, u32) {
+impl Codec for (u32, u32) {
+    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
+        let begin_number = reader.read_primitive()?;
+        let ent_number = reader.read_primitive()?;
+
+        Ok((begin_number, ent_number))
+    }
+
     fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
         writer.write_primitive(self.0)?;
         writer.write_primitive(self.1)?;
@@ -437,7 +401,21 @@ impl Encode for (u32, u32) {
     }
 }
 
-impl Encode for HashSet<String> {
+impl Codec for HashSet<String> {
+    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
+        let mut names = HashSet::new();
+
+        let name_count = reader.read_primitive::<u8>()?;
+
+        for _ in 0..name_count {
+            let name = reader.read_string_with_len::<u32>()?;
+
+            names.insert(name);
+        }
+
+        Ok(names)
+    }
+
     fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
         writer.write_primitive(self.len() as u8)?;
 
@@ -449,7 +427,20 @@ impl Encode for HashSet<String> {
     }
 }
 
-impl Encode for Vec<Page> {
+impl Codec for Vec<Page> {
+    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
+        let pages = match reader.version().into() {
+            (0, 0) => reader.read_objects::<u8, Page>(),
+            (0, 2) => reader.read_objects::<u32, Page>(),
+
+            version => anyhow::bail!(FileError::UnsupportedVersion {
+                version: version.into()
+            }),
+        }?;
+
+        Ok(pages)
+    }
+
     fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
         match writer.version().into() {
             (0, 0) => writer.write_objects::<u8, Page>(self)?,

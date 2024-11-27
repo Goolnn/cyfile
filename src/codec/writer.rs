@@ -1,5 +1,6 @@
 use crate::codec::bound::Length;
 use crate::codec::bound::Primitive;
+use crate::codec::Codec;
 use crate::file::VERSION_LATEST;
 use crate::Version;
 use std::fs::File;
@@ -7,12 +8,6 @@ use std::io::Result;
 use std::io::Seek;
 use std::io::SeekFrom;
 use std::io::Write;
-
-pub trait Encode {
-    fn encode<S>(&self, writer: &mut Writer<S>) -> anyhow::Result<()>
-    where
-        S: Write + Seek;
-}
 
 pub struct Writer<S>
 where
@@ -46,7 +41,7 @@ where
 
     pub fn write_object<T>(&mut self, object: &T) -> anyhow::Result<()>
     where
-        T: Encode,
+        T: Codec,
     {
         object.encode(self)
     }
@@ -54,7 +49,7 @@ where
     pub fn write_objects<L, T>(&mut self, objects: &Vec<T>) -> anyhow::Result<()>
     where
         L: Length,
-        T: Encode,
+        T: Codec,
     {
         self.write_len::<L>(objects.len())?;
 
