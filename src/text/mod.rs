@@ -5,6 +5,26 @@ use std::io::Read;
 use std::io::Seek;
 use std::io::Write;
 
+/// # Text
+///
+/// Text is a basic component of project files, used to store text content and comments.
+/// The content field is used to save the content of the translated text, and the comment
+/// field is used to save the comments of the translated text.
+///
+/// To create a text object, you can use the default constructor `Text::new()`, and then
+/// use the `with_content()` and `with_comment()` methods to set the text content and
+/// comments.
+///
+/// ```
+/// use cyfile::Text;
+///
+/// let text = Text::new()
+///     .with_content("Content")
+///     .with_comment("Comment");
+///
+/// assert_eq!(text.content(), "Content");
+/// assert_eq!(text.comment(), "Comment");
+/// ```
 #[derive(Default, PartialEq, Eq, Debug, Clone)]
 pub struct Text {
     content: String,
