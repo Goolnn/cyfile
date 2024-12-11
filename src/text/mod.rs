@@ -130,12 +130,9 @@ mod tests {
         let mut writer = Writer::new(cursor);
 
         writer.write_object(&text)?;
+        writer.seek(SeekFrom::Start(0))?;
 
-        let mut cursor = writer.into_inner();
-
-        cursor.seek(SeekFrom::Start(0))?;
-
-        let mut reader = Reader::new(cursor);
+        let mut reader = Reader::new(writer.into_inner());
 
         assert_eq!(reader.read_object::<Text>()?, text);
 
