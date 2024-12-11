@@ -4,11 +4,12 @@ mod export;
 mod version;
 
 pub use crate::file::error::Error;
-pub use data::HEADER_DATA;
-pub use data::VERSIONS;
-pub use data::VERSION_LATEST;
 pub use export::ExportArguments;
 pub use version::Version;
+
+pub(crate) use data::HEADER_DATA;
+pub(crate) use data::VERSIONS;
+pub(crate) use data::VERSION_LATEST;
 
 use crate::codec::Reader;
 use crate::codec::Writer;

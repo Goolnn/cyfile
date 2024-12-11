@@ -13,11 +13,10 @@
 //! user-friendliness, ensuring that users can easily adapt to and incorporate it
 //! into their workflows without encountering significant learning curves.
 
-pub mod error;
+pub mod file;
 
 mod codec;
 mod date;
-mod file;
 mod note;
 mod page;
 mod project;
