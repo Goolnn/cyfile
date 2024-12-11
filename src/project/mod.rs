@@ -1,7 +1,7 @@
 use crate::codec::Codec;
 use crate::codec::Reader;
 use crate::codec::Writer;
-use crate::error::FileError;
+use crate::file;
 use crate::Date;
 use crate::Note;
 use crate::Page;
@@ -303,7 +303,7 @@ impl Codec for Project {
                 pages: reader.read_object()?,
             }),
 
-            version => anyhow::bail!(FileError::UnsupportedVersion {
+            version => anyhow::bail!(file::Error::UnsupportedVersion {
                 version: version.into()
             }),
         }
@@ -378,7 +378,7 @@ impl Codec for Project {
                 Ok(())
             }
 
-            version => anyhow::bail!(FileError::UnsupportedVersion {
+            version => anyhow::bail!(file::Error::UnsupportedVersion {
                 version: version.into()
             }),
         }
@@ -433,7 +433,7 @@ impl Codec for Vec<Page> {
             (0, 0) => reader.read_objects::<u8, Page>(),
             (0, 2) => reader.read_objects::<u32, Page>(),
 
-            version => anyhow::bail!(FileError::UnsupportedVersion {
+            version => anyhow::bail!(file::Error::UnsupportedVersion {
                 version: version.into()
             }),
         }?;
@@ -446,7 +446,7 @@ impl Codec for Vec<Page> {
             (0, 0) => writer.write_objects::<u8, Page>(self)?,
             (0, 2) => writer.write_objects::<u32, Page>(self)?,
 
-            version => anyhow::bail!(FileError::UnsupportedVersion {
+            version => anyhow::bail!(file::Error::UnsupportedVersion {
                 version: version.into()
             }),
         }

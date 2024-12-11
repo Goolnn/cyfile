@@ -1,7 +1,7 @@
 use crate::codec::Codec;
 use crate::codec::Reader;
 use crate::codec::Writer;
-use crate::error::FileError;
+use crate::file;
 use crate::Note;
 use crate::Text;
 use image::ImageReader;
@@ -110,7 +110,7 @@ impl Codec for Page {
                 Ok(page)
             }
 
-            version => anyhow::bail!(FileError::UnsupportedVersion {
+            version => anyhow::bail!(file::Error::UnsupportedVersion {
                 version: version.into()
             }),
         }
@@ -158,7 +158,7 @@ impl Codec for Page {
                 Ok(())
             }
 
-            version => anyhow::bail!(FileError::UnsupportedVersion {
+            version => anyhow::bail!(file::Error::UnsupportedVersion {
                 version: version.into()
             }),
         }

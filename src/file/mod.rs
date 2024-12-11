@@ -1,7 +1,9 @@
 mod data;
+mod error;
 mod export;
 mod version;
 
+pub use crate::file::error::Error;
 pub use data::HEADER_DATA;
 pub use data::VERSIONS;
 pub use data::VERSION_LATEST;
@@ -10,7 +12,6 @@ pub use version::Version;
 
 use crate::codec::Reader;
 use crate::codec::Writer;
-use crate::error::FileError;
 use crate::Project;
 use std::fs;
 use std::io::Read;
@@ -31,13 +32,13 @@ impl File {
         stream.read_exact(&mut version)?;
 
         if header != data::HEADER_DATA {
-            anyhow::bail!(FileError::InvalidHeader);
+            anyhow::bail!(Error::InvalidHeader);
         }
 
         let version = Version::from(version);
 
         if !data::VERSIONS.contains(&version.into()) {
-            anyhow::bail!(FileError::UnsupportedVersion { version });
+            anyhow::bail!(Error::UnsupportedVersion { version });
         }
 
         let mut reader = Reader::new(stream).with_version(version);
@@ -49,7 +50,7 @@ impl File {
 
     pub fn export(project: &Project, arguments: ExportArguments) -> anyhow::Result<()> {
         if arguments.filepath.is_dir() {
-            anyhow::bail!(FileError::PathIsDirectory {
+            anyhow::bail!(Error::PathIsDirectory {
                 path: arguments.filepath
             })
         }
@@ -61,7 +62,7 @@ impl File {
 
         // 写入版本数据
         if !VERSIONS.contains(&arguments.version.into()) {
-            anyhow::bail!(FileError::UnsupportedVersion {
+            anyhow::bail!(Error::UnsupportedVersion {
                 version: arguments.version
             });
         }
