@@ -2,6 +2,7 @@
 name = "cyfile"
 version = "0.4.4"
 edition = "2021"
+license = "MIT"
 
 [lib]
 crate-type = ["lib"]
