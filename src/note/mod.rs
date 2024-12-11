@@ -6,6 +6,45 @@ use std::io::Read;
 use std::io::Seek;
 use std::io::Write;
 
+/// Note is used to represent a marked position on an image with text information,
+/// and can also specify a confirmation text.
+///
+/// You can create a new `Note` instance using `Note::new()`, and set the position
+/// with the `with_position` method, set the confirmation text with the `with_comfirm`
+/// method, set the text list with the `with_texts` method, or add a text with the
+/// `with_text` method.
+///
+/// ```
+/// use cyfile::Note;
+/// use cyfile::Text;
+///
+/// let confirm = Text::new()
+///     .with_content("Confirm Content")
+///     .with_comment("Confirm Comment");
+///
+/// let text_1 = Text::new()
+///     .with_content("Content 1")
+///     .with_comment("Comment 1");
+///
+/// let text_2 = Text::new()
+///     .with_content("Content 2")
+///     .with_comment("Comment 2");
+///
+/// let note = Note::new()
+///     .with_position(0.5, 0.5)
+///     .with_comfirm(confirm.clone())
+///     // Or use `with_texts` to set multiple texts at once
+///     // .with_texts(vec![text_1.clone(), text_2.clone()]);
+///     .with_text(text_1.clone())
+///     .with_text(text_2.clone());
+///
+/// assert_eq!(note.x(), 0.5);
+/// assert_eq!(note.y(), 0.5);
+///
+/// assert_eq!(note.comfirm(), Some(&confirm));
+///
+/// assert_eq!(note.texts(), &vec![text_1, text_2]);
+/// ```
 #[derive(Default, PartialEq, Debug, Clone)]
 pub struct Note {
     x: f64,
