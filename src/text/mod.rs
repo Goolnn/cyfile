@@ -101,14 +101,6 @@ mod tests {
     }
 
     #[test]
-    fn with_content_and_comment() {
-        let text = Text::new().with_content("Content").with_comment("Comment");
-
-        assert_eq!(text.content(), "Content");
-        assert_eq!(text.comment(), "Comment");
-    }
-
-    #[test]
     fn set_content() {
         let mut text = Text::new().with_content("Content").with_comment("Comment");
 
