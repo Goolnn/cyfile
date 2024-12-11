@@ -205,7 +205,7 @@ impl Codec for Project {
                         let note_x = reader.read_primitive::<u16>()? as f64;
                         let note_y = reader.read_primitive::<u16>()? as f64;
 
-                        let note = Note::new().with_coordinate(
+                        let note = Note::new().with_position(
                             note_x / page_width as f64 * 2.0 - 1.0,
                             1.0 - note_y / page_height as f64 * 2.0,
                         );

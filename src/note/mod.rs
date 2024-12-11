@@ -21,7 +21,7 @@ impl Note {
         Self::default()
     }
 
-    pub fn with_coordinate(mut self, x: f64, y: f64) -> Self {
+    pub fn with_position(mut self, x: f64, y: f64) -> Self {
         self.x = x;
         self.y = y;
 
@@ -195,8 +195,8 @@ mod tests {
     }
 
     #[test]
-    fn with_coordinate() {
-        let note = Note::new().with_coordinate(0.5, 0.5);
+    fn with_position() {
+        let note = Note::new().with_position(0.5, 0.5);
 
         assert_eq!(note.x(), 0.5);
         assert_eq!(note.y(), 0.5);
@@ -365,7 +365,7 @@ mod tests {
     #[test]
     fn codec() {
         let note = Note::new()
-            .with_coordinate(0.5, 0.5)
+            .with_position(0.5, 0.5)
             .with_comfirm(
                 Text::new()
                     .with_content("comfirm_content")

@@ -88,7 +88,7 @@ impl Codec for Page {
 
                     let content = reader.read_string_with_nil()?;
 
-                    let mut note = Note::new().with_coordinate(
+                    let mut note = Note::new().with_position(
                         note_x / page_width as f64 * 2.0 - 1.0,
                         1.0 - note_y / page_height as f64 * 2.0,
                     );
@@ -196,8 +196,8 @@ mod tests {
     fn with_notes() {
         let image = fs::read(r"tests/images/0.png").unwrap();
         let page = Page::new(image.clone()).with_notes(vec![
-            Note::new().with_coordinate(0.5, 0.5),
-            Note::new().with_coordinate(-0.5, -0.5),
+            Note::new().with_position(0.5, 0.5),
+            Note::new().with_position(-0.5, -0.5),
         ]);
 
         assert_eq!(page.data(), image.as_slice());
@@ -215,8 +215,8 @@ mod tests {
     fn with_note() {
         let image = fs::read(r"tests/images/0.png").unwrap();
         let page = Page::new(image.clone())
-            .with_note(Note::new().with_coordinate(0.5, 0.5))
-            .with_note(Note::new().with_coordinate(-0.5, -0.5));
+            .with_note(Note::new().with_position(0.5, 0.5))
+            .with_note(Note::new().with_position(-0.5, -0.5));
 
         assert_eq!(page.data(), image.as_slice());
 
@@ -246,8 +246,8 @@ mod tests {
         let mut page = Page::new(image.clone());
 
         let notes = vec![
-            Note::new().with_coordinate(0.5, 0.5),
-            Note::new().with_coordinate(-0.5, -0.5),
+            Note::new().with_position(0.5, 0.5),
+            Note::new().with_position(-0.5, -0.5),
         ];
 
         page.set_notes(notes.clone());
@@ -261,14 +261,14 @@ mod tests {
         let page = Page::new(image)
             .with_note(
                 Note::new()
-                    .with_coordinate(0.5, 0.5)
+                    .with_position(0.5, 0.5)
                     .with_text(Text::new().with_content("content_1_1"))
                     .with_text(Text::new().with_content("content_1_2"))
                     .with_text(Text::new().with_content("content_1_3")),
             )
             .with_note(
                 Note::new()
-                    .with_coordinate(-0.5, -0.5)
+                    .with_position(-0.5, -0.5)
                     .with_text(Text::new().with_content("content_2_1"))
                     .with_text(Text::new().with_content("content_2_2"))
                     .with_text(Text::new().with_content("content_2_3")),
@@ -313,14 +313,14 @@ mod tests {
         let page = Page::new(image)
             .with_note(
                 Note::new()
-                    .with_coordinate(0.5, 0.5)
+                    .with_position(0.5, 0.5)
                     .with_text(Text::new().with_content("content_1_1"))
                     .with_text(Text::new().with_content("content_1_2"))
                     .with_text(Text::new().with_content("content_1_3")),
             )
             .with_note(
                 Note::new()
-                    .with_coordinate(-0.5, -0.5)
+                    .with_position(-0.5, -0.5)
                     .with_text(Text::new().with_content("content_2_1"))
                     .with_text(Text::new().with_content("content_2_2"))
                     .with_text(Text::new().with_content("content_2_3")),
