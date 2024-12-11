@@ -3,7 +3,6 @@ use crate::codec::bound::Primitive;
 use crate::codec::Codec;
 use crate::file::VERSION_LATEST;
 use crate::Version;
-use std::fs::File;
 use std::io::Result;
 use std::io::Seek;
 use std::io::SeekFrom;
@@ -118,7 +117,10 @@ where
     }
 }
 
-impl Seek for Writer<File> {
+impl<S> Seek for Writer<S>
+where
+    S: Write + Seek,
+{
     fn seek(&mut self, pos: SeekFrom) -> Result<u64> {
         self.stream.seek(pos)
     }
