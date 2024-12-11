@@ -5,8 +5,6 @@ use std::io::Read;
 use std::io::Seek;
 use std::io::Write;
 
-/// # Text
-///
 /// Text is a basic component of project files, used to store text content and comments.
 /// The content field is used to save the content of the translated text, and the comment
 /// field is used to save the comments of the translated text.
