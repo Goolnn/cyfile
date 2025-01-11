@@ -7,13 +7,13 @@ pub use crate::file::error::Error;
 pub use export::ExportArguments;
 pub use version::Version;
 
-pub(crate) use data::HEADER_DATA;
-pub(crate) use data::VERSIONS;
 pub(crate) use data::VERSION_LATEST;
 
 use crate::codec::Reader;
 use crate::codec::Writer;
 use crate::Project;
+use data::HEADER_DATA;
+use data::VERSIONS;
 use std::fs;
 use std::io::Read;
 use std::io::Seek;
