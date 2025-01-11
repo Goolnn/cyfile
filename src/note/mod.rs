@@ -74,7 +74,7 @@ impl Note {
     }
 
     pub fn with_texts(mut self, texts: Vec<Text>) -> Self {
-        self.texts = texts;
+        self.texts.extend(texts);
 
         self
     }

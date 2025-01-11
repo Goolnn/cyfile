@@ -28,7 +28,7 @@ impl Page {
     }
 
     pub fn with_notes(mut self, notes: Vec<Note>) -> Self {
-        self.notes = notes;
+        self.notes.extend(notes);
 
         self
     }

@@ -81,7 +81,7 @@ impl Project {
     }
 
     pub fn with_pages(mut self, pages: Vec<Page>) -> Self {
-        self.pages = pages;
+        self.pages.extend(pages);
 
         self
     }
