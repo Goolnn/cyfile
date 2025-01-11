@@ -92,7 +92,6 @@ mod tests {
     use crate::Text;
     use std::io::Cursor;
     use std::io::Seek;
-    use std::io::SeekFrom;
 
     #[test]
     fn new() {
@@ -148,7 +147,7 @@ mod tests {
         let mut writer = Writer::new(cursor);
 
         writer.write_object(&text)?;
-        writer.seek(SeekFrom::Start(0))?;
+        writer.rewind()?;
 
         let mut reader = Reader::new(writer.into_inner());
 
