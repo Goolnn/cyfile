@@ -261,7 +261,6 @@ dependencies = [
 name = "cyfile"
 version = "0.4.4"
 dependencies = [
- "anyhow",
  "chrono",
  "image",
  "scraper",
