@@ -1,10 +1,12 @@
 use crate::codec::bound::Length;
 use crate::codec::bound::Primitive;
+use crate::codec::error::Error;
+use crate::codec::error::Result;
 use crate::codec::Codec;
 use crate::file::VERSION_LATEST;
 use crate::Version;
+use std::io;
 use std::io::Read;
-use std::io::Result;
 use std::io::Seek;
 use std::io::SeekFrom;
 
@@ -38,14 +40,14 @@ where
         self.version
     }
 
-    pub fn read_object<T>(&mut self) -> anyhow::Result<T>
+    pub fn read_object<T>(&mut self) -> Result<T>
     where
         T: Codec,
     {
         T::decode(self)
     }
 
-    pub fn read_objects<L, T>(&mut self) -> anyhow::Result<Vec<T>>
+    pub fn read_objects<L, T>(&mut self) -> Result<Vec<T>>
     where
         L: Length,
         T: Codec,
@@ -61,7 +63,7 @@ where
         Ok(objects)
     }
 
-    pub fn read_primitive<T>(&mut self) -> anyhow::Result<T>
+    pub fn read_primitive<T>(&mut self) -> Result<T>
     where
         T: Primitive,
     {
@@ -72,7 +74,7 @@ where
         unsafe { Ok(std::ptr::read(buffer.as_ptr() as *const T)) }
     }
 
-    pub fn read_bytes(&mut self, len: usize) -> anyhow::Result<Vec<u8>> {
+    pub fn read_bytes(&mut self, len: usize) -> Result<Vec<u8>> {
         let mut buffer = vec![0u8; len];
 
         self.stream.read_exact(&mut buffer)?;
@@ -80,7 +82,7 @@ where
         Ok(buffer)
     }
 
-    pub fn read_bytes_with_len<T>(&mut self) -> anyhow::Result<Vec<u8>>
+    pub fn read_bytes_with_len<T>(&mut self) -> Result<Vec<u8>>
     where
         T: Length,
     {
@@ -89,7 +91,7 @@ where
         self.read_bytes(len)
     }
 
-    pub fn read_string_with_len<T>(&mut self) -> anyhow::Result<String>
+    pub fn read_string_with_len<T>(&mut self) -> Result<String>
     where
         T: Length,
     {
@@ -99,7 +101,7 @@ where
         Ok(String::from_utf8(buffer)?)
     }
 
-    pub fn read_string_with_nil(&mut self) -> anyhow::Result<String> {
+    pub fn read_string_with_nil(&mut self) -> Result<String> {
         let mut buffer = Vec::new();
 
         loop {
@@ -115,14 +117,14 @@ where
         Ok(String::from_utf8(buffer)?)
     }
 
-    fn read_len<T>(&mut self) -> anyhow::Result<usize>
+    fn read_len<T>(&mut self) -> Result<usize>
     where
         T: Length,
     {
         if let Ok(len) = self.read_primitive::<T>()?.try_into() {
             Ok(len)
         } else {
-            anyhow::bail!("failed to convert length while reading");
+            Err(Error::InvalidLength)
         }
     }
 
@@ -136,7 +138,7 @@ impl<S> Seek for Reader<S>
 where
     S: Read + Seek,
 {
-    fn seek(&mut self, pos: SeekFrom) -> Result<u64> {
+    fn seek(&mut self, pos: SeekFrom) -> io::Result<u64> {
         self.stream.seek(pos)
     }
 }

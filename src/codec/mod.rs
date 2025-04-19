@@ -7,16 +7,17 @@ mod writer;
 pub use reader::Reader;
 pub use writer::Writer;
 
+use crate::codec::error::Result;
 use std::io::Read;
 use std::io::Seek;
 use std::io::Write;
 
 pub trait Codec: Sized {
-    fn encode<S>(&self, writer: &mut Writer<S>) -> anyhow::Result<()>
+    fn encode<S>(&self, writer: &mut Writer<S>) -> Result<()>
     where
         S: Write + Seek;
 
-    fn decode<S>(reader: &mut Reader<S>) -> anyhow::Result<Self>
+    fn decode<S>(reader: &mut Reader<S>) -> Result<Self>
     where
         S: Read + Seek;
 }
