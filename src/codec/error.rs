@@ -6,7 +6,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, Error)]
 pub enum Error {
-    #[error("failed to convert length while reading")]
+    #[error("failed to convert length")]
     InvalidLength,
 
     #[error("an I/O error occurred: {0}")]
