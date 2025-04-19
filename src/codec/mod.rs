@@ -1,3 +1,5 @@
+pub mod error;
+
 mod bound;
 mod reader;
 mod writer;

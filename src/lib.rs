@@ -13,9 +13,9 @@
 //! user-friendliness, ensuring that users can easily adapt to and incorporate it
 //! into their workflows without encountering significant learning curves.
 
+pub mod codec;
 pub mod file;
 
-mod codec;
 mod date;
 mod note;
 mod page;
