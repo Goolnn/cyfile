@@ -1,13 +1,13 @@
-pub mod error;
-
 mod bound;
+mod error;
 mod reader;
 mod writer;
 
+pub use crate::codec::error::Error;
+pub use crate::codec::error::Result;
 pub use reader::Reader;
 pub use writer::Writer;
 
-use crate::codec::error::Result;
 use std::io::Read;
 use std::io::Seek;
 use std::io::Write;

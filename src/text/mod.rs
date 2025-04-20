@@ -1,5 +1,6 @@
 use crate::codec::Codec;
 use crate::codec::Reader;
+use crate::codec::Result;
 use crate::codec::Writer;
 use std::io::Read;
 use std::io::Seek;
@@ -64,7 +65,7 @@ impl Text {
 }
 
 impl Codec for Text {
-    fn decode<S>(reader: &mut Reader<S>) -> anyhow::Result<Self>
+    fn decode<S>(reader: &mut Reader<S>) -> Result<Self>
     where
         S: Read + Seek,
     {
@@ -74,7 +75,7 @@ impl Codec for Text {
         })
     }
 
-    fn encode<S>(&self, writer: &mut Writer<S>) -> anyhow::Result<()>
+    fn encode<S>(&self, writer: &mut Writer<S>) -> Result<()>
     where
         S: Write + Seek,
     {
@@ -138,7 +139,7 @@ mod tests {
     }
 
     #[test]
-    fn codec() -> anyhow::Result<()> {
+    fn codec() {
         let text = Text::new().with_content("Content").with_comment("Comment");
 
         let buffer = Vec::new();
@@ -146,13 +147,11 @@ mod tests {
 
         let mut writer = Writer::new(cursor);
 
-        writer.write_object(&text)?;
-        writer.rewind()?;
+        writer.write_object(&text).unwrap();
+        writer.rewind().unwrap();
 
         let mut reader = Reader::new(writer.into_inner());
 
-        assert_eq!(reader.read_object::<Text>()?, text);
-
-        Ok(())
+        assert_eq!(reader.read_object::<Text>().unwrap(), text);
     }
 }

@@ -4,6 +4,7 @@ mod export;
 mod version;
 
 pub use crate::file::error::Error;
+pub use crate::file::error::Result;
 pub use export::ExportArguments;
 pub use version::Version;
 
@@ -22,7 +23,7 @@ use std::io::Write;
 pub struct File;
 
 impl File {
-    pub fn open<Stream>(mut stream: Stream) -> anyhow::Result<Project>
+    pub fn open<Stream>(mut stream: Stream) -> Result<Project>
     where
         Stream: Read + Seek,
     {
@@ -33,13 +34,13 @@ impl File {
         stream.read_exact(&mut version)?;
 
         if header != data::HEADER_DATA {
-            anyhow::bail!(Error::InvalidHeader);
+            return Err(Error::InvalidHeader);
         }
 
         let version = Version::from(version);
 
         if !data::VERSIONS.contains(&version.into()) {
-            anyhow::bail!(Error::UnsupportedVersion { version });
+            return Err(Error::UnsupportedVersion { version });
         }
 
         let mut reader = Reader::new(stream).with_version(version);
@@ -49,11 +50,11 @@ impl File {
         Ok(project)
     }
 
-    pub fn export(project: &Project, arguments: ExportArguments) -> anyhow::Result<()> {
+    pub fn export(project: &Project, arguments: ExportArguments) -> Result<()> {
         if arguments.filepath.is_dir() {
-            anyhow::bail!(Error::PathIsDirectory {
-                path: arguments.filepath
-            })
+            return Err(Error::PathIsDirectory {
+                path: arguments.filepath,
+            });
         }
 
         let mut file = fs::File::create(&arguments.filepath)?;
@@ -63,8 +64,8 @@ impl File {
 
         // 写入版本数据
         if !VERSIONS.contains(&arguments.version.into()) {
-            anyhow::bail!(Error::UnsupportedVersion {
-                version: arguments.version
+            return Err(Error::UnsupportedVersion {
+                version: arguments.version,
             });
         }
 

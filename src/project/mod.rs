@@ -1,7 +1,7 @@
+use crate::codec;
 use crate::codec::Codec;
 use crate::codec::Reader;
 use crate::codec::Writer;
-use crate::file;
 use crate::Date;
 use crate::Note;
 use crate::Page;
@@ -154,7 +154,7 @@ impl Project {
 }
 
 impl Codec for Project {
-    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
+    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> codec::Result<Self> {
         match reader.version().into() {
             (0, 0) => {
                 let pages = reader.read_object::<Vec<Page>>()?;
@@ -199,7 +199,8 @@ impl Codec for Project {
 
                     let page = &mut pages[i as usize];
 
-                    let (page_width, page_height) = page.size()?;
+                    let (page_width, page_height) =
+                        page.size().map_err(|_| codec::Error::InvalidImage)?;
 
                     for _ in 0..note_count {
                         let note_x = reader.read_primitive::<u16>()? as f64;
@@ -303,13 +304,13 @@ impl Codec for Project {
                 pages: reader.read_object()?,
             }),
 
-            version => anyhow::bail!(file::Error::UnsupportedVersion {
-                version: version.into()
+            version => Err(codec::Error::UnsupportedVersion {
+                version: version.into(),
             }),
         }
     }
 
-    fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
+    fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> codec::Result<()> {
         match writer.version().into() {
             (0, 0) => {
                 writer.write_objects::<u8, Page>(&self.pages)?;
@@ -335,7 +336,8 @@ impl Codec for Project {
                 // 标记数据
                 for page in self.pages() {
                     // 图像尺寸
-                    let (page_width, page_height) = page.size()?;
+                    let (page_width, page_height) =
+                        page.size().map_err(|_| codec::Error::InvalidImage)?;
 
                     // 标记数量
                     writer.write_primitive(page.notes().len() as u8)?;
@@ -378,22 +380,22 @@ impl Codec for Project {
                 Ok(())
             }
 
-            version => anyhow::bail!(file::Error::UnsupportedVersion {
-                version: version.into()
+            version => Err(codec::Error::UnsupportedVersion {
+                version: version.into(),
             }),
         }
     }
 }
 
 impl Codec for (u32, u32) {
-    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
+    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> codec::Result<Self> {
         let begin_number = reader.read_primitive()?;
         let ent_number = reader.read_primitive()?;
 
         Ok((begin_number, ent_number))
     }
 
-    fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
+    fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> codec::Result<()> {
         writer.write_primitive(self.0)?;
         writer.write_primitive(self.1)?;
 
@@ -402,7 +404,7 @@ impl Codec for (u32, u32) {
 }
 
 impl Codec for HashSet<String> {
-    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
+    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> codec::Result<Self> {
         let mut names = HashSet::new();
 
         let name_count = reader.read_primitive::<u8>()?;
@@ -416,7 +418,7 @@ impl Codec for HashSet<String> {
         Ok(names)
     }
 
-    fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
+    fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> codec::Result<()> {
         writer.write_primitive(self.len() as u8)?;
 
         for name in self.iter() {
@@ -428,27 +430,27 @@ impl Codec for HashSet<String> {
 }
 
 impl Codec for Vec<Page> {
-    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
+    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> codec::Result<Self> {
         let pages = match reader.version().into() {
             (0, 0) => reader.read_objects::<u8, Page>(),
             (0, 2) => reader.read_objects::<u32, Page>(),
 
-            version => anyhow::bail!(file::Error::UnsupportedVersion {
-                version: version.into()
+            version => Err(codec::Error::UnsupportedVersion {
+                version: version.into(),
             }),
         }?;
 
         Ok(pages)
     }
 
-    fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
+    fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> codec::Result<()> {
         match writer.version().into() {
             (0, 0) => writer.write_objects::<u8, Page>(self)?,
             (0, 2) => writer.write_objects::<u32, Page>(self)?,
 
-            version => anyhow::bail!(file::Error::UnsupportedVersion {
-                version: version.into()
-            }),
+            version => Err(codec::Error::UnsupportedVersion {
+                version: version.into(),
+            })?,
         }
 
         Ok(())

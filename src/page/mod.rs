@@ -1,3 +1,4 @@
+use crate::codec;
 use crate::codec::Codec;
 use crate::codec::Reader;
 use crate::codec::Writer;
@@ -59,7 +60,7 @@ impl Page {
         &self.notes
     }
 
-    pub fn size(&self) -> anyhow::Result<(usize, usize)> {
+    pub fn size(&self) -> file::Result<(usize, usize)> {
         let cursor = Cursor::new(self.data());
         let reader = ImageReader::new(cursor).with_guessed_format()?;
         let dimensions = reader.into_dimensions()?;
@@ -69,14 +70,15 @@ impl Page {
 }
 
 impl Codec for Page {
-    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
+    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> codec::Result<Self> {
         match reader.version().into() {
             (0, 0) => {
                 let data = reader.read_bytes_with_len::<u32>()?;
 
                 let mut page = Page::new(data);
 
-                let (page_width, page_height) = page.size()?;
+                let (page_width, page_height) =
+                    page.size().map_err(|_| codec::Error::InvalidImage)?;
 
                 let note_count = reader.read_primitive::<u8>()?;
 
@@ -110,20 +112,21 @@ impl Codec for Page {
                 Ok(page)
             }
 
-            version => anyhow::bail!(file::Error::UnsupportedVersion {
-                version: version.into()
+            version => Err(codec::Error::UnsupportedVersion {
+                version: version.into(),
             }),
         }
     }
 
-    fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
+    fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> codec::Result<()> {
         match writer.version().into() {
             (0, 0) => {
                 // 图像数据
                 writer.write_bytes_with_len::<u32>(self.data())?;
 
                 // 图像尺寸
-                let (page_width, page_height) = self.size()?;
+                let (page_width, page_height) =
+                    self.size().map_err(|_| codec::Error::InvalidImage)?;
 
                 // 标签数量
                 writer.write_primitive(self.notes().len() as u8)?;
@@ -158,8 +161,8 @@ impl Codec for Page {
                 Ok(())
             }
 
-            version => anyhow::bail!(file::Error::UnsupportedVersion {
-                version: version.into()
+            version => Err(codec::Error::UnsupportedVersion {
+                version: version.into(),
             }),
         }
     }

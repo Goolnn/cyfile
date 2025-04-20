@@ -1,8 +1,8 @@
 use crate::codec::bound::Length;
 use crate::codec::bound::Primitive;
-use crate::codec::error::Error;
-use crate::codec::error::Result;
 use crate::codec::Codec;
+use crate::codec::Error;
+use crate::codec::Result;
 use crate::file::VERSION_LATEST;
 use crate::Version;
 use std::io;

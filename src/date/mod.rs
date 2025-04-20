@@ -1,3 +1,4 @@
+use crate::codec;
 use crate::codec::Codec;
 use crate::codec::Reader;
 use crate::codec::Writer;
@@ -101,7 +102,7 @@ impl Default for Date {
 }
 
 impl Codec for Date {
-    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> anyhow::Result<Self> {
+    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> codec::Result<Self> {
         Ok(Self {
             year: reader.read_primitive()?,
             month: reader.read_primitive()?,
@@ -113,7 +114,7 @@ impl Codec for Date {
         })
     }
 
-    fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> anyhow::Result<()> {
+    fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> codec::Result<()> {
         writer.write_primitive(self.year)?;
         writer.write_primitive(self.month)?;
         writer.write_primitive(self.day)?;
