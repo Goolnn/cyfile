@@ -137,7 +137,7 @@ mod tests {
     use std::io::SeekFrom;
 
     #[test]
-    fn codec() {
+    fn codec() -> anyhow::Result<()> {
         let date = Date::now();
 
         let buffer = Vec::new();
@@ -145,14 +145,16 @@ mod tests {
 
         let mut writer = Writer::new(cursor);
 
-        writer.write_object(&date).unwrap();
+        writer.write_object(&date)?;
 
         let mut cursor = writer.into_inner();
 
-        cursor.seek(SeekFrom::Start(0)).unwrap();
+        cursor.seek(SeekFrom::Start(0))?;
 
         let mut reader = Reader::new(cursor);
 
-        assert_eq!(reader.read_object::<Date>().unwrap(), date);
+        assert_eq!(reader.read_object::<Date>()?, date);
+
+        Ok(())
     }
 }

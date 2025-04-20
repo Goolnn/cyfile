@@ -13,6 +13,8 @@ pub enum Error {
     UnsupportedVersion { version: Version },
     #[error("failed to parse image data")]
     InvalidImage,
+    #[error("failed to parse text data")]
+    ParseFailed,
 
     #[error("an I/O error occurred: {0}")]
     Io(#[from] io::Error),

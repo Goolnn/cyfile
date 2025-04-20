@@ -31,7 +31,7 @@ mod tests {
     use std::io::SeekFrom;
 
     #[test]
-    fn primitive() {
+    fn primitive() -> anyhow::Result<()> {
         let u8_value = 8u8;
         let u16_value = 16u16;
         let u32_value = 32u32;
@@ -94,135 +94,131 @@ mod tests {
 
         let mut writer = Writer::new(cursor);
 
-        writer.write_primitive(u8_value).unwrap();
-        writer.write_primitive(u16_value).unwrap();
-        writer.write_primitive(u32_value).unwrap();
-        writer.write_primitive(u64_value).unwrap();
-        writer.write_primitive(u128_value).unwrap();
+        writer.write_primitive(u8_value)?;
+        writer.write_primitive(u16_value)?;
+        writer.write_primitive(u32_value)?;
+        writer.write_primitive(u64_value)?;
+        writer.write_primitive(u128_value)?;
 
-        writer.write_primitive(u8_min_value).unwrap();
-        writer.write_primitive(u16_min_value).unwrap();
-        writer.write_primitive(u32_min_value).unwrap();
-        writer.write_primitive(u64_min_value).unwrap();
-        writer.write_primitive(u128_min_value).unwrap();
+        writer.write_primitive(u8_min_value)?;
+        writer.write_primitive(u16_min_value)?;
+        writer.write_primitive(u32_min_value)?;
+        writer.write_primitive(u64_min_value)?;
+        writer.write_primitive(u128_min_value)?;
 
-        writer.write_primitive(u8_max_value).unwrap();
-        writer.write_primitive(u16_max_value).unwrap();
-        writer.write_primitive(u32_max_value).unwrap();
-        writer.write_primitive(u64_max_value).unwrap();
-        writer.write_primitive(u128_max_value).unwrap();
+        writer.write_primitive(u8_max_value)?;
+        writer.write_primitive(u16_max_value)?;
+        writer.write_primitive(u32_max_value)?;
+        writer.write_primitive(u64_max_value)?;
+        writer.write_primitive(u128_max_value)?;
 
-        writer.write_primitive(i8_nagative_value).unwrap();
-        writer.write_primitive(i16_nagative_value).unwrap();
-        writer.write_primitive(i32_nagative_value).unwrap();
-        writer.write_primitive(i64_nagative_value).unwrap();
-        writer.write_primitive(i128_nagative_value).unwrap();
+        writer.write_primitive(i8_nagative_value)?;
+        writer.write_primitive(i16_nagative_value)?;
+        writer.write_primitive(i32_nagative_value)?;
+        writer.write_primitive(i64_nagative_value)?;
+        writer.write_primitive(i128_nagative_value)?;
 
-        writer.write_primitive(i8_min_value).unwrap();
-        writer.write_primitive(i16_min_value).unwrap();
-        writer.write_primitive(i32_min_value).unwrap();
-        writer.write_primitive(i64_min_value).unwrap();
-        writer.write_primitive(i128_min_value).unwrap();
+        writer.write_primitive(i8_min_value)?;
+        writer.write_primitive(i16_min_value)?;
+        writer.write_primitive(i32_min_value)?;
+        writer.write_primitive(i64_min_value)?;
+        writer.write_primitive(i128_min_value)?;
 
-        writer.write_primitive(i8_positive_value).unwrap();
-        writer.write_primitive(i16_positive_value).unwrap();
-        writer.write_primitive(i32_positive_value).unwrap();
-        writer.write_primitive(i64_positive_value).unwrap();
-        writer.write_primitive(i128_positive_value).unwrap();
+        writer.write_primitive(i8_positive_value)?;
+        writer.write_primitive(i16_positive_value)?;
+        writer.write_primitive(i32_positive_value)?;
+        writer.write_primitive(i64_positive_value)?;
+        writer.write_primitive(i128_positive_value)?;
 
-        writer.write_primitive(i8_max_value).unwrap();
-        writer.write_primitive(i16_max_value).unwrap();
-        writer.write_primitive(i32_max_value).unwrap();
-        writer.write_primitive(i64_max_value).unwrap();
-        writer.write_primitive(i128_max_value).unwrap();
+        writer.write_primitive(i8_max_value)?;
+        writer.write_primitive(i16_max_value)?;
+        writer.write_primitive(i32_max_value)?;
+        writer.write_primitive(i64_max_value)?;
+        writer.write_primitive(i128_max_value)?;
 
-        writer.write_primitive(f32_nagative_value).unwrap();
-        writer.write_primitive(f64_nagative_value).unwrap();
+        writer.write_primitive(f32_nagative_value)?;
+        writer.write_primitive(f64_nagative_value)?;
 
-        writer.write_primitive(f32_min_value).unwrap();
-        writer.write_primitive(f64_min_value).unwrap();
+        writer.write_primitive(f32_min_value)?;
+        writer.write_primitive(f64_min_value)?;
 
-        writer.write_primitive(f32_positive_value).unwrap();
-        writer.write_primitive(f64_positive_value).unwrap();
+        writer.write_primitive(f32_positive_value)?;
+        writer.write_primitive(f64_positive_value)?;
 
-        writer.write_primitive(f32_max_value).unwrap();
-        writer.write_primitive(f64_max_value).unwrap();
+        writer.write_primitive(f32_max_value)?;
+        writer.write_primitive(f64_max_value)?;
 
-        writer.write_primitive(bool_true_value).unwrap();
-        writer.write_primitive(bool_false_value).unwrap();
+        writer.write_primitive(bool_true_value)?;
+        writer.write_primitive(bool_false_value)?;
 
         let mut cursor = writer.into_inner();
 
-        cursor.seek(SeekFrom::Start(0)).unwrap();
+        cursor.seek(SeekFrom::Start(0))?;
 
         let mut reader = Reader::new(cursor);
 
-        assert_eq!(reader.read_primitive::<u8>().unwrap(), u8_value);
-        assert_eq!(reader.read_primitive::<u16>().unwrap(), u16_value);
-        assert_eq!(reader.read_primitive::<u32>().unwrap(), u32_value);
-        assert_eq!(reader.read_primitive::<u64>().unwrap(), u64_value);
-        assert_eq!(reader.read_primitive::<u128>().unwrap(), u128_value);
+        assert_eq!(reader.read_primitive::<u8>()?, u8_value);
+        assert_eq!(reader.read_primitive::<u16>()?, u16_value);
+        assert_eq!(reader.read_primitive::<u32>()?, u32_value);
+        assert_eq!(reader.read_primitive::<u64>()?, u64_value);
+        assert_eq!(reader.read_primitive::<u128>()?, u128_value);
 
-        assert_eq!(reader.read_primitive::<u8>().unwrap(), u8_min_value);
-        assert_eq!(reader.read_primitive::<u16>().unwrap(), u16_min_value);
-        assert_eq!(reader.read_primitive::<u32>().unwrap(), u32_min_value);
-        assert_eq!(reader.read_primitive::<u64>().unwrap(), u64_min_value);
-        assert_eq!(reader.read_primitive::<u128>().unwrap(), u128_min_value);
+        assert_eq!(reader.read_primitive::<u8>()?, u8_min_value);
+        assert_eq!(reader.read_primitive::<u16>()?, u16_min_value);
+        assert_eq!(reader.read_primitive::<u32>()?, u32_min_value);
+        assert_eq!(reader.read_primitive::<u64>()?, u64_min_value);
+        assert_eq!(reader.read_primitive::<u128>()?, u128_min_value);
 
-        assert_eq!(reader.read_primitive::<u8>().unwrap(), u8_max_value);
-        assert_eq!(reader.read_primitive::<u16>().unwrap(), u16_max_value);
-        assert_eq!(reader.read_primitive::<u32>().unwrap(), u32_max_value);
-        assert_eq!(reader.read_primitive::<u64>().unwrap(), u64_max_value);
-        assert_eq!(reader.read_primitive::<u128>().unwrap(), u128_max_value);
+        assert_eq!(reader.read_primitive::<u8>()?, u8_max_value);
+        assert_eq!(reader.read_primitive::<u16>()?, u16_max_value);
+        assert_eq!(reader.read_primitive::<u32>()?, u32_max_value);
+        assert_eq!(reader.read_primitive::<u64>()?, u64_max_value);
+        assert_eq!(reader.read_primitive::<u128>()?, u128_max_value);
 
-        assert_eq!(reader.read_primitive::<i8>().unwrap(), i8_nagative_value);
-        assert_eq!(reader.read_primitive::<i16>().unwrap(), i16_nagative_value);
-        assert_eq!(reader.read_primitive::<i32>().unwrap(), i32_nagative_value);
-        assert_eq!(reader.read_primitive::<i64>().unwrap(), i64_nagative_value);
-        assert_eq!(
-            reader.read_primitive::<i128>().unwrap(),
-            i128_nagative_value
-        );
+        assert_eq!(reader.read_primitive::<i8>()?, i8_nagative_value);
+        assert_eq!(reader.read_primitive::<i16>()?, i16_nagative_value);
+        assert_eq!(reader.read_primitive::<i32>()?, i32_nagative_value);
+        assert_eq!(reader.read_primitive::<i64>()?, i64_nagative_value);
+        assert_eq!(reader.read_primitive::<i128>()?, i128_nagative_value);
 
-        assert_eq!(reader.read_primitive::<i8>().unwrap(), i8_min_value);
-        assert_eq!(reader.read_primitive::<i16>().unwrap(), i16_min_value);
-        assert_eq!(reader.read_primitive::<i32>().unwrap(), i32_min_value);
-        assert_eq!(reader.read_primitive::<i64>().unwrap(), i64_min_value);
-        assert_eq!(reader.read_primitive::<i128>().unwrap(), i128_min_value);
+        assert_eq!(reader.read_primitive::<i8>()?, i8_min_value);
+        assert_eq!(reader.read_primitive::<i16>()?, i16_min_value);
+        assert_eq!(reader.read_primitive::<i32>()?, i32_min_value);
+        assert_eq!(reader.read_primitive::<i64>()?, i64_min_value);
+        assert_eq!(reader.read_primitive::<i128>()?, i128_min_value);
 
-        assert_eq!(reader.read_primitive::<i8>().unwrap(), i8_positive_value);
-        assert_eq!(reader.read_primitive::<i16>().unwrap(), i16_positive_value);
-        assert_eq!(reader.read_primitive::<i32>().unwrap(), i32_positive_value);
-        assert_eq!(reader.read_primitive::<i64>().unwrap(), i64_positive_value);
-        assert_eq!(
-            reader.read_primitive::<i128>().unwrap(),
-            i128_positive_value
-        );
+        assert_eq!(reader.read_primitive::<i8>()?, i8_positive_value);
+        assert_eq!(reader.read_primitive::<i16>()?, i16_positive_value);
+        assert_eq!(reader.read_primitive::<i32>()?, i32_positive_value);
+        assert_eq!(reader.read_primitive::<i64>()?, i64_positive_value);
+        assert_eq!(reader.read_primitive::<i128>()?, i128_positive_value);
 
-        assert_eq!(reader.read_primitive::<i8>().unwrap(), i8_max_value);
-        assert_eq!(reader.read_primitive::<i16>().unwrap(), i16_max_value);
-        assert_eq!(reader.read_primitive::<i32>().unwrap(), i32_max_value);
-        assert_eq!(reader.read_primitive::<i64>().unwrap(), i64_max_value);
-        assert_eq!(reader.read_primitive::<i128>().unwrap(), i128_max_value);
+        assert_eq!(reader.read_primitive::<i8>()?, i8_max_value);
+        assert_eq!(reader.read_primitive::<i16>()?, i16_max_value);
+        assert_eq!(reader.read_primitive::<i32>()?, i32_max_value);
+        assert_eq!(reader.read_primitive::<i64>()?, i64_max_value);
+        assert_eq!(reader.read_primitive::<i128>()?, i128_max_value);
 
-        assert_eq!(reader.read_primitive::<f32>().unwrap(), f32_nagative_value);
-        assert_eq!(reader.read_primitive::<f64>().unwrap(), f64_nagative_value);
+        assert_eq!(reader.read_primitive::<f32>()?, f32_nagative_value);
+        assert_eq!(reader.read_primitive::<f64>()?, f64_nagative_value);
 
-        assert_eq!(reader.read_primitive::<f32>().unwrap(), f32_min_value);
-        assert_eq!(reader.read_primitive::<f64>().unwrap(), f64_min_value);
+        assert_eq!(reader.read_primitive::<f32>()?, f32_min_value);
+        assert_eq!(reader.read_primitive::<f64>()?, f64_min_value);
 
-        assert_eq!(reader.read_primitive::<f32>().unwrap(), f32_positive_value);
-        assert_eq!(reader.read_primitive::<f64>().unwrap(), f64_positive_value);
+        assert_eq!(reader.read_primitive::<f32>()?, f32_positive_value);
+        assert_eq!(reader.read_primitive::<f64>()?, f64_positive_value);
 
-        assert_eq!(reader.read_primitive::<f32>().unwrap(), f32_max_value);
-        assert_eq!(reader.read_primitive::<f64>().unwrap(), f64_max_value);
+        assert_eq!(reader.read_primitive::<f32>()?, f32_max_value);
+        assert_eq!(reader.read_primitive::<f64>()?, f64_max_value);
 
-        assert_eq!(reader.read_primitive::<bool>().unwrap(), bool_true_value);
-        assert_eq!(reader.read_primitive::<bool>().unwrap(), bool_false_value);
+        assert_eq!(reader.read_primitive::<bool>()?, bool_true_value);
+        assert_eq!(reader.read_primitive::<bool>()?, bool_false_value);
+
+        Ok(())
     }
 
     #[test]
-    fn bytes() {
+    fn bytes() -> anyhow::Result<()> {
         let data = [0x01, 0x04, 0x03, 0x02, 0x05];
 
         let buffer = Vec::new();
@@ -230,19 +226,21 @@ mod tests {
 
         let mut writer = Writer::new(cursor);
 
-        writer.write_bytes(data).unwrap();
+        writer.write_bytes(data)?;
 
         let mut cursor = writer.into_inner();
 
-        cursor.seek(SeekFrom::Start(0)).unwrap();
+        cursor.seek(SeekFrom::Start(0))?;
 
         let mut reader = Reader::new(cursor);
 
-        assert_eq!(reader.read_bytes(data.len()).unwrap(), data);
+        assert_eq!(reader.read_bytes(data.len())?, data);
+
+        Ok(())
     }
 
     #[test]
-    fn bytes_with_len() {
+    fn bytes_with_len() -> anyhow::Result<()> {
         let data = [0x01, 0x04, 0x03, 0x02, 0x05];
 
         let buffer = Vec::new();
@@ -250,19 +248,21 @@ mod tests {
 
         let mut writer = Writer::new(cursor);
 
-        writer.write_bytes_with_len::<u8>(data).unwrap();
+        writer.write_bytes_with_len::<u8>(data)?;
 
         let mut cursor = writer.into_inner();
 
-        cursor.seek(SeekFrom::Start(0)).unwrap();
+        cursor.seek(SeekFrom::Start(0))?;
 
         let mut reader = Reader::new(cursor);
 
-        assert_eq!(reader.read_bytes_with_len::<u8>().unwrap(), data);
+        assert_eq!(reader.read_bytes_with_len::<u8>()?, data);
+
+        Ok(())
     }
 
     #[test]
-    fn string_with_len() {
+    fn string_with_len() -> anyhow::Result<()> {
         let data = "Hello, world!";
 
         let buffer = Vec::new();
@@ -270,19 +270,21 @@ mod tests {
 
         let mut writer = Writer::new(cursor);
 
-        writer.write_string_with_len::<u8>(data).unwrap();
+        writer.write_string_with_len::<u8>(data)?;
 
         let mut cursor = writer.into_inner();
 
-        cursor.seek(SeekFrom::Start(0)).unwrap();
+        cursor.seek(SeekFrom::Start(0))?;
 
         let mut reader = Reader::new(cursor);
 
-        assert_eq!(reader.read_string_with_len::<u8>().unwrap(), data);
+        assert_eq!(reader.read_string_with_len::<u8>()?, data);
+
+        Ok(())
     }
 
     #[test]
-    fn string_with_nil() {
+    fn string_with_nil() -> anyhow::Result<()> {
         let data = "Hello, world!";
 
         let buffer = Vec::new();
@@ -290,14 +292,16 @@ mod tests {
 
         let mut writer = Writer::new(cursor);
 
-        writer.write_string_with_nil(data).unwrap();
+        writer.write_string_with_nil(data)?;
 
         let mut cursor = writer.into_inner();
 
-        cursor.seek(SeekFrom::Start(0)).unwrap();
+        cursor.seek(SeekFrom::Start(0))?;
 
         let mut reader = Reader::new(cursor);
 
-        assert_eq!(reader.read_string_with_nil().unwrap(), data);
+        assert_eq!(reader.read_string_with_nil()?, data);
+
+        Ok(())
     }
 }

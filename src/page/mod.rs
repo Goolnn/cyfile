@@ -187,17 +187,19 @@ mod tests {
     use std::io::SeekFrom;
 
     #[test]
-    fn new() {
-        let image = fs::read(r"tests/images/0.png").unwrap();
+    fn new() -> anyhow::Result<()> {
+        let image = fs::read(r"tests/images/0.png")?;
         let page = Page::new(image.clone());
 
         assert_eq!(page.data(), image.as_slice());
         assert_eq!(page.notes().len(), 0);
+
+        Ok(())
     }
 
     #[test]
-    fn with_notes() {
-        let image = fs::read(r"tests/images/0.png").unwrap();
+    fn with_notes() -> anyhow::Result<()> {
+        let image = fs::read(r"tests/images/0.png")?;
         let page = Page::new(image.clone()).with_notes(vec![
             Note::new().with_position(0.5, 0.5),
             Note::new().with_position(-0.5, -0.5),
@@ -212,11 +214,13 @@ mod tests {
 
         assert_eq!(page.notes()[1].x(), -0.5);
         assert_eq!(page.notes()[1].y(), -0.5);
+
+        Ok(())
     }
 
     #[test]
-    fn with_note() {
-        let image = fs::read(r"tests/images/0.png").unwrap();
+    fn with_note() -> anyhow::Result<()> {
+        let image = fs::read(r"tests/images/0.png")?;
         let page = Page::new(image.clone())
             .with_note(Note::new().with_position(0.5, 0.5))
             .with_note(Note::new().with_position(-0.5, -0.5));
@@ -230,22 +234,26 @@ mod tests {
 
         assert_eq!(page.notes()[1].x(), -0.5);
         assert_eq!(page.notes()[1].y(), -0.5);
+
+        Ok(())
     }
 
     #[test]
-    fn set_data() {
-        let image = fs::read(r"tests/images/0.png").unwrap();
+    fn set_data() -> anyhow::Result<()> {
+        let image = fs::read(r"tests/images/0.png")?;
         let mut page = Page::new(image.clone());
 
-        let new_image = fs::read(r"tests/images/1.png").unwrap();
+        let new_image = fs::read(r"tests/images/1.png")?;
         page.set_data(new_image.clone());
 
         assert_eq!(page.data(), new_image.as_slice());
+
+        Ok(())
     }
 
     #[test]
-    fn set_notes() {
-        let image = fs::read(r"tests/images/0.png").unwrap();
+    fn set_notes() -> anyhow::Result<()> {
+        let image = fs::read(r"tests/images/0.png")?;
         let mut page = Page::new(image.clone());
 
         let notes = vec![
@@ -256,11 +264,13 @@ mod tests {
         page.set_notes(notes.clone());
 
         assert_eq!(page.notes(), &notes);
+
+        Ok(())
     }
 
     #[test]
-    fn codec_for_version_0_0() {
-        let image = fs::read(r"tests/images/0.png").unwrap();
+    fn codec_for_version_0_0() -> anyhow::Result<()> {
+        let image = fs::read(r"tests/images/0.png")?;
         let page = Page::new(image)
             .with_note(
                 Note::new()
@@ -282,15 +292,15 @@ mod tests {
 
         let mut writer = Writer::new(cursor).with_version((0, 0));
 
-        writer.write_object(&page).unwrap();
+        writer.write_object(&page)?;
 
         let mut cursor = writer.into_inner();
 
-        cursor.seek(SeekFrom::Start(0)).unwrap();
+        cursor.seek(SeekFrom::Start(0))?;
 
         let mut reader = Reader::new(cursor).with_version((0, 0));
 
-        let read_page = reader.read_object::<Page>().unwrap();
+        let read_page = reader.read_object::<Page>()?;
 
         assert_eq!(read_page.data(), page.data());
 
@@ -308,11 +318,13 @@ mod tests {
 
             assert_eq!(read_note.texts()[0].content(), merged_text);
         }
+
+        Ok(())
     }
 
     #[test]
-    fn codec_for_version_0_2() {
-        let image = fs::read(r"tests/images/0.png").unwrap();
+    fn codec_for_version_0_2() -> anyhow::Result<()> {
+        let image = fs::read(r"tests/images/0.png")?;
         let page = Page::new(image)
             .with_note(
                 Note::new()
@@ -334,14 +346,16 @@ mod tests {
 
         let mut writer = Writer::new(cursor).with_version((0, 2));
 
-        writer.write_object(&page).unwrap();
+        writer.write_object(&page)?;
 
         let mut cursor = writer.into_inner();
 
-        cursor.seek(SeekFrom::Start(0)).unwrap();
+        cursor.seek(SeekFrom::Start(0))?;
 
         let mut reader = Reader::new(cursor).with_version((0, 2));
 
-        assert_eq!(reader.read_object::<Page>().unwrap(), page);
+        assert_eq!(reader.read_object::<Page>()?, page);
+
+        Ok(())
     }
 }

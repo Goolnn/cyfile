@@ -139,7 +139,7 @@ mod tests {
     }
 
     #[test]
-    fn codec() {
+    fn codec() -> anyhow::Result<()> {
         let text = Text::new().with_content("Content").with_comment("Comment");
 
         let buffer = Vec::new();
@@ -147,11 +147,13 @@ mod tests {
 
         let mut writer = Writer::new(cursor);
 
-        writer.write_object(&text).unwrap();
-        writer.rewind().unwrap();
+        writer.write_object(&text)?;
+        writer.rewind()?;
 
         let mut reader = Reader::new(writer.into_inner());
 
-        assert_eq!(reader.read_object::<Text>().unwrap(), text);
+        assert_eq!(reader.read_object::<Text>()?, text);
+
+        Ok(())
     }
 }

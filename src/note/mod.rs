@@ -403,7 +403,7 @@ mod tests {
     }
 
     #[test]
-    fn codec() {
+    fn codec() -> anyhow::Result<()> {
         let note = Note::new()
             .with_position(0.5, 0.5)
             .with_comfirm(
@@ -432,14 +432,16 @@ mod tests {
 
         let mut writer = Writer::new(cursor);
 
-        writer.write_object(&note).unwrap();
+        writer.write_object(&note)?;
 
         let mut cursor = writer.into_inner();
 
-        cursor.seek(SeekFrom::Start(0)).unwrap();
+        cursor.seek(SeekFrom::Start(0))?;
 
         let mut reader = Reader::new(cursor);
 
-        assert_eq!(reader.read_object::<Note>().unwrap(), note);
+        assert_eq!(reader.read_object::<Note>()?, note);
+
+        Ok(())
     }
 }

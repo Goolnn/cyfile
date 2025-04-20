@@ -218,7 +218,7 @@ impl Codec for Project {
 
                         draft_bytes.pop();
 
-                        let mut draft = String::from_utf8(draft_bytes).unwrap();
+                        let mut draft = String::from_utf8(draft_bytes)?;
 
                         // 校对数据
                         let revision_len = reader.read_primitive::<u16>()? as usize;
@@ -227,7 +227,7 @@ impl Codec for Project {
 
                         revision_bytes.pop();
 
-                        let mut revision = String::from_utf8(revision_bytes).unwrap();
+                        let mut revision = String::from_utf8(revision_bytes)?;
 
                         // 判断是否为 HTML
                         let draft_is_html = draft.contains("DOCTYPE HTML PUBLIC");
@@ -237,7 +237,8 @@ impl Codec for Project {
                             let draft_parser = Html::parse_document(&draft);
                             let revision_parser = Html::parse_document(&revision);
 
-                            let selector = Selector::parse("p").unwrap();
+                            let selector =
+                                Selector::parse("p").map_err(|_| codec::Error::ParseFailed)?;
 
                             draft = draft_parser
                                 .select(&selector)
@@ -507,11 +508,13 @@ mod tests {
     }
 
     #[test]
-    fn with_cover() {
-        let cover = fs::read(r"tests/images/0.png").unwrap();
+    fn with_cover() -> anyhow::Result<()> {
+        let cover = fs::read(r"tests/images/0.png")?;
         let project = Project::new().with_cover(cover.clone());
 
         assert_eq!(project.cover(), cover.as_slice());
+
+        Ok(())
     }
 
     #[test]
@@ -543,8 +546,8 @@ mod tests {
     }
 
     #[test]
-    fn with_pages() {
-        let image = fs::read(r"tests/images/0.png").unwrap();
+    fn with_pages() -> anyhow::Result<()> {
+        let image = fs::read(r"tests/images/0.png")?;
 
         let project = Project::new().with_pages(vec![
             Page::new(image.clone()).with_note(
@@ -587,11 +590,13 @@ mod tests {
             project.pages()[1].notes()[0].texts()[1].content(),
             "content_2_1_2"
         );
+
+        Ok(())
     }
 
     #[test]
-    fn with_page() {
-        let image = fs::read(r"tests/images/0.png").unwrap();
+    fn with_page() -> anyhow::Result<()> {
+        let image = fs::read(r"tests/images/0.png")?;
 
         let project = Project::new()
             .with_page(
@@ -659,16 +664,20 @@ mod tests {
             project.pages()[1].notes()[0].texts()[1].content(),
             "content_2_1_2"
         );
+
+        Ok(())
     }
 
     #[test]
-    fn set_cover() {
-        let cover = fs::read(r"tests/images/0.png").unwrap();
+    fn set_cover() -> anyhow::Result<()> {
+        let cover = fs::read(r"tests/images/0.png")?;
         let mut project = Project::new();
 
         project.set_cover(cover.clone());
 
         assert_eq!(project.cover(), cover.as_slice());
+
+        Ok(())
     }
 
     #[test]
@@ -708,8 +717,8 @@ mod tests {
     }
 
     #[test]
-    fn set_pages() {
-        let image = fs::read(r"tests/images/0.png").unwrap();
+    fn set_pages() -> anyhow::Result<()> {
+        let image = fs::read(r"tests/images/0.png")?;
 
         let mut project = Project::new();
 
@@ -754,11 +763,13 @@ mod tests {
             project.pages()[1].notes()[0].texts()[1].content(),
             "content_2_1_2"
         );
+
+        Ok(())
     }
 
     #[test]
-    fn codec_for_version_0_0() {
-        let image = fs::read(r"tests/images/0.png").unwrap();
+    fn codec_for_version_0_0() -> anyhow::Result<()> {
+        let image = fs::read(r"tests/images/0.png")?;
 
         let project = Project::new()
             .with_title("工程")
@@ -789,15 +800,15 @@ mod tests {
 
         let mut writer = Writer::new(cursor).with_version((0, 0));
 
-        writer.write_object(&project).unwrap();
+        writer.write_object(&project)?;
 
         let mut cursor = writer.into_inner();
 
-        cursor.seek(std::io::SeekFrom::Start(0)).unwrap();
+        cursor.seek(std::io::SeekFrom::Start(0))?;
 
         let mut reader = Reader::new(cursor).with_version((0, 0));
 
-        let read_project = reader.read_object::<Project>().unwrap();
+        let read_project = reader.read_object::<Project>()?;
 
         assert!(read_project.title().is_empty());
 
@@ -817,11 +828,13 @@ mod tests {
                 assert_eq!(read_note.texts()[0].comment(), comment);
             }
         }
+
+        Ok(())
     }
 
     #[test]
-    fn codec_for_version_0_1() {
-        let image = fs::read(r"tests/images/0.png").unwrap();
+    fn codec_for_version_0_1() -> anyhow::Result<()> {
+        let image = fs::read(r"tests/images/0.png")?;
 
         let project = Project::new()
             .with_title("工程")
@@ -852,15 +865,15 @@ mod tests {
 
         let mut writer = Writer::new(cursor).with_version((0, 1));
 
-        writer.write_object(&project).unwrap();
+        writer.write_object(&project)?;
 
         let mut cursor = writer.into_inner();
 
-        cursor.seek(std::io::SeekFrom::Start(0)).unwrap();
+        cursor.seek(std::io::SeekFrom::Start(0))?;
 
         let mut reader = Reader::new(cursor).with_version((0, 1));
 
-        let read_project = reader.read_object::<Project>().unwrap();
+        let read_project = reader.read_object::<Project>()?;
 
         assert!(read_project.title().is_empty());
 
@@ -880,11 +893,13 @@ mod tests {
                 assert_eq!(read_note.texts()[0].comment(), comment);
             }
         }
+
+        Ok(())
     }
 
     #[test]
-    fn codec_for_version_0_2() {
-        let image = fs::read(r"tests/images/0.png").unwrap();
+    fn codec_for_version_0_2() -> anyhow::Result<()> {
+        let image = fs::read(r"tests/images/0.png")?;
 
         let project = Project::new()
             .with_title("工程")
@@ -915,14 +930,16 @@ mod tests {
 
         let mut writer = Writer::new(cursor).with_version((0, 2));
 
-        writer.write_object(&project).unwrap();
+        writer.write_object(&project)?;
 
         let mut cursor = writer.into_inner();
 
-        cursor.seek(std::io::SeekFrom::Start(0)).unwrap();
+        cursor.seek(std::io::SeekFrom::Start(0))?;
 
         let mut reader = Reader::new(cursor).with_version((0, 2));
 
-        assert_eq!(reader.read_object::<Project>().unwrap(), project);
+        assert_eq!(reader.read_object::<Project>()?, project);
+
+        Ok(())
     }
 }
