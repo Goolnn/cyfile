@@ -1,6 +1,6 @@
+use crate::codec;
 use crate::codec::Codec;
 use crate::codec::Reader;
-use crate::codec::Result;
 use crate::codec::Writer;
 use std::io::Read;
 use std::io::Seek;
@@ -65,7 +65,7 @@ impl Text {
 }
 
 impl Codec for Text {
-    fn decode<S>(reader: &mut Reader<S>) -> Result<Self>
+    fn decode<S>(reader: &mut Reader<S>) -> codec::Result<Self>
     where
         S: Read + Seek,
     {
@@ -75,7 +75,7 @@ impl Codec for Text {
         })
     }
 
-    fn encode<S>(&self, writer: &mut Writer<S>) -> Result<()>
+    fn encode<S>(&self, writer: &mut Writer<S>) -> codec::Result<()>
     where
         S: Write + Seek,
     {

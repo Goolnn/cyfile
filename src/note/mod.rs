@@ -1,6 +1,6 @@
+use crate::codec;
 use crate::codec::Codec;
 use crate::codec::Reader;
-use crate::codec::Result;
 use crate::codec::Writer;
 use crate::Text;
 use std::io::Read;
@@ -154,7 +154,7 @@ impl Note {
 }
 
 impl Codec for Note {
-    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> Result<Self> {
+    fn decode<S: Read + Seek>(reader: &mut Reader<S>) -> codec::Result<Self> {
         let x = reader.read_primitive()?;
         let y = reader.read_primitive()?;
 
@@ -172,7 +172,7 @@ impl Codec for Note {
         })
     }
 
-    fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> Result<()> {
+    fn encode<S: Write + Seek>(&self, writer: &mut Writer<S>) -> codec::Result<()> {
         writer.write_primitive(self.x)?;
         writer.write_primitive(self.y)?;
 
@@ -185,7 +185,7 @@ impl Codec for Note {
 }
 
 impl Codec for Option<Text> {
-    fn decode<S>(reader: &mut Reader<S>) -> Result<Self>
+    fn decode<S>(reader: &mut Reader<S>) -> codec::Result<Self>
     where
         S: Read + Seek,
     {
@@ -198,7 +198,7 @@ impl Codec for Option<Text> {
         }
     }
 
-    fn encode<S>(&self, writer: &mut Writer<S>) -> Result<()>
+    fn encode<S>(&self, writer: &mut Writer<S>) -> codec::Result<()>
     where
         S: Write + Seek,
     {
