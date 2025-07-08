@@ -35,9 +35,9 @@ fn main() -> anyhow::Result<()> {
     let project_0_1 = File::open(stream_0_1)?;
     let project_0_2 = File::open(stream_0_2)?;
 
-    println!("{:#?}", project_0_0);
-    println!("{:#?}", project_0_1);
-    println!("{:#?}", project_0_2);
+    println!("{project_0_0:#?}");
+    println!("{project_0_1:#?}");
+    println!("{project_0_2:#?}");
 
     Ok(())
 }

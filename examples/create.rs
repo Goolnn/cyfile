@@ -24,7 +24,7 @@ fn main() -> anyhow::Result<()> {
         .with_title("Create")
         .with_page(page);
 
-    println!("{:#?}", project);
+    println!("{project:#?}");
 
     Ok(())
 }
