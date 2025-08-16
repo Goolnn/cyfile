@@ -1,4 +1,5 @@
-mod data;
+pub(crate) mod data;
+
 mod error;
 mod export;
 mod version;

@@ -29,4 +29,22 @@ pub use file::Version;
 pub use note::Note;
 pub use page::Page;
 pub use project::Project;
+use std::io::Read;
+use std::path::Path;
 pub use text::Text;
+
+pub fn check<P: AsRef<Path>>(path: P) -> bool {
+    let file = std::fs::File::open(path);
+
+    if let Ok(mut file) = file {
+        let mut header = [0; 15];
+
+        if file.read_exact(&mut header).is_err() {
+            return false;
+        };
+
+        header == file::data::HEADER_DATA
+    } else {
+        false
+    }
+}
