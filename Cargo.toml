@@ -11,7 +11,7 @@ crate-type = ["lib"]
 chrono = "0.4.41"
 image = "0.25.6"
 scraper = "0.23.1"
-thiserror = "2.0.12"
+thiserror = "2.0.14"
 
 [dev-dependencies]
-anyhow = "1.0.98"
+anyhow = "1.0.99"
