@@ -32,20 +32,13 @@ pub use project::Project;
 pub use text::Text;
 
 use std::io::Read;
-use std::path::Path;
 
-pub fn check<P: AsRef<Path>>(path: P) -> bool {
-    let file = std::fs::File::open(path);
+pub fn check<S: Read>(mut stream: S) -> bool {
+    let mut header = [0; 15];
 
-    if let Ok(mut file) = file {
-        let mut header = [0; 15];
+    if stream.read_exact(&mut header).is_err() {
+        return false;
+    };
 
-        if file.read_exact(&mut header).is_err() {
-            return false;
-        };
-
-        header == file::data::HEADER_DATA
-    } else {
-        false
-    }
+    header == file::data::HEADER_DATA
 }
