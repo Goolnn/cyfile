@@ -29,9 +29,10 @@ pub use file::Version;
 pub use note::Note;
 pub use page::Page;
 pub use project::Project;
+pub use text::Text;
+
 use std::io::Read;
 use std::path::Path;
-pub use text::Text;
 
 pub fn check<P: AsRef<Path>>(path: P) -> bool {
     let file = std::fs::File::open(path);

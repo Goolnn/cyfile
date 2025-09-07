@@ -9,9 +9,9 @@ crate-type = ["lib"]
 
 [dependencies]
 chrono = "0.4.41"
-image = "0.25.6"
-scraper = "0.23.1"
-thiserror = "2.0.14"
+image = "0.25.8"
+scraper = "0.24.0"
+thiserror = "2.0.16"
 
 [dev-dependencies]
 anyhow = "1.0.99"
