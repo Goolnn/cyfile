@@ -42,3 +42,24 @@ pub fn check<S: Read>(mut stream: S) -> bool {
 
     header == file::data::HEADER_DATA
 }
+
+#[cfg(test)]
+mod tests {
+    use std::io::Seek;
+    use std::io::SeekFrom;
+    use std::io::Write;
+
+    #[test]
+    fn check() -> anyhow::Result<()> {
+        let mut file = tempfile::tempfile()?;
+
+        assert!(!super::check(&file));
+
+        file.write_all("苍眼汉化组".as_bytes())?;
+        file.seek(SeekFrom::Start(0))?;
+
+        assert!(super::check(&file));
+
+        Ok(())
+    }
+}
