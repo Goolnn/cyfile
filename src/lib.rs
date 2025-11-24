@@ -42,7 +42,7 @@ pub fn check<S: Read>(mut stream: S) -> bool {
         return false;
     };
 
-    header == file::data::HEADER_DATA
+    header == file::data::LEGACY_HEADER_DATA
 }
 
 #[cfg(test)]

@@ -14,7 +14,7 @@ pub(crate) use data::VERSION_LATEST;
 use crate::codec::Reader;
 use crate::codec::Writer;
 use crate::Project;
-use data::HEADER_DATA;
+use data::LEGACY_HEADER_DATA;
 use data::VERSIONS;
 use std::fs;
 use std::io::Read;
@@ -34,7 +34,7 @@ impl File {
         stream.read_exact(&mut header)?;
         stream.read_exact(&mut version)?;
 
-        if header != data::HEADER_DATA {
+        if header != data::LEGACY_HEADER_DATA {
             return Err(Error::InvalidHeader);
         }
 
@@ -61,7 +61,7 @@ impl File {
         let mut file = fs::File::create(&arguments.filepath)?;
 
         // 写入头部数据
-        file.write_all(&HEADER_DATA)?;
+        file.write_all(&LEGACY_HEADER_DATA)?;
 
         // 写入版本数据
         if !VERSIONS.contains(&arguments.version.into()) {
