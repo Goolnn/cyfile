@@ -298,6 +298,7 @@ name = "cyfile"
 version = "0.5.2"
 dependencies = [
  "anyhow",
+ "byteorder",
  "chrono",
  "image",
  "scraper",
