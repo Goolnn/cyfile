@@ -15,6 +15,7 @@
 
 pub mod codec;
 pub mod file;
+pub mod image;
 
 mod date;
 mod note;
@@ -26,6 +27,7 @@ pub use date::Date;
 pub use file::ExportArguments;
 pub use file::File;
 pub use file::Version;
+pub use image::Image;
 pub use note::Note;
 pub use page::Page;
 pub use project::Project;
