@@ -2,6 +2,7 @@ use crate::codec;
 use crate::codec::Codec;
 use crate::codec::Reader;
 use crate::codec::Writer;
+use crate::Date;
 use std::io::Read;
 use std::io::Seek;
 use std::io::Write;
@@ -10,7 +11,7 @@ use std::io::Write;
 /// The content field is used to save the content of the translated text, and the comment
 /// field is used to save the comments of the translated text.
 ///
-/// To create a text object, you can use the default constructor `Text::new()`, and then
+/// To create a text, you can use the default constructor `Text::new()`, and then
 /// use the `with_content()` and `with_comment()` methods to set the text content and
 /// comments.
 ///
@@ -28,6 +29,9 @@ use std::io::Write;
 pub struct Text {
     content: String,
     comment: String,
+
+    create_at: Date,
+    update_at: Date,
 }
 
 impl Text {
@@ -36,22 +40,30 @@ impl Text {
     }
 
     pub fn with_content(mut self, content: impl ToString) -> Self {
+        self.update_at = Date::now();
+
         self.content = content.to_string();
 
         self
     }
 
     pub fn with_comment(mut self, comment: impl ToString) -> Self {
+        self.update_at = Date::now();
+
         self.comment = comment.to_string();
 
         self
     }
 
     pub fn set_content(&mut self, content: impl ToString) {
+        self.update_at = Date::now();
+
         self.content = content.to_string();
     }
 
     pub fn set_comment(&mut self, comment: impl ToString) {
+        self.update_at = Date::now();
+
         self.comment = comment.to_string();
     }
 
@@ -61,6 +73,14 @@ impl Text {
 
     pub fn comment(&self) -> &str {
         &self.comment
+    }
+
+    pub fn create_at(&self) -> &Date {
+        &self.create_at
+    }
+
+    pub fn update_at(&self) -> &Date {
+        &self.update_at
     }
 }
 
@@ -72,6 +92,9 @@ impl Codec for Text {
         Ok(Self {
             content: reader.read_string_with_len::<u32>()?,
             comment: reader.read_string_with_len::<u32>()?,
+
+            create_at: reader.read_object()?,
+            update_at: reader.read_object()?,
         })
     }
 
@@ -81,6 +104,9 @@ impl Codec for Text {
     {
         writer.write_string_with_len::<u32>(&self.content)?;
         writer.write_string_with_len::<u32>(&self.comment)?;
+
+        writer.write_object(&self.create_at)?;
+        writer.write_object(&self.update_at)?;
 
         Ok(())
     }
