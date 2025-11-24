@@ -13,13 +13,42 @@ use std::io::Seek;
 use std::io::Write;
 
 pub trait Codec: Sized {
-    fn encode<S>(&self, writer: &mut Writer<S>) -> Result<()>
-    where
-        S: Write + Seek;
-
     fn decode<S>(reader: &mut Reader<S>) -> Result<Self>
     where
         S: Read + Seek;
+
+    fn encode<S>(&self, writer: &mut Writer<S>) -> Result<()>
+    where
+        S: Write + Seek;
+}
+
+impl<T> Codec for Option<T>
+where
+    T: Codec,
+{
+    fn decode<S>(reader: &mut Reader<S>) -> Result<Self>
+    where
+        S: Read + Seek,
+    {
+        if reader.read_primitive()? {
+            Ok(Some(T::decode(reader)?))
+        } else {
+            Ok(None)
+        }
+    }
+
+    fn encode<S>(&self, writer: &mut Writer<S>) -> Result<()>
+    where
+        S: Write + Seek,
+    {
+        writer.write_primitive(self.is_some())?;
+
+        if let Some(value) = self {
+            T::encode(value, writer)?;
+        }
+
+        Ok(())
+    }
 }
 
 #[cfg(test)]
