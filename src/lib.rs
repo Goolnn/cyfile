@@ -27,6 +27,7 @@ pub use file::ExportArguments;
 pub use file::File;
 pub use file::Version;
 pub use image::Image;
+pub use note::Area;
 pub use note::Note;
 pub use note::Text;
 pub use page::Page;

@@ -1,5 +1,7 @@
+mod area;
 mod text;
 
+pub use area::Area;
 pub use text::Text;
 
 use crate::codec;
