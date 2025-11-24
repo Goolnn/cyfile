@@ -42,6 +42,20 @@ impl Image {
     pub fn size(&self) -> (u32, u32) {
         (self.width, self.height)
     }
+
+    pub fn map(&self, x: f64, y: f64) -> (u32, u32) {
+        let mapped_x = self.width as f64 * (x + 1.0) / 2.0;
+        let mapped_y = self.height as f64 * (1.0 - (y + 1.0) / 2.0);
+
+        (mapped_x as u32, mapped_y as u32)
+    }
+
+    pub fn unmap(&self, x: u32, y: u32) -> (f64, f64) {
+        let unmapped_x = (x as f64 / self.width as f64) * 2.0 - 1.0;
+        let unmapped_y = 1.0 - (y as f64 / self.height as f64) * 2.0;
+
+        (unmapped_x, unmapped_y)
+    }
 }
 
 impl AsRef<[u8]> for Image {
