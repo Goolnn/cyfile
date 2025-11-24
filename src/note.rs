@@ -1,8 +1,11 @@
+mod text;
+
+pub use text::Text;
+
 use crate::codec;
 use crate::codec::Codec;
 use crate::codec::Reader;
 use crate::codec::Writer;
-use crate::Text;
 use std::io::Read;
 use std::io::Seek;
 use std::io::Write;
