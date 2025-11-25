@@ -189,34 +189,6 @@ impl Codec for Note {
     }
 }
 
-impl Codec for Option<Text> {
-    fn decode<S>(reader: &mut Reader<S>) -> codec::Result<Self>
-    where
-        S: Read + Seek,
-    {
-        if reader.read_primitive()? {
-            let text = reader.read_object()?;
-
-            Ok(Some(text))
-        } else {
-            Ok(None)
-        }
-    }
-
-    fn encode<S>(&self, writer: &mut Writer<S>) -> codec::Result<()>
-    where
-        S: Write + Seek,
-    {
-        writer.write_primitive(self.is_some())?;
-
-        if let Some(text) = self {
-            writer.write_object(text)?;
-        }
-
-        Ok(())
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use crate::codec::Reader;
