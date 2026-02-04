@@ -1,8 +1,10 @@
 mod note;
 mod page;
+mod text;
 
 pub use note::Note;
 pub use page::Page;
+pub use text::Text;
 
 use crate::Codec;
 use crate::codec;
