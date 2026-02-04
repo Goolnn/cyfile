@@ -12,4 +12,4 @@ expect_used = "warn"
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = { version = "1.0.149", features = ["preserve_order"] }
 thiserror = "2.0.18"
-zip = "7.2.0"
+zip = "7.3.0"
