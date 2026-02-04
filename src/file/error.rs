@@ -35,12 +35,12 @@ pub enum Error {
         column: usize,
     },
 
+    #[error("{}", source)]
+    CodecError {
+        #[from]
+        source: codec::Error,
+    },
+
     #[error("undefined error")]
     Undefined,
-}
-
-impl From<codec::Error> for Error {
-    fn from(_: codec::Error) -> Self {
-        Error::Undefined
-    }
 }
