@@ -26,7 +26,7 @@ impl<T: Codec> Codec for Vec<T> {
     }
 
     fn decode(manifest: &Manifest, value: &Value) -> codec::Result<Self> {
-        let array = value.as_array().ok_or(codec::Error::TypeMismatch {
+        let array = value.as_array().ok_or(codec::Error::MismatchType {
             expected: "an array".to_string(),
             found: value.to_string(),
         })?;
@@ -44,7 +44,7 @@ impl<T: Codec> Codec for Vec<T> {
 pub fn field_as_str<S: AsRef<str>>(value: &Value, key: S) -> codec::Result<&str> {
     let field = field(value, key)?;
 
-    field.as_str().ok_or(codec::Error::TypeMismatch {
+    field.as_str().ok_or(codec::Error::MismatchType {
         expected: "a string".to_string(),
         found: field.to_string(),
     })
@@ -56,7 +56,7 @@ pub fn field_as_f32<S: AsRef<str>>(value: &Value, key: S) -> codec::Result<f32> 
     field
         .as_f64()
         .map(|v| v as f32)
-        .ok_or(codec::Error::TypeMismatch {
+        .ok_or(codec::Error::MismatchType {
             expected: "a number".to_string(),
             found: field.to_string(),
         })
@@ -65,7 +65,7 @@ pub fn field_as_f32<S: AsRef<str>>(value: &Value, key: S) -> codec::Result<f32> 
 pub fn field_as_f64<S: AsRef<str>>(value: &Value, key: S) -> codec::Result<f64> {
     let field = field(value, key)?;
 
-    field.as_f64().ok_or(codec::Error::TypeMismatch {
+    field.as_f64().ok_or(codec::Error::MismatchType {
         expected: "a number".to_string(),
         found: field.to_string(),
     })
@@ -87,7 +87,7 @@ fn field<S: AsRef<str>>(value: &Value, key: S) -> codec::Result<&Value> {
     match value.get(key) {
         Option::Some(val) => Ok(val),
 
-        None => Err(codec::Error::FieldMissing {
+        None => Err(codec::Error::MissingField {
             field: key.to_string(),
         }),
     }
