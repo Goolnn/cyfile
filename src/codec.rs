@@ -40,3 +40,55 @@ impl<T: Codec> Codec for Vec<T> {
         Ok(vec)
     }
 }
+
+pub fn field_as_str<S: AsRef<str>>(value: &Value, key: S) -> codec::Result<&str> {
+    let field = field(value, key)?;
+
+    field.as_str().ok_or(codec::Error::TypeMismatch {
+        expected: "a string".to_string(),
+        found: field.to_string(),
+    })
+}
+
+pub fn field_as_f32<S: AsRef<str>>(value: &Value, key: S) -> codec::Result<f32> {
+    let field = field(value, key)?;
+
+    field
+        .as_f64()
+        .map(|v| v as f32)
+        .ok_or(codec::Error::TypeMismatch {
+            expected: "a number".to_string(),
+            found: field.to_string(),
+        })
+}
+
+pub fn field_as_f64<S: AsRef<str>>(value: &Value, key: S) -> codec::Result<f64> {
+    let field = field(value, key)?;
+
+    field.as_f64().ok_or(codec::Error::TypeMismatch {
+        expected: "a number".to_string(),
+        found: field.to_string(),
+    })
+}
+
+pub fn field_as_codec<T: Codec, S: AsRef<str>>(
+    manifest: &Manifest,
+    value: &Value,
+    key: S,
+) -> codec::Result<T> {
+    let field = field(value, key)?;
+
+    T::decode(manifest, field)
+}
+
+fn field<S: AsRef<str>>(value: &Value, key: S) -> codec::Result<&Value> {
+    let key = key.as_ref();
+
+    match value.get(key) {
+        Option::Some(val) => Ok(val),
+
+        None => Err(codec::Error::FieldMissing {
+            field: key.to_string(),
+        }),
+    }
+}
