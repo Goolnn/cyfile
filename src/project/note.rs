@@ -11,17 +11,27 @@ pub struct Note {
 }
 
 impl Codec for Note {
-    fn encode(&self, _: &Manifest) -> codec::Result<Value> {
-        Ok(json!({
-            "x": self.x,
-            "y": self.y,
-        }))
+    fn encode(&self, manifest: &Manifest) -> codec::Result<Value> {
+        match manifest.version {
+            0 => Ok(json!({
+                "x": self.x,
+                "y": self.y,
+            })),
+
+            version => Err(codec::Error::UnsupportedVersion { version }),
+        }
     }
 
-    fn decode(_: &Manifest, value: &Value) -> codec::Result<Self> {
-        let x = codec::field_as_f32(value, "x")?;
-        let y = codec::field_as_f32(value, "y")?;
+    fn decode(manifest: &Manifest, value: &Value) -> codec::Result<Self> {
+        match manifest.version {
+            0 => {
+                let x = codec::field_as_f32(value, "x")?;
+                let y = codec::field_as_f32(value, "y")?;
 
-        Ok(Note { x, y })
+                Ok(Note { x, y })
+            }
+
+            version => Err(codec::Error::UnsupportedVersion { version }),
+        }
     }
 }

@@ -14,18 +14,28 @@ pub struct Page {
 
 impl Codec for Page {
     fn encode(&self, manifest: &Manifest) -> codec::Result<Value> {
-        Ok(json!({
-            "image": self.image,
+        match manifest.version {
+            0 => Ok(json!({
+                "image": self.image,
 
-            "notes": self.notes.encode(manifest)?,
-        }))
+                "notes": self.notes.encode(manifest)?,
+            })),
+
+            version => Err(codec::Error::UnsupportedVersion { version }),
+        }
     }
 
     fn decode(manifest: &Manifest, value: &Value) -> codec::Result<Self> {
-        let image = codec::field_as_str(value, "image")?.to_string();
+        match manifest.version {
+            0 => {
+                let image = codec::field_as_str(value, "image")?.to_string();
 
-        let notes = codec::field_as_codec(manifest, value, "notes")?;
+                let notes = codec::field_as_codec(manifest, value, "notes")?;
 
-        Ok(Page { image, notes })
+                Ok(Page { image, notes })
+            }
+
+            version => Err(codec::Error::UnsupportedVersion { version }),
+        }
     }
 }
