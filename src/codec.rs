@@ -16,21 +16,20 @@ pub trait Codec: Sized {
 
 impl<T: Codec> Codec for Vec<T> {
     fn encode(&self, manifest: &Manifest) -> codec::Result<Value> {
-        let mut vec = Vec::with_capacity(self.len());
+        let mut array = Vec::with_capacity(self.len());
 
         for item in self {
-            vec.push(item.encode(manifest)?);
+            array.push(item.encode(manifest)?);
         }
 
-        Ok(Value::Array(vec))
+        Ok(Value::Array(array))
     }
 
     fn decode(manifest: &Manifest, value: &Value) -> codec::Result<Self> {
-        let array = match value.as_array() {
-            Some(val) => val,
-
-            None => return Err(Error::ParseFailure),
-        };
+        let array = value.as_array().ok_or(codec::Error::TypeMismatch {
+            expected: "an array".to_string(),
+            found: value.to_string(),
+        })?;
 
         let mut vec = Vec::with_capacity(array.len());
 
