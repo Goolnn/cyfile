@@ -1,9 +1,11 @@
 mod asset;
 mod error;
+mod reader;
 
 pub use asset::AssetSource;
 pub use error::Error;
 pub use error::Result;
+pub use reader::Reader;
 
 use crate::codec;
 use crate::file::Manifest;
