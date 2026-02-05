@@ -1,5 +1,6 @@
 use crate::Codec;
 use crate::Project;
+use crate::codec::Reader;
 use crate::file;
 use std::fs::File;
 use std::io;
@@ -42,7 +43,7 @@ pub fn open_from_path<P: AsRef<Path>>(path: P) -> file::Result<Project> {
     open_from_stream(file)
 }
 
-pub fn open_from_stream<R: Read + Seek>(reader: R) -> file::Result<Project> {
+pub fn open_from_stream<R: Read + Seek + 'static>(reader: R) -> file::Result<Project> {
     let mut archive = match ZipArchive::new(reader) {
         Ok(val) => val,
 
@@ -117,5 +118,7 @@ pub fn open_from_stream<R: Read + Seek>(reader: R) -> file::Result<Project> {
         }
     };
 
-    Ok(Project::decode(&manifest, &value)?)
+    let reader = Reader::new(archive, manifest, value);
+
+    Ok(Project::decode(reader)?)
 }

@@ -1,13 +1,17 @@
 use crate::Codec;
 use crate::codec;
+use crate::codec::Reader;
 use crate::file::Manifest;
+use crate::project::Asset;
 use crate::project::Note;
 use serde_json::Value;
 use serde_json::json;
+use std::io::Read;
+use std::io::Seek;
 
 #[derive(Debug)]
 pub struct Page {
-    image: String,
+    image: Asset,
 
     notes: Vec<Note>,
 }
@@ -16,7 +20,7 @@ impl Codec for Page {
     fn encode(&self, manifest: &Manifest) -> codec::Result<Value> {
         match manifest.version {
             0 => Ok(json!({
-                "image": self.image,
+                "image": self.image.encode(manifest)?,
 
                 "notes": self.notes.encode(manifest)?,
             })),
@@ -25,15 +29,15 @@ impl Codec for Page {
         }
     }
 
-    fn decode(manifest: &Manifest, value: &Value) -> codec::Result<Self> {
-        match manifest.version {
-            0 => {
-                let image = codec::field_as_str(value, "image")?.to_string();
-
-                let notes = codec::field_as_codec(manifest, value, "notes")?;
-
-                Ok(Page { image, notes })
-            }
+    fn decode<'a, S>(reader: Reader<'a, S>) -> codec::Result<Self>
+    where
+        S: Read + Seek,
+    {
+        match reader.manifest().version {
+            0 => Ok(Page {
+                image: reader.read("image")?,
+                notes: reader.read("notes")?,
+            }),
 
             version => Err(codec::Error::UnsupportedVersion { version }),
         }
