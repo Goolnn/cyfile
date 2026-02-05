@@ -12,4 +12,10 @@ pub enum Error {
 
     #[error("unsupported version: {version}")]
     UnsupportedVersion { version: u8 },
+
+    #[error("asset not found at `{path}`")]
+    AssetNotFound { path: String },
+
+    #[error("unknown error")]
+    Undefined,
 }
