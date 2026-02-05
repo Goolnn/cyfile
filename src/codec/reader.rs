@@ -57,7 +57,10 @@ where
         self.value.as_ref()
     }
 
-    pub fn field<'b, K: AsRef<str>>(&'b self, key: K) -> codec::Result<Reader<'b, S>> {
+    pub fn field<'b, K>(&'b self, key: K) -> codec::Result<Reader<'b, S>>
+    where
+        K: AsRef<str>,
+    {
         let field = self
             .value
             .as_ref()
@@ -66,7 +69,7 @@ where
                 field: key.as_ref().to_string(),
             })?;
 
-        Ok(Reader::<S> {
+        Ok(Reader {
             manifest: Rc::clone(&self.manifest),
 
             value: Cow::Borrowed(field),
@@ -78,7 +81,7 @@ where
     }
 
     pub fn at<'b>(&'b self, value: &'b Value) -> Reader<'b, S> {
-        Reader::<S> {
+        Reader {
             manifest: Rc::clone(&self.manifest),
 
             value: Cow::Borrowed(value),
@@ -89,7 +92,11 @@ where
         }
     }
 
-    pub fn read<K: AsRef<str>, T: Codec>(&self, key: K) -> codec::Result<T> {
+    pub fn read<K, T>(&self, key: K) -> codec::Result<T>
+    where
+        K: AsRef<str>,
+        T: Codec,
+    {
         T::decode(self.field(key)?)
     }
 }
