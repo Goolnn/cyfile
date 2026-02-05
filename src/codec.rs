@@ -1,5 +1,7 @@
+mod asset;
 mod error;
 
+pub use asset::AssetSource;
 pub use error::Error;
 pub use error::Result;
 
