@@ -1,16 +1,24 @@
 use crate::Codec;
 use crate::codec;
+use crate::file::Manifest;
 use serde_json::Map;
 use serde_json::Value;
+use std::rc::Rc;
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct Writer {
+    manifest: Rc<Manifest>,
+
     value: Value,
 }
 
 impl Writer {
-    pub fn new() -> Self {
-        Self::default()
+    pub fn new(manifest: Manifest) -> Self {
+        Self {
+            manifest: Rc::new(manifest),
+
+            value: Value::Null,
+        }
     }
 
     pub fn field<K, V>(&mut self, key: K, value: &V) -> codec::Result<()>
@@ -22,7 +30,7 @@ impl Writer {
             self.value = Value::Object(Map::new());
         }
 
-        let mut writer = Self::new();
+        let mut writer = self.clone();
 
         Codec::encode(value, &mut writer)?;
 
@@ -44,5 +52,13 @@ impl Writer {
 
     pub fn into_value(self) -> Value {
         self.value
+    }
+
+    pub(crate) fn clone(&self) -> Self {
+        Writer {
+            manifest: Rc::clone(&self.manifest),
+
+            value: Value::Null,
+        }
     }
 }

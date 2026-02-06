@@ -73,7 +73,7 @@ where
         writer.value(
             self.iter()
                 .map(|item| {
-                    let mut writer = Writer::new();
+                    let mut writer = writer.clone();
 
                     Codec::encode(item, &mut writer)?;
 
@@ -94,7 +94,7 @@ where
                 found: reader.value().to_string(),
             })?
             .iter()
-            .map(|item| T::decode(&Reader::new(item)))
+            .map(|item| T::decode(&reader.clone(item)))
             .collect()
     }
 }
