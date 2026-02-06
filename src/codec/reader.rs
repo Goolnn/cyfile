@@ -53,7 +53,7 @@ where
         &self.manifest
     }
 
-    pub fn value(&self) -> &Value {
+    pub fn current(&self) -> &Value {
         self.value.as_ref()
     }
 
