@@ -43,8 +43,8 @@ pub fn open_from_path<P: AsRef<Path>>(path: P) -> file::Result<Project> {
     open_from_stream(file)
 }
 
-pub fn open_from_stream<R: Read + Seek + 'static>(reader: R) -> file::Result<Project> {
-    let mut archive = match ZipArchive::new(reader) {
+pub fn open_from_stream<R: Read + Seek>(stream: R) -> file::Result<Project> {
+    let mut archive = match ZipArchive::new(stream) {
         Ok(val) => val,
 
         Err(err) => match err {
@@ -118,7 +118,7 @@ pub fn open_from_stream<R: Read + Seek + 'static>(reader: R) -> file::Result<Pro
         }
     };
 
-    let reader = Reader::new(manifest, &value);
+    let reader = Reader::new(&manifest, &value);
 
     Ok(Project::decode(&reader)?)
 }

@@ -2,21 +2,16 @@ use crate::Codec;
 use crate::codec;
 use crate::file::Manifest;
 use serde_json::Value;
-use std::rc::Rc;
 
 pub struct Reader<'a> {
-    manifest: Rc<Manifest>,
+    manifest: &'a Manifest,
 
     value: &'a Value,
 }
 
 impl<'a> Reader<'a> {
-    pub fn new(manifest: Manifest, value: &'a Value) -> Reader<'a> {
-        Reader {
-            manifest: Rc::new(manifest),
-
-            value,
-        }
+    pub fn new(manifest: &'a Manifest, value: &'a Value) -> Reader<'a> {
+        Reader { manifest, value }
     }
 
     pub fn field<K, T>(&self, key: K) -> codec::Result<T>
@@ -42,7 +37,7 @@ impl<'a> Reader<'a> {
 
     pub fn clone(&self, value: &'a Value) -> Reader<'a> {
         Reader {
-            manifest: Rc::clone(&self.manifest),
+            manifest: self.manifest,
 
             value,
         }

@@ -3,19 +3,18 @@ use crate::codec;
 use crate::file::Manifest;
 use serde_json::Map;
 use serde_json::Value;
-use std::rc::Rc;
 
 #[derive(Debug)]
-pub struct Writer {
-    manifest: Rc<Manifest>,
+pub struct Writer<'a> {
+    manifest: &'a Manifest,
 
     value: Value,
 }
 
-impl Writer {
-    pub fn new(manifest: Manifest) -> Self {
+impl<'a> Writer<'a> {
+    pub fn new(manifest: &'a Manifest) -> Self {
         Self {
-            manifest: Rc::new(manifest),
+            manifest,
 
             value: Value::Null,
         }
@@ -55,10 +54,10 @@ impl Writer {
     }
 }
 
-impl Clone for Writer {
+impl Clone for Writer<'_> {
     fn clone(&self) -> Self {
         Writer {
-            manifest: Rc::clone(&self.manifest),
+            manifest: self.manifest,
 
             value: Value::Null,
         }
