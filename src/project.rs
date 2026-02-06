@@ -22,6 +22,24 @@ pub struct Project {
     pages: Vec<Page>,
 }
 
+impl Project {
+    pub fn title(&self) -> &str {
+        &self.title
+    }
+
+    pub fn cover(&self) -> &Asset {
+        &self.cover
+    }
+
+    pub fn cover_mut(&mut self) -> &mut Asset {
+        &mut self.cover
+    }
+
+    pub fn pages(&self) -> &[Page] {
+        &self.pages
+    }
+}
+
 impl Codec for Project {
     fn encode(&self, writer: &mut Writer) -> codec::Result<()> {
         writer.field("title", &self.title)?;
