@@ -53,8 +53,10 @@ impl Writer {
     pub fn into_value(self) -> Value {
         self.value
     }
+}
 
-    pub(crate) fn clone(&self) -> Self {
+impl Clone for Writer {
+    fn clone(&self) -> Self {
         Writer {
             manifest: Rc::clone(&self.manifest),
 

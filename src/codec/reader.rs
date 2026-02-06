@@ -40,7 +40,7 @@ impl<'a> Reader<'a> {
         self.value
     }
 
-    pub(crate) fn clone(&self, value: &'a Value) -> Reader<'a> {
+    pub fn clone(&self, value: &'a Value) -> Reader<'a> {
         Reader {
             manifest: Rc::clone(&self.manifest),
 

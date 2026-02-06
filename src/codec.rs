@@ -3,12 +3,13 @@ mod error;
 mod reader;
 mod writer;
 
+pub(crate) use reader::Reader;
+pub(crate) use writer::Writer;
+
 pub use asset::ArchiveSource;
 pub use asset::AssetSource;
 pub use error::Error;
 pub use error::Result;
-pub use reader::Reader;
-pub use writer::Writer;
 
 use crate::codec;
 use serde_json::Value;
