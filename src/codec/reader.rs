@@ -11,9 +11,9 @@ use std::marker::PhantomData;
 use std::rc::Rc;
 use zip::ZipArchive;
 
-pub struct Reader<'a, S>
+pub struct Reader<'a, R>
 where
-    S: Read + Seek,
+    R: Read + Seek,
 {
     source: Rc<dyn AssetSource>,
 
@@ -21,14 +21,14 @@ where
 
     value: Cow<'a, Value>,
 
-    marker: PhantomData<S>,
+    marker: PhantomData<R>,
 }
 
-impl<'a, S> Reader<'a, S>
+impl<'a, R> Reader<'a, R>
 where
-    S: Read + Seek + 'static,
+    R: Read + Seek + 'static,
 {
-    pub fn new(archive: ZipArchive<S>, manifest: Manifest, value: Value) -> Self {
+    pub fn new(archive: ZipArchive<R>, manifest: Manifest, value: Value) -> Self {
         Self {
             source: Rc::new(ArchiveSource::new(archive)),
 
@@ -41,9 +41,9 @@ where
     }
 }
 
-impl<'a, S> Reader<'a, S>
+impl<'a, R> Reader<'a, R>
 where
-    S: Read + Seek,
+    R: Read + Seek,
 {
     pub fn source(&self) -> Rc<dyn AssetSource> {
         Rc::clone(&self.source)
@@ -57,7 +57,7 @@ where
         self.value.as_ref()
     }
 
-    pub fn field<'b, K>(&'b self, key: K) -> codec::Result<Reader<'b, S>>
+    pub fn field<'b, K>(&'b self, key: K) -> codec::Result<Reader<'b, R>>
     where
         K: AsRef<str>,
     {
@@ -80,7 +80,7 @@ where
         })
     }
 
-    pub fn at<'b>(&'b self, value: &'b Value) -> Reader<'b, S> {
+    pub fn at<'b>(&'b self, value: &'b Value) -> Reader<'b, R> {
         Reader {
             manifest: Rc::clone(&self.manifest),
 
