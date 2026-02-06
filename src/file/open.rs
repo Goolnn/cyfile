@@ -66,31 +66,31 @@ pub fn open_from_stream<R: Read + Seek + 'static>(reader: R) -> file::Result<Pro
         },
     };
 
-    let manifest = {
-        let file = "cangyan.json";
+    // let manifest = {
+    //     let file = "cangyan.json";
 
-        let stream = match archive.by_name(file) {
-            Ok(val) => val,
+    //     let stream = match archive.by_name(file) {
+    //         Ok(val) => val,
 
-            Err(_) => {
-                return Err(file::Error::FileNotFound {
-                    file: file.to_string(),
-                });
-            }
-        };
+    //         Err(_) => {
+    //             return Err(file::Error::FileNotFound {
+    //                 file: file.to_string(),
+    //             });
+    //         }
+    //     };
 
-        match serde_json::from_reader(stream) {
-            Ok(val) => val,
+    //     match serde_json::from_reader(stream) {
+    //         Ok(val) => val,
 
-            Err(err) => {
-                return Err(file::Error::ParseFailure {
-                    file: file.to_string(),
-                    line: err.line(),
-                    column: err.column(),
-                });
-            }
-        }
-    };
+    //         Err(err) => {
+    //             return Err(file::Error::ParseFailure {
+    //                 file: file.to_string(),
+    //                 line: err.line(),
+    //                 column: err.column(),
+    //             });
+    //         }
+    //     }
+    // };
 
     let value = {
         let file = "project.json";
@@ -118,7 +118,7 @@ pub fn open_from_stream<R: Read + Seek + 'static>(reader: R) -> file::Result<Pro
         }
     };
 
-    let reader = Reader::new(archive, manifest, value);
+    let reader = Reader::new(&value);
 
-    Ok(Project::decode(reader)?)
+    Ok(Project::decode(&reader)?)
 }

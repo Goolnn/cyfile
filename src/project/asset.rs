@@ -1,52 +1,37 @@
 use crate::Codec;
 use crate::codec;
-use crate::codec::AssetSource;
 use crate::codec::Reader;
+use crate::codec::Writer;
 use std::fmt;
 use std::fmt::Debug;
-use std::io::Read;
-use std::io::Seek;
-use std::rc::Rc;
 
 pub struct Asset {
-    source: Rc<dyn AssetSource>,
-
-    data: Option<Vec<u8>>,
-
     path: String,
 }
 
 impl Asset {
-    pub fn load(&mut self) -> codec::Result<&[u8]> {
-        if self.data.is_none() {
-            self.data = Some(self.source.load(&self.path)?);
-        }
-
-        self.data.as_deref().ok_or(codec::Error::AssetNotFound {
-            path: self.path.clone(),
-        })
-    }
-
-    pub fn clean(&mut self) {
-        self.data = None;
+    pub fn path(&self) -> &str {
+        &self.path
     }
 }
 
 impl Codec for Asset {
-    fn encode(&self, _manifest: &crate::file::Manifest) -> codec::Result<serde_json::Value> {
-        todo!()
+    fn encode(&self, writer: &mut Writer) -> codec::Result<()> {
+        writer.value(self.path.clone());
+
+        Ok(())
     }
 
-    fn decode<'a, S>(reader: Reader<'a, S>) -> codec::Result<Self>
-    where
-        S: Read + Seek,
-    {
+    fn decode(reader: &Reader) -> codec::Result<Self> {
         Ok(Asset {
-            source: reader.source(),
-
-            data: None,
-
-            path: Codec::decode(reader)?,
+            path: reader
+                .value()
+                .as_str()
+                .ok_or(codec::Error::MismatchType {
+                    expected: "string".to_string(),
+                    found: reader.value().to_string(),
+                })?
+                .to_string(),
         })
     }
 }
