@@ -1,6 +1,8 @@
 use crate::codec;
+use std::io;
 use std::path::PathBuf;
 use thiserror::Error;
+use zip::result;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -43,4 +45,24 @@ pub enum Error {
 
     #[error("undefined error")]
     Undefined,
+}
+
+impl From<io::Error> for Error {
+    fn from(_: io::Error) -> Self {
+        Error::Undefined
+    }
+}
+
+impl From<result::ZipError> for Error {
+    fn from(value: result::ZipError) -> Self {
+        match value {
+            result::ZipError::InvalidArchive(_) => Error::InvalidFormat,
+            result::ZipError::UnsupportedArchive(_) => Error::UnsupportedFormat,
+            result::ZipError::InvalidPassword => Error::PasswordNotCorrect,
+
+            result::ZipError::Io(error) => error.into(),
+
+            _ => Error::Undefined,
+        }
+    }
 }

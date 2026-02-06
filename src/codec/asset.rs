@@ -1,5 +1,4 @@
 use crate::codec;
-use std::any::Any;
 use std::cell::RefCell;
 use std::io::Read;
 use std::io::Seek;
@@ -8,10 +7,14 @@ use std::rc::Rc;
 use zip::ZipArchive;
 use zip::ZipWriter;
 
-pub trait AssetSource: Any {
+pub trait DynWrite: Write + Seek {}
+
+impl<T> DynWrite for T where T: Write + Seek {}
+
+pub trait AssetSource {
     fn load(&self, path: &str) -> codec::Result<Vec<u8>>;
 
-    fn as_any(&self) -> &dyn Any;
+    fn copy(&self, path: &str, writer: &mut ZipWriter<&mut dyn DynWrite>) -> codec::Result<()>;
 }
 
 pub struct ArchiveSource<R>
@@ -29,30 +32,6 @@ where
         ArchiveSource {
             archive: Rc::new(RefCell::new(archive)),
         }
-    }
-
-    pub fn copy<P, W>(&self, path: P, writer: &mut ZipWriter<W>) -> codec::Result<()>
-    where
-        P: AsRef<str>,
-        W: Write + Seek,
-    {
-        let mut archive = self.archive.borrow_mut();
-
-        let path = path.as_ref();
-
-        let stream = match archive.by_name(path) {
-            Ok(val) => val,
-
-            Err(_) => {
-                return Err(codec::Error::AssetNotFound {
-                    path: path.to_string(),
-                });
-            }
-        };
-
-        writer
-            .raw_copy_file(stream)
-            .map_err(|_| codec::Error::Undefined)
     }
 }
 
@@ -82,7 +61,37 @@ where
         Ok(data)
     }
 
-    fn as_any(&self) -> &dyn Any {
-        self
+    fn copy(&self, path: &str, writer: &mut ZipWriter<&mut dyn DynWrite>) -> codec::Result<()> {
+        let mut archive = self.archive.borrow_mut();
+
+        let stream = match archive.by_name(path) {
+            Ok(val) => val,
+
+            Err(_) => {
+                return Err(codec::Error::AssetNotFound {
+                    path: path.to_string(),
+                });
+            }
+        };
+
+        writer
+            .raw_copy_file(stream)
+            .map_err(|_| codec::Error::Undefined)
+    }
+}
+
+pub struct EmptySource;
+
+impl AssetSource for EmptySource {
+    fn load(&self, path: &str) -> codec::Result<Vec<u8>> {
+        Err(codec::Error::AssetNotFound {
+            path: path.to_string(),
+        })
+    }
+
+    fn copy(&self, path: &str, _: &mut ZipWriter<&mut dyn DynWrite>) -> codec::Result<()> {
+        Err(codec::Error::AssetNotFound {
+            path: path.to_string(),
+        })
     }
 }

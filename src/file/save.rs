@@ -1,129 +1,81 @@
-// use crate::Codec;
-// use crate::Project;
-// use crate::codec::Writer;
-// use crate::file;
-// use crate::file::Manifest;
-// use crate::project::Asset;
-// use std::collections::HashSet;
-// use std::fs::File;
-// use std::io::Seek;
-// use std::io::Write;
-// use std::path::Path;
-// use zip::CompressionMethod;
-// use zip::ZipWriter;
-// use zip::write::SimpleFileOptions;
+use crate::Codec;
+use crate::Project;
+use crate::codec;
+use crate::codec::Writer;
+use crate::file;
+use crate::file::Manifest;
+use std::io::Write;
+use std::path::Path;
+use tempfile::NamedTempFile;
+use zip::ZipWriter;
+use zip::write::FileOptions;
 
-// const IDENTIFIER: &[u8] = b"Cangyan Project Package";
+pub fn save_to_path<P>(path: P, manifest: &Manifest, project: &Project) -> file::Result<()>
+where
+    P: AsRef<Path>,
+{
+    let path = path.as_ref();
 
-// pub fn save_to_path<P: AsRef<Path>>(
-//     project: &mut Project,
-//     manifest: Manifest,
-//     path: P,
-// ) -> file::Result<()> {
-//     let path = path.as_ref();
+    if path.exists() && !path.is_file() {
+        return Err(file::Error::PathNotFile {
+            path: path.to_path_buf(),
+        });
+    }
 
-//     if path.exists() && !path.is_file() {
-//         return Err(file::Error::PathNotFile {
-//             path: path.to_path_buf(),
-//         });
-//     }
+    if let Some(parent) = path.parent()
+        && let Ok(mut tempfile) = NamedTempFile::new_in(parent)
+    {
+        save_to_stream(&mut tempfile, manifest, project)?;
 
-//     let file = match File::create(path) {
-//         Ok(val) => val,
+        tempfile.persist(path).map_err(|_| file::Error::Undefined)?;
 
-//         Err(err) => match err.kind() {
-//             std::io::ErrorKind::PermissionDenied => {
-//                 return Err(file::Error::PermissionDenied {
-//                     path: path.to_path_buf(),
-//                 });
-//             }
+        Ok(())
+    } else {
+        Err(file::Error::Undefined)
+    }
+}
 
-//             std::io::ErrorKind::NotFound => {
-//                 return Err(file::Error::PathNotExist {
-//                     path: path.to_path_buf(),
-//                 });
-//             }
+pub fn save_to_stream(
+    stream: &mut dyn codec::DynWrite,
+    manifest: &Manifest,
+    project: &Project,
+) -> file::Result<()> {
+    let mut writer = Writer::new(manifest);
 
-//             _ => {
-//                 return Err(file::Error::Undefined);
-//             }
-//         },
-//     };
+    Codec::encode(project, &mut writer)?;
 
-//     save_to_stream(project, manifest, file)
-// }
+    let assets = writer.assets();
 
-// pub fn save_to_stream<W: Write + Seek>(
-//     project: &mut Project,
-//     manifest: Manifest,
-//     writer: W,
-// ) -> file::Result<()> {
-//     let mut archive = ZipWriter::new(writer);
+    let manifest =
+        serde_json::to_string_pretty(&manifest).map_err(|err| file::Error::ParseFailure {
+            file: String::new(),
+            line: err.line(),
+            column: err.column(),
+        })?;
 
-//     archive.set_comment(String::from_utf8_lossy(IDENTIFIER).to_string());
+    let project = serde_json::to_string_pretty(&writer.into_value()).map_err(|err| {
+        file::Error::ParseFailure {
+            file: String::new(),
+            line: err.line(),
+            column: err.column(),
+        }
+    })?;
 
-//     write_json_file(&mut archive, "cangyan.json", &manifest)?;
+    let mut writer = ZipWriter::new(stream);
 
-//     let mut writer = Writer::new(manifest);
-//     project.encode(&mut writer)?;
-//     write_json_file(&mut archive, "project.json", &writer.into_value())?;
+    let options = FileOptions::<()>::default().compression_method(zip::CompressionMethod::Deflated);
 
-//     write_assets(&mut archive, project)?;
+    writer.start_file("cangyan.json", options)?;
+    writer.write_all(manifest.as_bytes())?;
 
-//     archive.finish().map_err(|_| file::Error::Undefined)?;
+    writer.start_file("project.json", options)?;
+    writer.write_all(project.as_bytes())?;
 
-//     Ok(())
-// }
+    for (path, source) in assets.iter() {
+        source.copy(path, &mut writer)?;
+    }
 
-// fn write_json_file<W: Write + Seek, T: serde::Serialize>(
-//     archive: &mut ZipWriter<W>,
-//     name: &str,
-//     value: &T,
-// ) -> file::Result<()> {
-//     let data = serde_json::to_vec(value).map_err(|_| file::Error::Undefined)?;
+    writer.finish()?;
 
-//     let options = SimpleFileOptions::default().compression_method(CompressionMethod::Stored);
-
-//     archive
-//         .start_file(name, options)
-//         .map_err(|_| file::Error::Undefined)?;
-
-//     archive.write_all(&data).map_err(|_| file::Error::Undefined)
-// }
-
-// fn write_assets<W: Write + Seek>(
-//     archive: &mut ZipWriter<W>,
-//     project: &mut Project,
-// ) -> file::Result<()> {
-//     let mut seen = HashSet::new();
-
-//     write_asset(archive, project.cover_mut(), &mut seen)?;
-
-//     for page in project.pages_mut() {
-//         write_asset(archive, page.image_mut(), &mut seen)?;
-//     }
-
-//     Ok(())
-// }
-
-// fn write_asset<W: Write + Seek>(
-//     archive: &mut ZipWriter<W>,
-//     asset: &mut Asset,
-//     seen: &mut HashSet<String>,
-// ) -> file::Result<()> {
-//     let path = asset.path().to_string();
-
-//     if !seen.insert(path.clone()) {
-//         return Ok(());
-//     }
-
-//     let data = asset.load()?;
-
-//     let options = SimpleFileOptions::default().compression_method(CompressionMethod::Stored);
-
-//     archive
-//         .start_file(&path, options)
-//         .map_err(|_| file::Error::Undefined)?;
-
-//     archive.write_all(data).map_err(|_| file::Error::Undefined)
-// }
+    Ok(())
+}

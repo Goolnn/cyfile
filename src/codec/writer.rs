@@ -1,14 +1,20 @@
 use crate::Codec;
 use crate::codec;
+use crate::codec::AssetSource;
 use crate::file::Manifest;
 use serde_json::Map;
 use serde_json::Value;
+use std::cell::RefCell;
+use std::rc::Rc;
 
-#[derive(Debug)]
+type Assets = Rc<RefCell<Vec<(String, Rc<dyn AssetSource>)>>>;
+
 pub struct Writer<'a> {
     manifest: &'a Manifest,
 
     value: Value,
+
+    assets: Assets,
 }
 
 impl<'a> Writer<'a> {
@@ -17,6 +23,8 @@ impl<'a> Writer<'a> {
             manifest,
 
             value: Value::Null,
+
+            assets: Rc::new(RefCell::new(Vec::new())),
         }
     }
 
@@ -49,6 +57,16 @@ impl<'a> Writer<'a> {
         self.value = value.into();
     }
 
+    pub fn assets(&self) -> Vec<(String, Rc<dyn AssetSource>)> {
+        self.assets.borrow().clone()
+    }
+
+    pub fn asset(&mut self, path: String, source: Rc<dyn AssetSource>) {
+        let mut assets = self.assets.borrow_mut();
+
+        assets.push((path, source));
+    }
+
     pub fn into_value(self) -> Value {
         self.value
     }
@@ -60,6 +78,8 @@ impl Clone for Writer<'_> {
             manifest: self.manifest,
 
             value: Value::Null,
+
+            assets: Rc::clone(&self.assets),
         }
     }
 }
