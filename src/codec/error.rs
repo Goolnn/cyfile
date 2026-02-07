@@ -16,6 +16,12 @@ pub enum Error {
     #[error("asset not found at `{path}`")]
     AssetNotFound { path: String },
 
+    #[error("failed to load asset at `{path}`")]
+    AssetLoadFailed { path: String },
+
+    #[error("failed to copy asset at `{path}`")]
+    AssetCopyFailed { path: String },
+
     #[error("unknown error")]
     Undefined,
 }
