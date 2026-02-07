@@ -39,6 +39,10 @@ impl Project {
         &self.pages
     }
 
+    pub fn pages_mut(&mut self) -> &mut [Page] {
+        &mut self.pages
+    }
+
     pub fn add_page(&mut self, page: Page) {
         self.pages.push(page);
     }
