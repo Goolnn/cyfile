@@ -71,6 +71,8 @@ pub fn save_to_stream(
 
     let mut writer = ZipWriter::new(stream);
 
+    writer.set_comment(crate::file::IDENTIFIER.to_owned().into_boxed_str());
+
     let options = FileOptions::<()>::default().compression_method(zip::CompressionMethod::Deflated);
 
     writer.start_file("cangyan.json", options)?;

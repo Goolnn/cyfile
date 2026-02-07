@@ -4,8 +4,6 @@ use std::io::Seek;
 use std::path::Path;
 use zip::ZipArchive;
 
-const IDENTIFIER: &[u8] = b"Cangyan Project Package";
-
 pub fn check_from_path<P: AsRef<Path>>(path: P) -> bool {
     let path = path.as_ref();
 
@@ -23,5 +21,5 @@ pub fn check_from_stream<R: Read + Seek>(reader: R) -> bool {
         Err(_) => return false,
     };
 
-    archive.comment() == IDENTIFIER
+    archive.comment() == crate::file::IDENTIFIER.as_bytes()
 }

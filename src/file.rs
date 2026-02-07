@@ -14,3 +14,5 @@ pub use open::open_from_path;
 pub use open::open_from_stream;
 pub use save::save_to_path;
 pub use save::save_to_stream;
+
+const IDENTIFIER: &str = "Cangyan Project Package";
