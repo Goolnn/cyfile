@@ -69,6 +69,42 @@ impl Codec for Value {
     }
 }
 
+impl<T> Codec for Option<T>
+where
+    T: Codec,
+{
+    fn encode(&self, writer: &mut Writer) -> codec::Result<()> {
+        match self {
+            Some(value) => {
+                writer.value(
+                    {
+                        let mut writer = writer.clone();
+
+                        Codec::encode(value, &mut writer)?;
+
+                        writer
+                    }
+                    .into_value(),
+                );
+            }
+
+            None => {
+                writer.value(Value::Null);
+            }
+        }
+
+        Ok(())
+    }
+
+    fn decode(reader: &Reader) -> codec::Result<Self> {
+        if reader.value().is_null() {
+            Ok(None)
+        } else {
+            Codec::decode(reader).map(Some)
+        }
+    }
+}
+
 impl<T> Codec for Vec<T>
 where
     T: Codec,
