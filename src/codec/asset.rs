@@ -55,7 +55,9 @@ where
         let mut data = Vec::new();
 
         if stream.read_to_end(&mut data).is_err() {
-            return Err(codec::Error::Undefined);
+            return Err(codec::Error::AssetLoadFailed {
+                path: path.to_string(),
+            });
         }
 
         Ok(data)
@@ -76,7 +78,9 @@ where
 
         writer
             .raw_copy_file(stream)
-            .map_err(|_| codec::Error::Undefined)
+            .map_err(|_| codec::Error::AssetCopyFailed {
+                path: path.to_string(),
+            })
     }
 }
 
