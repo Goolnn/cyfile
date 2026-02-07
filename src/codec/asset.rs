@@ -95,3 +95,9 @@ impl AssetSource for EmptySource {
         })
     }
 }
+
+#[derive(Clone)]
+pub enum AssetSnap {
+    Clean(Rc<dyn AssetSource>),
+    Dirty(Vec<u8>),
+}
