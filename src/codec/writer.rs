@@ -29,6 +29,10 @@ impl<'a> Writer<'a> {
         }
     }
 
+    pub fn manifest(&self) -> &Manifest {
+        self.manifest
+    }
+
     pub fn field<K, V>(&mut self, key: K, value: &V) -> codec::Result<()>
     where
         K: AsRef<str>,

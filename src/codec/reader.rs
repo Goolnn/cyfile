@@ -31,6 +31,10 @@ impl<'a> Reader<'a> {
         }
     }
 
+    pub fn manifest(&self) -> &Manifest {
+        self.manifest
+    }
+
     pub fn field<K, T>(&self, key: K) -> codec::Result<T>
     where
         K: AsRef<str>,
