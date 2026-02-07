@@ -37,7 +37,7 @@ where
 }
 
 pub fn save_to_stream(
-    stream: &mut dyn codec::DynWrite,
+    stream: &mut dyn codec::Stream,
     manifest: &Manifest,
     project: &Project,
 ) -> file::Result<()> {

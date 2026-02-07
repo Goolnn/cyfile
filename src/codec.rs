@@ -9,8 +9,8 @@ pub(crate) use writer::Writer;
 pub use asset::ArchiveSource;
 pub use asset::AssetSnap;
 pub use asset::AssetSource;
-pub use asset::DynWrite;
 pub use asset::EmptySource;
+pub use asset::Stream;
 pub use error::Error;
 pub use error::Result;
 

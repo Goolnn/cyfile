@@ -7,14 +7,14 @@ use std::rc::Rc;
 use zip::ZipArchive;
 use zip::ZipWriter;
 
-pub trait DynWrite: Write + Seek {}
+pub trait Stream: Write + Seek {}
 
-impl<T> DynWrite for T where T: Write + Seek {}
+impl<T> Stream for T where T: Write + Seek {}
 
 pub trait AssetSource {
     fn load(&self, path: &str) -> codec::Result<Vec<u8>>;
 
-    fn copy(&self, path: &str, writer: &mut ZipWriter<&mut dyn DynWrite>) -> codec::Result<()>;
+    fn copy(&self, path: &str, writer: &mut ZipWriter<&mut dyn Stream>) -> codec::Result<()>;
 }
 
 pub struct ArchiveSource<R>
@@ -61,7 +61,7 @@ where
         Ok(data)
     }
 
-    fn copy(&self, path: &str, writer: &mut ZipWriter<&mut dyn DynWrite>) -> codec::Result<()> {
+    fn copy(&self, path: &str, writer: &mut ZipWriter<&mut dyn Stream>) -> codec::Result<()> {
         let mut archive = self.archive.borrow_mut();
 
         let stream = match archive.by_name(path) {
@@ -89,7 +89,7 @@ impl AssetSource for EmptySource {
         })
     }
 
-    fn copy(&self, path: &str, _: &mut ZipWriter<&mut dyn DynWrite>) -> codec::Result<()> {
+    fn copy(&self, path: &str, _: &mut ZipWriter<&mut dyn Stream>) -> codec::Result<()> {
         Err(codec::Error::AssetNotFound {
             path: path.to_string(),
         })
