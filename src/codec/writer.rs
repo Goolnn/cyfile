@@ -1,13 +1,14 @@
 use crate::Codec;
 use crate::codec;
-use crate::codec::AssetSource;
+use crate::codec::AssetSnap;
 use crate::file::Manifest;
 use serde_json::Map;
 use serde_json::Value;
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::rc::Rc;
 
-type Assets = Rc<RefCell<Vec<(String, Rc<dyn AssetSource>)>>>;
+type Assets = Rc<RefCell<HashMap<String, AssetSnap>>>;
 
 pub struct Writer<'a> {
     manifest: &'a Manifest,
@@ -24,7 +25,7 @@ impl<'a> Writer<'a> {
 
             value: Value::Null,
 
-            assets: Rc::new(RefCell::new(Vec::new())),
+            assets: Rc::new(RefCell::new(HashMap::new())),
         }
     }
 
@@ -57,14 +58,18 @@ impl<'a> Writer<'a> {
         self.value = value.into();
     }
 
-    pub fn assets(&self) -> Vec<(String, Rc<dyn AssetSource>)> {
+    pub fn assets(&self) -> HashMap<String, AssetSnap> {
         self.assets.borrow().clone()
     }
 
-    pub fn asset(&mut self, path: String, source: Rc<dyn AssetSource>) {
+    pub fn asset(&mut self, path: String, snap: AssetSnap) {
         let mut assets = self.assets.borrow_mut();
 
-        assets.push((path, source));
+        assets.insert(path, snap);
+    }
+
+    pub fn end(self) -> (Assets, Value) {
+        (self.assets, self.value)
     }
 
     pub fn into_value(self) -> Value {

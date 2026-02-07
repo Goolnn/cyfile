@@ -1,6 +1,7 @@
 use crate::Codec;
 use crate::Project;
 use crate::codec;
+use crate::codec::AssetSnap;
 use crate::codec::Writer;
 use crate::file;
 use crate::file::Manifest;
@@ -44,7 +45,7 @@ pub fn save_to_stream(
 
     Codec::encode(project, &mut writer)?;
 
-    let assets = writer.assets();
+    let (assets, value) = writer.end();
 
     let manifest =
         serde_json::to_string_pretty(&manifest).map_err(|err| file::Error::ParseFailure {
@@ -53,13 +54,12 @@ pub fn save_to_stream(
             column: err.column(),
         })?;
 
-    let project = serde_json::to_string_pretty(&writer.into_value()).map_err(|err| {
-        file::Error::ParseFailure {
+    let project =
+        serde_json::to_string_pretty(&value).map_err(|err| file::Error::ParseFailure {
             file: String::new(),
             line: err.line(),
             column: err.column(),
-        }
-    })?;
+        })?;
 
     let mut writer = ZipWriter::new(stream);
 
@@ -71,8 +71,17 @@ pub fn save_to_stream(
     writer.start_file("project.json", options)?;
     writer.write_all(project.as_bytes())?;
 
-    for (path, source) in assets.iter() {
-        source.copy(path, &mut writer)?;
+    for (path, snap) in assets.borrow().iter() {
+        match snap {
+            AssetSnap::Clean(source) => {
+                source.copy(path.as_str(), &mut writer)?;
+            }
+
+            AssetSnap::Dirty(data) => {
+                writer.start_file(path.as_str(), options)?;
+                writer.write_all(data)?;
+            }
+        }
     }
 
     writer.finish()?;

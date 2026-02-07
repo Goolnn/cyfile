@@ -1,5 +1,6 @@
 use crate::Codec;
 use crate::codec;
+use crate::codec::AssetSnap;
 use crate::codec::EmptySource;
 use crate::codec::Reader;
 use crate::codec::Writer;
@@ -23,9 +24,12 @@ enum Track {
 }
 
 impl Asset {
-    pub fn new(path: String, data: Vec<u8>) -> Self {
+    pub fn new<P>(path: P, data: Vec<u8>) -> Self
+    where
+        P: ToString,
+    {
         Asset {
-            path,
+            path: path.to_string(),
 
             source: Rc::new(EmptySource),
 
@@ -34,6 +38,7 @@ impl Asset {
             track: Track::Dirty,
         }
     }
+
     pub fn path(&self) -> &str {
         &self.path
     }
@@ -58,7 +63,17 @@ impl Codec for Asset {
     fn encode(&self, writer: &mut Writer) -> codec::Result<()> {
         writer.value(self.path.clone());
 
-        writer.asset(self.path.clone(), Rc::clone(&self.source));
+        writer.asset(
+            self.path.clone(),
+            match self.track {
+                Track::Clean => AssetSnap::Clean(Rc::clone(&self.source)),
+                Track::Dirty => {
+                    AssetSnap::Dirty(self.data.clone().ok_or(codec::Error::AssetNotFound {
+                        path: self.path.to_string(),
+                    })?)
+                }
+            },
+        );
 
         Ok(())
     }

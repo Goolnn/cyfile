@@ -7,6 +7,7 @@ pub(crate) use reader::Reader;
 pub(crate) use writer::Writer;
 
 pub use asset::ArchiveSource;
+pub use asset::AssetSnap;
 pub use asset::AssetSource;
 pub use asset::DynWrite;
 pub use asset::EmptySource;
