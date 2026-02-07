@@ -13,7 +13,7 @@ use crate::codec;
 use crate::codec::Reader;
 use crate::codec::Writer;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Project {
     cover: Option<Asset>,
 
@@ -25,6 +25,10 @@ pub struct Project {
 }
 
 impl Project {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
     pub fn cover(&self) -> Option<&Asset> {
         self.cover.as_ref()
     }
@@ -33,32 +37,64 @@ impl Project {
         self.cover = cover;
     }
 
+    pub fn with_cover(mut self, cover: Asset) -> Self {
+        self.cover = Some(cover);
+
+        self
+    }
+
     pub fn title(&self) -> &str {
         &self.title
     }
 
-    pub fn set_title<T: ToString>(&mut self, title: T) {
+    pub fn set_title<T>(&mut self, title: T)
+    where
+        T: ToString,
+    {
         self.title = title.to_string();
+    }
+
+    pub fn with_title<T>(mut self, title: T) -> Self
+    where
+        T: ToString,
+    {
+        self.title = title.to_string();
+
+        self
     }
 
     pub fn overview(&self) -> &str {
         &self.overview
     }
 
-    pub fn set_overview<T: ToString>(&mut self, overview: T) {
+    pub fn set_overview<T>(&mut self, overview: T)
+    where
+        T: ToString,
+    {
         self.overview = overview.to_string();
     }
 
-    pub fn pages(&self) -> &[Page] {
+    pub fn with_overview<T>(mut self, overview: T) -> Self
+    where
+        T: ToString,
+    {
+        self.overview = overview.to_string();
+
+        self
+    }
+
+    pub fn pages(&self) -> &Vec<Page> {
         &self.pages
     }
 
-    pub fn pages_mut(&mut self) -> &mut [Page] {
+    pub fn pages_mut(&mut self) -> &mut Vec<Page> {
         &mut self.pages
     }
 
-    pub fn add_page(&mut self, page: Page) {
+    pub fn with_page(mut self, page: Page) -> Self {
         self.pages.push(page);
+
+        self
     }
 }
 

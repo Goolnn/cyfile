@@ -25,16 +25,22 @@ impl Page {
         &self.image
     }
 
-    pub fn image_mut(&mut self) -> &mut Asset {
-        &mut self.image
+    pub fn set_image(&mut self, image: Asset) {
+        self.image = image;
     }
 
-    pub fn notes(&self) -> &[Note] {
+    pub fn notes(&self) -> &Vec<Note> {
         &self.notes
     }
 
-    pub fn notes_mut(&mut self) -> &mut [Note] {
+    pub fn notes_mut(&mut self) -> &mut Vec<Note> {
         &mut self.notes
+    }
+
+    pub fn with_note(mut self, note: Note) -> Self {
+        self.notes.push(note);
+
+        self
     }
 }
 
