@@ -28,7 +28,15 @@ where
     {
         save_to_stream(&mut tempfile, manifest, project)?;
 
-        tempfile.persist(path).map_err(|_| file::Error::Undefined)?;
+        if let Err(err) = tempfile.persist(path) {
+            if path.is_file() {
+                std::fs::remove_file(path).map_err(|_| codec::Error::Undefined)?;
+            }
+
+            err.file
+                .persist(path)
+                .map_err(|_| codec::Error::Undefined)?;
+        }
 
         Ok(())
     } else {
