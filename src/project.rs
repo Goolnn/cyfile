@@ -17,7 +17,7 @@ use crate::codec::Writer;
 pub struct Project {
     title: String,
 
-    cover: Asset,
+    cover: Option<Asset>,
 
     pages: Vec<Page>,
 }
@@ -27,12 +27,16 @@ impl Project {
         &self.title
     }
 
-    pub fn cover(&self) -> &Asset {
-        &self.cover
+    pub fn set_title<T: ToString>(&mut self, title: T) {
+        self.title = title.to_string();
     }
 
-    pub fn cover_mut(&mut self) -> &mut Asset {
-        &mut self.cover
+    pub fn cover(&self) -> Option<&Asset> {
+        self.cover.as_ref()
+    }
+
+    pub fn set_cover(&mut self, cover: Option<Asset>) {
+        self.cover = cover;
     }
 
     pub fn pages(&self) -> &[Page] {
