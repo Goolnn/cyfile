@@ -58,10 +58,6 @@ impl<'a> Writer<'a> {
         self.value = value.into();
     }
 
-    pub fn assets(&self) -> HashMap<String, AssetSnap> {
-        self.assets.borrow().clone()
-    }
-
     pub fn asset(&mut self, path: String, snap: AssetSnap) {
         let mut assets = self.assets.borrow_mut();
 
