@@ -46,18 +46,28 @@ impl Page {
 
 impl Codec for Page {
     fn encode(&self, writer: &mut Writer) -> codec::Result<()> {
-        writer.field("image", &self.image)?;
+        match writer.manifest().version() {
+            0 => {
+                writer.field("image", &self.image)?;
 
-        writer.field("notes", &self.notes)?;
+                writer.field("notes", &self.notes)?;
 
-        Ok(())
+                Ok(())
+            }
+
+            version => Err(codec::Error::UnsupportedVersion { version }),
+        }
     }
 
     fn decode(reader: &Reader) -> codec::Result<Self> {
-        Ok(Page {
-            image: reader.field("image")?,
+        match reader.manifest().version() {
+            0 => Ok(Page {
+                image: reader.field("image")?,
 
-            notes: reader.field("notes")?,
-        })
+                notes: reader.field("notes")?,
+            }),
+
+            version => Err(codec::Error::UnsupportedVersion { version }),
+        }
     }
 }

@@ -69,20 +69,30 @@ impl Note {
 
 impl Codec for Note {
     fn encode(&self, writer: &mut Writer) -> codec::Result<()> {
-        writer.field("x", &self.x)?;
-        writer.field("y", &self.y)?;
+        match writer.manifest().version() {
+            0 => {
+                writer.field("x", &self.x)?;
+                writer.field("y", &self.y)?;
 
-        writer.field("texts", &self.texts)?;
+                writer.field("texts", &self.texts)?;
 
-        Ok(())
+                Ok(())
+            }
+
+            version => Err(codec::Error::UnsupportedVersion { version }),
+        }
     }
 
     fn decode(reader: &Reader) -> codec::Result<Self> {
-        Ok(Note {
-            x: reader.field("x")?,
-            y: reader.field("y")?,
+        match reader.manifest().version() {
+            0 => Ok(Note {
+                x: reader.field("x")?,
+                y: reader.field("y")?,
 
-            texts: reader.field("texts")?,
-        })
+                texts: reader.field("texts")?,
+            }),
+
+            version => Err(codec::Error::UnsupportedVersion { version }),
+        }
     }
 }

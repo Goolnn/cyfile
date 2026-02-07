@@ -61,40 +61,50 @@ impl Asset {
 
 impl Codec for Asset {
     fn encode(&self, writer: &mut Writer) -> codec::Result<()> {
-        writer.value(self.path.clone());
+        match writer.manifest().version() {
+            0 => {
+                writer.value(self.path.clone());
 
-        writer.asset(
-            self.path.clone(),
-            match self.track {
-                Track::Clean => AssetSnap::Clean(Rc::clone(&self.source)),
-                Track::Dirty => {
-                    AssetSnap::Dirty(self.data.clone().ok_or(codec::Error::AssetNotFound {
-                        path: self.path.to_string(),
-                    })?)
-                }
-            },
-        );
+                writer.asset(
+                    self.path.clone(),
+                    match self.track {
+                        Track::Clean => AssetSnap::Clean(Rc::clone(&self.source)),
+                        Track::Dirty => AssetSnap::Dirty(self.data.clone().ok_or(
+                            codec::Error::AssetNotFound {
+                                path: self.path.to_string(),
+                            },
+                        )?),
+                    },
+                );
 
-        Ok(())
+                Ok(())
+            }
+
+            version => Err(codec::Error::UnsupportedVersion { version }),
+        }
     }
 
     fn decode(reader: &Reader) -> codec::Result<Self> {
-        Ok(Asset {
-            path: reader
-                .value()
-                .as_str()
-                .ok_or(codec::Error::MismatchType {
-                    expected: "string".to_string(),
-                    found: reader.value().to_string(),
-                })?
-                .to_string(),
+        match reader.manifest().version() {
+            0 => Ok(Asset {
+                path: reader
+                    .value()
+                    .as_str()
+                    .ok_or(codec::Error::MismatchType {
+                        expected: "string".to_string(),
+                        found: reader.value().to_string(),
+                    })?
+                    .to_string(),
 
-            source: reader.asset(),
+                source: reader.asset(),
 
-            data: None,
+                data: None,
 
-            track: Track::Clean,
-        })
+                track: Track::Clean,
+            }),
+
+            version => Err(codec::Error::UnsupportedVersion { version }),
+        }
     }
 }
 

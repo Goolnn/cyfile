@@ -100,26 +100,36 @@ impl Project {
 
 impl Codec for Project {
     fn encode(&self, writer: &mut Writer) -> codec::Result<()> {
-        writer.field("cover", &self.cover)?;
+        match writer.manifest().version() {
+            0 => {
+                writer.field("cover", &self.cover)?;
 
-        writer.field("title", &self.title)?;
+                writer.field("title", &self.title)?;
 
-        writer.field("overview", &self.overview)?;
+                writer.field("overview", &self.overview)?;
 
-        writer.field("pages", &self.pages)?;
+                writer.field("pages", &self.pages)?;
 
-        Ok(())
+                Ok(())
+            }
+
+            version => Err(codec::Error::UnsupportedVersion { version }),
+        }
     }
 
     fn decode(reader: &Reader) -> codec::Result<Self> {
-        Ok(Project {
-            cover: reader.field("cover")?,
+        match reader.manifest().version() {
+            0 => Ok(Project {
+                cover: reader.field("cover")?,
 
-            title: reader.field("title")?,
+                title: reader.field("title")?,
 
-            overview: reader.field("overview")?,
+                overview: reader.field("overview")?,
 
-            pages: reader.field("pages")?,
-        })
+                pages: reader.field("pages")?,
+            }),
+
+            version => Err(codec::Error::UnsupportedVersion { version }),
+        }
     }
 }

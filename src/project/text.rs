@@ -57,17 +57,28 @@ impl Text {
 
 impl Codec for Text {
     fn encode(&self, writer: &mut Writer) -> codec::Result<()> {
-        writer.field("content", &self.content)?;
+        match writer.manifest().version() {
+            0 => {
+                writer.field("content", &self.content)?;
 
-        writer.field("comment", &self.comment)?;
+                writer.field("comment", &self.comment)?;
 
-        Ok(())
+                Ok(())
+            }
+
+            version => Err(codec::Error::UnsupportedVersion { version }),
+        }
     }
 
     fn decode(reader: &Reader) -> codec::Result<Self> {
-        Ok(Text {
-            content: reader.field("content")?,
-            comment: reader.field("comment")?,
-        })
+        match reader.manifest().version() {
+            0 => Ok(Text {
+                content: reader.field("content")?,
+
+                comment: reader.field("comment")?,
+            }),
+
+            version => Err(codec::Error::UnsupportedVersion { version }),
+        }
     }
 }
