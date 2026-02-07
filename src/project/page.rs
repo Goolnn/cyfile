@@ -20,6 +20,22 @@ impl Page {
             notes: Vec::new(),
         }
     }
+
+    pub fn image(&self) -> &Asset {
+        &self.image
+    }
+
+    pub fn image_mut(&mut self) -> &mut Asset {
+        &mut self.image
+    }
+
+    pub fn notes(&self) -> &[Note] {
+        &self.notes
+    }
+
+    pub fn notes_mut(&mut self) -> &mut [Note] {
+        &mut self.notes
+    }
 }
 
 impl Codec for Page {
