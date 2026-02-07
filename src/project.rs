@@ -38,6 +38,10 @@ impl Project {
     pub fn pages(&self) -> &[Page] {
         &self.pages
     }
+
+    pub fn add_page(&mut self, page: Page) {
+        self.pages.push(page);
+    }
 }
 
 impl Codec for Project {

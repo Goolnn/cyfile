@@ -12,6 +12,16 @@ pub struct Page {
     notes: Vec<Note>,
 }
 
+impl Page {
+    pub fn new(image: Asset) -> Self {
+        Page {
+            image,
+
+            notes: Vec::new(),
+        }
+    }
+}
+
 impl Codec for Page {
     fn encode(&self, writer: &mut Writer) -> codec::Result<()> {
         writer.field("image", &self.image)?;
