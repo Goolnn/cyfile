@@ -1,9 +1,9 @@
 use crate::codec;
-use std::cell::RefCell;
 use std::io::Read;
 use std::io::Seek;
 use std::io::Write;
-use std::rc::Rc;
+use std::sync::Arc;
+use std::sync::Mutex;
 use zip::ZipArchive;
 use zip::ZipWriter;
 
@@ -11,7 +11,7 @@ pub trait Stream: Write + Seek {}
 
 impl<T> Stream for T where T: Write + Seek {}
 
-pub trait AssetSource {
+pub trait AssetSource: Send + Sync {
     fn load(&self, path: &str) -> codec::Result<Vec<u8>>;
 
     fn copy(&self, path: &str, writer: &mut ZipWriter<&mut dyn Stream>) -> codec::Result<()>;
@@ -21,7 +21,7 @@ pub struct ArchiveSource<R>
 where
     R: Read + Seek,
 {
-    archive: Rc<RefCell<ZipArchive<R>>>,
+    archive: Arc<Mutex<ZipArchive<R>>>,
 }
 
 impl<R> ArchiveSource<R>
@@ -30,17 +30,17 @@ where
 {
     pub fn new(archive: ZipArchive<R>) -> Self {
         ArchiveSource {
-            archive: Rc::new(RefCell::new(archive)),
+            archive: Arc::new(Mutex::new(archive)),
         }
     }
 }
 
 impl<R> AssetSource for ArchiveSource<R>
 where
-    R: Read + Seek + 'static,
+    R: Read + Seek + Send + 'static,
 {
     fn load(&self, path: &str) -> codec::Result<Vec<u8>> {
-        let mut archive = self.archive.borrow_mut();
+        let mut archive = self.archive.lock().map_err(|_| codec::Error::Undefined)?;
 
         let mut stream = match archive.by_name(path) {
             Ok(val) => val,
@@ -64,7 +64,7 @@ where
     }
 
     fn copy(&self, path: &str, writer: &mut ZipWriter<&mut dyn Stream>) -> codec::Result<()> {
-        let mut archive = self.archive.borrow_mut();
+        let mut archive = self.archive.lock().map_err(|_| codec::Error::Undefined)?;
 
         let stream = match archive.by_name(path) {
             Ok(val) => val,
@@ -102,6 +102,6 @@ impl AssetSource for EmptySource {
 
 #[derive(Clone)]
 pub enum AssetSnap {
-    Clean(Rc<dyn AssetSource>),
+    Clean(Arc<dyn AssetSource>),
     Dirty(Vec<u8>),
 }

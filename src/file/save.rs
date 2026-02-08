@@ -81,7 +81,7 @@ pub fn save_to_stream(
     writer.start_file("project.json", options)?;
     writer.write_all(project.as_bytes())?;
 
-    for (path, snap) in assets.borrow().iter() {
+    for (path, snap) in assets.lock().map_err(|_| file::Error::Undefined)?.iter() {
         match snap {
             AssetSnap::Clean(source) => {
                 source.copy(path.as_str(), &mut writer)?;

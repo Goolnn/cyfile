@@ -6,14 +6,15 @@ use crate::codec::Reader;
 use crate::codec::Writer;
 use std::fmt;
 use std::fmt::Debug;
-use std::rc::Rc;
+use std::sync::Arc;
+use std::sync::RwLock;
 
 pub struct Asset {
     path: String,
 
-    source: Rc<dyn codec::AssetSource>,
+    source: Arc<dyn codec::AssetSource>,
 
-    data: Option<Vec<u8>>,
+    data: RwLock<Option<Vec<u8>>>,
 
     track: Track,
 }
@@ -31,9 +32,9 @@ impl Asset {
         Asset {
             path: path.to_string(),
 
-            source: Rc::new(EmptySource),
+            source: Arc::new(EmptySource),
 
-            data: Some(data),
+            data: RwLock::new(Some(data)),
 
             track: Track::Dirty,
         }
@@ -43,19 +44,26 @@ impl Asset {
         &self.path
     }
 
-    pub fn load(&mut self) -> codec::Result<&[u8]> {
-        if self.data.is_none() {
+    pub fn load(&self) -> codec::Result<Vec<u8>> {
+        if self
+            .data
+            .read()
+            .map_err(|_| codec::Error::Undefined)?
+            .is_none()
+        {
             let data = self.source.load(&self.path)?;
 
-            self.data = Some(data);
+            *self.data.write().map_err(|_| codec::Error::Undefined)? = Some(data);
         }
 
         self.data
+            .read()
+            .map_err(|_| codec::Error::Undefined)?
             .as_ref()
             .ok_or(codec::Error::AssetNotFound {
                 path: self.path.to_string(),
             })
-            .map(|data| data.as_slice())
+            .cloned()
     }
 }
 
@@ -68,12 +76,16 @@ impl Codec for Asset {
                 writer.asset(
                     self.path.clone(),
                     match self.track {
-                        Track::Clean => AssetSnap::Clean(Rc::clone(&self.source)),
-                        Track::Dirty => AssetSnap::Dirty(self.data.clone().ok_or(
-                            codec::Error::AssetNotFound {
-                                path: self.path.to_string(),
-                            },
-                        )?),
+                        Track::Clean => AssetSnap::Clean(Arc::clone(&self.source)),
+                        Track::Dirty => AssetSnap::Dirty(
+                            self.data
+                                .read()
+                                .map_err(|_| codec::Error::Undefined)?
+                                .clone()
+                                .ok_or(codec::Error::AssetNotFound {
+                                    path: self.path.to_string(),
+                                })?,
+                        ),
                     },
                 );
 
@@ -98,7 +110,7 @@ impl Codec for Asset {
 
                 source: reader.asset(),
 
-                data: None,
+                data: RwLock::new(None),
 
                 track: Track::Clean,
             }),

@@ -6,7 +6,7 @@ use crate::file::Manifest;
 use serde_json::Value;
 use std::io::Read;
 use std::io::Seek;
-use std::rc::Rc;
+use std::sync::Arc;
 use zip::ZipArchive;
 
 pub struct Reader<'a> {
@@ -14,20 +14,20 @@ pub struct Reader<'a> {
 
     value: &'a Value,
 
-    source: Rc<dyn AssetSource>,
+    source: Arc<dyn AssetSource>,
 }
 
 impl<'a> Reader<'a> {
     pub fn new<R>(manifest: &'a Manifest, value: &'a Value, archive: ZipArchive<R>) -> Reader<'a>
     where
-        R: Read + Seek + 'static,
+        R: Read + Seek + Send + 'static,
     {
         Reader {
             manifest,
 
             value,
 
-            source: Rc::new(ArchiveSource::new(archive)),
+            source: Arc::new(ArchiveSource::new(archive)),
         }
     }
 
@@ -56,8 +56,8 @@ impl<'a> Reader<'a> {
         self.value
     }
 
-    pub fn asset(&self) -> Rc<dyn AssetSource> {
-        Rc::clone(&self.source)
+    pub fn asset(&self) -> Arc<dyn AssetSource> {
+        Arc::clone(&self.source)
     }
 
     pub fn clone(&self, value: &'a Value) -> Reader<'a> {
@@ -66,7 +66,7 @@ impl<'a> Reader<'a> {
 
             value,
 
-            source: Rc::clone(&self.source),
+            source: Arc::clone(&self.source),
         }
     }
 }

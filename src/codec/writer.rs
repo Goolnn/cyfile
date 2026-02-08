@@ -4,11 +4,11 @@ use crate::codec::AssetSnap;
 use crate::file::Manifest;
 use serde_json::Map;
 use serde_json::Value;
-use std::cell::RefCell;
 use std::collections::HashMap;
-use std::rc::Rc;
+use std::sync::Arc;
+use std::sync::Mutex;
 
-type Assets = Rc<RefCell<HashMap<String, AssetSnap>>>;
+type Assets = Arc<Mutex<HashMap<String, AssetSnap>>>;
 
 pub struct Writer<'a> {
     manifest: &'a Manifest,
@@ -25,7 +25,7 @@ impl<'a> Writer<'a> {
 
             value: Value::Null,
 
-            assets: Rc::new(RefCell::new(HashMap::new())),
+            assets: Arc::new(Mutex::new(HashMap::new())),
         }
     }
 
@@ -63,9 +63,9 @@ impl<'a> Writer<'a> {
     }
 
     pub fn asset(&mut self, path: String, snap: AssetSnap) {
-        let mut assets = self.assets.borrow_mut();
-
-        assets.insert(path, snap);
+        if let Ok(mut assets) = self.assets.lock() {
+            assets.insert(path, snap);
+        }
     }
 
     pub fn end(self) -> (Assets, Value) {
@@ -84,7 +84,7 @@ impl Clone for Writer<'_> {
 
             value: Value::Null,
 
-            assets: Rc::clone(&self.assets),
+            assets: Arc::clone(&self.assets),
         }
     }
 }
