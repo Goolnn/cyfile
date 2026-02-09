@@ -115,6 +115,20 @@ mod tests {
     }
 
     #[test]
+    fn set_image() {
+        let asset1 = Asset::new("path/to/image1.png", Vec::new());
+        let asset2 = Asset::new("path/to/image2.png", Vec::new());
+
+        let mut page = Page::new(asset1);
+
+        assert_eq!(page.image().path(), "path/to/image1.png");
+
+        page.set_image(asset2);
+
+        assert_eq!(page.image().path(), "path/to/image2.png");
+    }
+
+    #[test]
     fn encode() {
         let asset = Asset::new("path/to/image.png", Vec::new());
 
@@ -150,7 +164,6 @@ mod tests {
                             }
                         ],
                     },
-
                     {
                         "x": 0.0,
                         "y": 0.0,
@@ -161,7 +174,6 @@ mod tests {
                             }
                         ],
                     },
-
                     {
                         "x": 0.0,
                         "y": 0.0,
