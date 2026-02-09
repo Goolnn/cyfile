@@ -3,7 +3,7 @@ use crate::codec;
 use crate::codec::Reader;
 use crate::codec::Writer;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct Text {
     content: String,
     comment: String,
