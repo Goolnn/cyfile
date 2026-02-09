@@ -71,3 +71,109 @@ impl Codec for Page {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::Asset;
+    use crate::Codec;
+    use crate::Note;
+    use crate::Page;
+    use crate::Text;
+    use crate::codec::Writer;
+    use crate::file::Manifest;
+    use serde_json::json;
+
+    #[test]
+    fn new() {
+        let asset = Asset::new("path/to/image.png", Vec::new());
+
+        let page = Page::new(asset);
+
+        assert_eq!(page.image().path(), "path/to/image.png");
+
+        assert!(page.notes().is_empty());
+    }
+
+    #[test]
+    fn with_notes() {
+        let asset = Asset::new("path/to/image.png", Vec::new());
+
+        let note1 = Note::new().with_text(Text::new().with_content("This is a note1."));
+        let note2 = Note::new().with_text(Text::new().with_content("This is a note2."));
+        let note3 = Note::new().with_text(Text::new().with_content("This is a note3."));
+
+        let page = Page::new(asset)
+            .with_note(note1.clone())
+            .with_note(note2.clone())
+            .with_note(note3.clone());
+
+        assert_eq!(page.notes().len(), 3);
+
+        assert_eq!(page.notes()[0].texts()[0].content(), "This is a note1.");
+        assert_eq!(page.notes()[1].texts()[0].content(), "This is a note2.");
+        assert_eq!(page.notes()[2].texts()[0].content(), "This is a note3.");
+    }
+
+    #[test]
+    fn encode() {
+        let asset = Asset::new("path/to/image.png", Vec::new());
+
+        let note1 = Note::new().with_text(Text::new().with_content("This is a note1."));
+        let note2 = Note::new().with_text(Text::new().with_content("This is a note2."));
+        let note3 = Note::new().with_text(Text::new().with_content("This is a note3."));
+
+        let page = Page::new(asset)
+            .with_note(note1.clone())
+            .with_note(note2.clone())
+            .with_note(note3.clone());
+
+        let manifest = Manifest::default();
+
+        let mut writer = Writer::new(&manifest);
+
+        assert!(Codec::encode(&page, &mut writer).is_ok());
+
+        let value = writer.into_value();
+
+        assert_eq!(
+            value,
+            json!({
+                "image": "path/to/image.png",
+                "notes": [
+                    {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "texts": [
+                            {
+                                "content": "This is a note1.",
+                                "comment": "",
+                            }
+                        ],
+                    },
+
+                    {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "texts": [
+                            {
+                                "content": "This is a note2.",
+                                "comment": "",
+                            }
+                        ],
+                    },
+
+                    {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "texts": [
+                            {
+                                "content": "This is a note3.",
+                                "comment": "",
+                            }
+                        ],
+                    },
+                ],
+            }),
+        );
+    }
+}
