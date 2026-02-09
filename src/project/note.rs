@@ -104,8 +104,12 @@ impl Codec for Note {
 
 #[cfg(test)]
 mod tests {
+    use crate::Codec;
     use crate::Note;
     use crate::Text;
+    use crate::codec::Writer;
+    use crate::file::Manifest;
+    use serde_json::json;
 
     #[test]
     fn new() {
@@ -198,5 +202,49 @@ mod tests {
 
         assert_eq!(note.x(), 1.0);
         assert_eq!(note.y(), 2.0);
+    }
+
+    #[test]
+    fn encode() {
+        let text1 = Text::new().with_content("This is a content 1.");
+        let text2 = Text::new().with_content("This is a content 2.");
+        let text3 = Text::new().with_content("This is a content 3.");
+
+        let note = Note::new()
+            .with_position(1.0, 2.0)
+            .with_text(text1.clone())
+            .with_text(text2.clone())
+            .with_text(text3.clone());
+
+        let manifest = Manifest::default();
+
+        let mut writer = Writer::new(&manifest);
+
+        assert!(Codec::encode(&note, &mut writer).is_ok());
+
+        let value = writer.into_value();
+
+        assert_eq!(
+            value,
+            json!({
+                "x": 1.0,
+                "y": 2.0,
+
+                "texts": [
+                    {
+                        "content": "This is a content 1.",
+                        "comment": ""
+                    },
+                    {
+                        "content": "This is a content 2.",
+                        "comment": ""
+                    },
+                    {
+                        "content": "This is a content 3.",
+                        "comment": ""
+                    }
+                ]
+            })
+        );
     }
 }
