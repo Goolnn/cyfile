@@ -125,3 +125,46 @@ impl Debug for Asset {
         f.write_fmt(format_args!("Asset(\"{}\")", self.path))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::Asset;
+    use crate::Codec;
+    use crate::codec::Writer;
+    use crate::file::Manifest;
+
+    #[test]
+    fn path() {
+        let asset = Asset::new("asset.png", Vec::new());
+
+        assert_eq!(asset.path(), "asset.png");
+    }
+
+    #[test]
+    fn load() {
+        let data = vec![0, 1, 2, 3];
+
+        let asset = Asset::new("asset.png", data.clone());
+
+        match asset.load() {
+            Ok(data) => assert_eq!(data, data),
+
+            Err(err) => panic!("Failed to load asset: {:?}", err),
+        }
+    }
+
+    #[test]
+    fn encode() {
+        let asset = Asset::new("asset.png", vec![0, 1, 2, 3]);
+
+        let manifest = Manifest::default();
+
+        let mut writer = Writer::new(&manifest);
+
+        assert!(Codec::encode(&asset, &mut writer).is_ok());
+
+        let value = writer.into_value();
+
+        assert_eq!(value, "asset.png");
+    }
+}
