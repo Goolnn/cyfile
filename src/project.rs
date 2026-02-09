@@ -133,3 +133,118 @@ impl Codec for Project {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::Asset;
+    use crate::Codec;
+    use crate::Page;
+    use crate::Project;
+    use crate::codec::Writer;
+    use crate::file::Manifest;
+
+    #[test]
+    fn new() {
+        let project = Project::new();
+
+        assert!(project.cover().is_none());
+
+        assert!(project.title().is_empty());
+
+        assert!(project.overview().is_empty());
+
+        assert!(project.pages().is_empty());
+    }
+
+    #[test]
+    fn with_cover() {
+        let data = vec![0, 1, 2, 3];
+
+        let asset = Asset::new("cover.png", data);
+
+        let project = Project::new().with_cover(asset);
+
+        match project.cover() {
+            Some(cover) => assert_eq!(cover.path(), "cover.png"),
+
+            None => panic!("Cover should be set."),
+        }
+    }
+
+    #[test]
+    fn with_title() {
+        let project = Project::new().with_title("Project Title");
+
+        assert_eq!(project.title(), "Project Title");
+    }
+
+    #[test]
+    fn with_overview() {
+        let project = Project::new().with_overview("This is an overview.");
+
+        assert_eq!(project.overview(), "This is an overview.");
+    }
+
+    #[test]
+    fn with_pages() {
+        let page1 = Page::new(Asset::new("image1.png", Vec::new()));
+        let page2 = Page::new(Asset::new("image2.png", Vec::new()));
+        let page3 = Page::new(Asset::new("image3.png", Vec::new()));
+
+        let project = Project::new()
+            .with_page(page1)
+            .with_page(page2)
+            .with_page(page3);
+
+        assert_eq!(project.pages().len(), 3);
+
+        assert_eq!(project.pages()[0].image().path(), "image1.png");
+        assert_eq!(project.pages()[1].image().path(), "image2.png");
+        assert_eq!(project.pages()[2].image().path(), "image3.png");
+    }
+
+    #[test]
+    fn encode() {
+        let page1 = Page::new(Asset::new("image1.png", Vec::new()));
+        let page2 = Page::new(Asset::new("image2.png", Vec::new()));
+        let page3 = Page::new(Asset::new("image3.png", Vec::new()));
+
+        let project = Project::new()
+            .with_title("Project Title")
+            .with_overview("This is an overview.")
+            .with_page(page1)
+            .with_page(page2)
+            .with_page(page3);
+
+        let manifest = Manifest::default();
+
+        let mut writer = Writer::new(&manifest);
+
+        assert!(Codec::encode(&project, &mut writer).is_ok());
+
+        let value = writer.into_value();
+
+        assert_eq!(
+            value,
+            serde_json::json!({
+                "cover": null,
+                "title": "Project Title",
+                "overview": "This is an overview.",
+                "pages": [
+                    {
+                        "image": "image1.png",
+                        "notes": []
+                    },
+                    {
+                        "image": "image2.png",
+                        "notes": []
+                    },
+                    {
+                        "image": "image3.png",
+                        "notes": []
+                    },
+                ],
+            })
+        );
+    }
+}
