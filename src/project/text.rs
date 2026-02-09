@@ -82,3 +82,67 @@ impl Codec for Text {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::Codec;
+    use crate::Text;
+    use crate::codec::Writer;
+    use crate::file::Manifest;
+    use serde_json::json;
+
+    #[test]
+    fn new() {
+        let text = Text::new();
+
+        assert!(text.content().is_empty());
+        assert!(text.comment().is_empty());
+    }
+
+    #[test]
+    fn with_content() {
+        let text = Text::new().with_content("This is a content.");
+
+        assert_eq!(text.content(), "This is a content.");
+    }
+
+    #[test]
+    fn with_comment() {
+        let text = Text::new().with_comment("This is a comment.");
+
+        assert_eq!(text.comment(), "This is a comment.");
+    }
+
+    #[test]
+    fn with_content_and_comment() {
+        let text = Text::new()
+            .with_content("This is a content.")
+            .with_comment("This is a comment.");
+
+        assert_eq!(text.content(), "This is a content.");
+        assert_eq!(text.comment(), "This is a comment.");
+    }
+
+    #[test]
+    fn encode() {
+        let text = Text::new()
+            .with_content("This is a content.")
+            .with_comment("This is a comment.");
+
+        let manifest = Manifest::default();
+
+        let mut writer = Writer::new(&manifest);
+
+        assert!(Codec::encode(&text, &mut writer).is_ok());
+
+        let value = writer.into_value();
+
+        assert_eq!(
+            value,
+            json!({
+                "content": "This is a content.",
+                "comment": "This is a comment."
+            })
+        );
+    }
+}
