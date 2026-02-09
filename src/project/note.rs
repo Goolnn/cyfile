@@ -17,6 +17,11 @@ impl Note {
         Self::default()
     }
 
+    pub fn set_position(&mut self, x: f32, y: f32) {
+        self.x = x;
+        self.y = y;
+    }
+
     pub fn with_position(mut self, x: f32, y: f32) -> Self {
         self.x = x;
         self.y = y;
@@ -94,5 +99,104 @@ impl Codec for Note {
 
             version => Err(codec::Error::UnsupportedVersion { version }),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::Note;
+    use crate::Text;
+
+    #[test]
+    fn new() {
+        let note = Note::new();
+
+        assert_eq!(note.x(), 0.0);
+        assert_eq!(note.y(), 0.0);
+
+        assert!(note.texts().is_empty());
+    }
+
+    #[test]
+    fn with_position() {
+        let note = Note::new().with_position(1.0, 2.0);
+
+        assert_eq!(note.x(), 1.0);
+        assert_eq!(note.y(), 2.0);
+    }
+
+    #[test]
+    fn with_x() {
+        let note = Note::new().with_x(1.0);
+
+        assert_eq!(note.x(), 1.0);
+        assert_eq!(note.y(), 0.0);
+    }
+
+    #[test]
+    fn with_y() {
+        let note = Note::new().with_y(2.0);
+
+        assert_eq!(note.x(), 0.0);
+        assert_eq!(note.y(), 2.0);
+    }
+
+    #[test]
+    fn with_texts() {
+        let text1 = Text::new().with_content("This is a content 1.");
+        let text2 = Text::new().with_content("This is a content 2.");
+        let text3 = Text::new().with_content("This is a content 3.");
+
+        let note = Note::new()
+            .with_text(text1.clone())
+            .with_text(text2.clone())
+            .with_text(text3.clone());
+
+        assert_eq!(note.texts().len(), 3);
+
+        assert_eq!(note.texts()[0].content(), "This is a content 1.");
+        assert_eq!(note.texts()[1].content(), "This is a content 2.");
+        assert_eq!(note.texts()[2].content(), "This is a content 3.");
+    }
+
+    #[test]
+    fn set_position() {
+        let mut note = Note::new();
+
+        note.set_position(1.0, 2.0);
+
+        assert_eq!(note.x(), 1.0);
+        assert_eq!(note.y(), 2.0);
+    }
+
+    #[test]
+    fn set_x() {
+        let mut note = Note::new();
+
+        note.set_x(1.0);
+
+        assert_eq!(note.x(), 1.0);
+        assert_eq!(note.y(), 0.0);
+    }
+
+    #[test]
+    fn set_y() {
+        let mut note = Note::new();
+
+        note.set_y(2.0);
+
+        assert_eq!(note.x(), 0.0);
+        assert_eq!(note.y(), 2.0);
+    }
+
+    #[test]
+    fn set_x_and_y() {
+        let mut note = Note::new();
+
+        note.set_x(1.0);
+        note.set_y(2.0);
+
+        assert_eq!(note.x(), 1.0);
+        assert_eq!(note.y(), 2.0);
     }
 }
