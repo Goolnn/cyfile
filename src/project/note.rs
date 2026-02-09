@@ -4,7 +4,7 @@ use crate::codec::Reader;
 use crate::codec::Writer;
 use crate::project::Text;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct Note {
     x: f32,
     y: f32,
