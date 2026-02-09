@@ -124,6 +124,24 @@ mod tests {
     }
 
     #[test]
+    fn set_content() {
+        let mut text = Text::new();
+
+        text.set_content("This is a content.");
+
+        assert_eq!(text.content(), "This is a content.");
+    }
+
+    #[test]
+    fn set_comment() {
+        let mut text = Text::new();
+
+        text.set_comment("This is a comment.");
+
+        assert_eq!(text.comment(), "This is a comment.");
+    }
+
+    #[test]
     fn encode() {
         let text = Text::new()
             .with_content("This is a content.")
