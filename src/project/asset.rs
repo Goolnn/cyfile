@@ -48,17 +48,26 @@ impl Asset {
         if self
             .data
             .read()
-            .map_err(|_| codec::Error::Undefined)?
+            .map_err(|_| codec::Error::AssetAccessFailed {
+                path: self.path.to_string(),
+            })?
             .is_none()
         {
             let data = self.source.load(&self.path)?;
 
-            *self.data.write().map_err(|_| codec::Error::Undefined)? = Some(data);
+            *self
+                .data
+                .write()
+                .map_err(|_| codec::Error::AssetAccessFailed {
+                    path: self.path.to_string(),
+                })? = Some(data);
         }
 
         self.data
             .read()
-            .map_err(|_| codec::Error::Undefined)?
+            .map_err(|_| codec::Error::AssetAccessFailed {
+                path: self.path.to_string(),
+            })?
             .as_ref()
             .ok_or(codec::Error::AssetNotFound {
                 path: self.path.to_string(),
@@ -80,7 +89,9 @@ impl Codec for Asset {
                         Track::Dirty => AssetSnap::Dirty(
                             self.data
                                 .read()
-                                .map_err(|_| codec::Error::Undefined)?
+                                .map_err(|_| codec::Error::AssetAccessFailed {
+                                    path: self.path.to_string(),
+                                })?
                                 .clone()
                                 .ok_or(codec::Error::AssetNotFound {
                                     path: self.path.to_string(),
