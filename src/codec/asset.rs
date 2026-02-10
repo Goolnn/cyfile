@@ -40,7 +40,10 @@ where
     R: Read + Seek + Send + 'static,
 {
     fn load(&self, path: &str) -> codec::Result<Vec<u8>> {
-        let mut archive = self.archive.lock().map_err(|_| codec::Error::Undefined)?;
+        let mut archive = self
+            .archive
+            .lock()
+            .map_err(|_| codec::Error::ArchiveAcquireFailed)?;
 
         let mut stream = match archive.by_name(path) {
             Ok(val) => val,
@@ -64,7 +67,10 @@ where
     }
 
     fn copy(&self, path: &str, writer: &mut ZipWriter<&mut dyn Stream>) -> codec::Result<()> {
-        let mut archive = self.archive.lock().map_err(|_| codec::Error::Undefined)?;
+        let mut archive = self
+            .archive
+            .lock()
+            .map_err(|_| codec::Error::ArchiveAcquireFailed)?;
 
         let stream = match archive.by_name(path) {
             Ok(val) => val,
