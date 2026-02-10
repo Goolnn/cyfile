@@ -14,3 +14,10 @@ serde_json = { version = "1.0.149", features = ["preserve_order"] }
 tempfile = "3.25.0"
 thiserror = "2.0.18"
 zip = "7.4.0"
+
+[dev-dependencies]
+anyhow = "1.0.101"
+clap = { version = "4.5.57", features = ["derive"] }
+cyfile_old = { package = "cyfile", git = "https://github.com/Goolnn/cyfile.git", tag = "v0.5.1" }
+indicatif = "0.18.3"
+rayon = "1.11.0"
