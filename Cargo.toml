@@ -18,6 +18,7 @@ zip = "7.4.0"
 [dev-dependencies]
 anyhow = "1.0.101"
 clap = { version = "4.5.57", features = ["derive"] }
-cyfile_old = { package = "cyfile", git = "https://github.com/Goolnn/cyfile.git", tag = "v0.5.1" }
+cyfile-old = { package = "cyfile", git = "https://github.com/Goolnn/cyfile.git", tag = "v0.5.1" }
+image = "0.25.9"
 indicatif = "0.18.3"
 rayon = "1.11.0"

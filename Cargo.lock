@@ -495,6 +495,7 @@ dependencies = [
  "anyhow",
  "clap",
  "cyfile 0.5.2",
+ "image",
  "indicatif",
  "rayon",
  "serde",
