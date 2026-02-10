@@ -22,6 +22,12 @@ pub enum Error {
     #[error("failed to copy asset at `{path}`")]
     AssetCopyFailed { path: String },
 
+    #[error("failed to acquire archive")]
+    ArchiveAcquireFailed,
+
+    #[error("failed to access asset at `{path}`")]
+    AssetAccessFailed { path: String },
+
     #[error("unknown error")]
     Undefined,
 }
