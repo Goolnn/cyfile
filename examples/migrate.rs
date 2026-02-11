@@ -288,7 +288,8 @@ pub fn migrate_page(page: &cyfile_old::Page, index: usize) -> Result<cyfile::Pag
     })()
     .with_context(|| format!("处理第 {} 页图片失败", index))?;
 
-    let mut next = cyfile::Page::new(Asset::new(format!("pages/page_{}.webp", index), image_data));
+    let mut next = cyfile::Page::new()
+        .with_image(Asset::new(format!("pages/page_{}.webp", index), image_data));
 
     for note in page.notes() {
         next = next.with_note(migrate_note(note));

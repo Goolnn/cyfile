@@ -187,9 +187,9 @@ mod tests {
 
     #[test]
     fn with_pages() {
-        let page1 = Page::new(Asset::new("image1.png", Vec::new()));
-        let page2 = Page::new(Asset::new("image2.png", Vec::new()));
-        let page3 = Page::new(Asset::new("image3.png", Vec::new()));
+        let page1 = Page::new().with_image(Asset::new("image1.png", Vec::new()));
+        let page2 = Page::new().with_image(Asset::new("image2.png", Vec::new()));
+        let page3 = Page::new().with_image(Asset::new("image3.png", Vec::new()));
 
         let project = Project::new()
             .with_page(page1)
@@ -198,16 +198,27 @@ mod tests {
 
         assert_eq!(project.pages().len(), 3);
 
-        assert_eq!(project.pages()[0].image().path(), "image1.png");
-        assert_eq!(project.pages()[1].image().path(), "image2.png");
-        assert_eq!(project.pages()[2].image().path(), "image3.png");
+        match project.pages()[0].image() {
+            Some(image) => assert_eq!(image.path(), "image1.png"),
+            None => panic!("Expected image, found None"),
+        }
+
+        match project.pages()[1].image() {
+            Some(image) => assert_eq!(image.path(), "image2.png"),
+            None => panic!("Expected image, found None"),
+        }
+
+        match project.pages()[2].image() {
+            Some(image) => assert_eq!(image.path(), "image3.png"),
+            None => panic!("Expected image, found None"),
+        }
     }
 
     #[test]
     fn encode() {
-        let page1 = Page::new(Asset::new("image1.png", Vec::new()));
-        let page2 = Page::new(Asset::new("image2.png", Vec::new()));
-        let page3 = Page::new(Asset::new("image3.png", Vec::new()));
+        let page1 = Page::new().with_image(Asset::new("image1.png", Vec::new()));
+        let page2 = Page::new().with_image(Asset::new("image2.png", Vec::new()));
+        let page3 = Page::new().with_image(Asset::new("image3.png", Vec::new()));
 
         let project = Project::new()
             .with_title("Project Title")

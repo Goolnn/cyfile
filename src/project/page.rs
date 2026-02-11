@@ -5,28 +5,30 @@ use crate::codec::Writer;
 use crate::project::Asset;
 use crate::project::Note;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Page {
-    image: Asset,
+    image: Option<Asset>,
 
     notes: Vec<Note>,
 }
 
 impl Page {
-    pub fn new(image: Asset) -> Self {
-        Page {
-            image,
-
-            notes: Vec::new(),
-        }
+    pub fn new() -> Self {
+        Self::default()
     }
 
-    pub fn image(&self) -> &Asset {
-        &self.image
+    pub fn image(&self) -> Option<&Asset> {
+        self.image.as_ref()
     }
 
-    pub fn set_image(&mut self, image: Asset) {
+    pub fn set_image(&mut self, image: Option<Asset>) {
         self.image = image;
+    }
+
+    pub fn with_image(mut self, image: Asset) -> Self {
+        self.image = Some(image);
+
+        self
     }
 
     pub fn notes(&self) -> &Vec<Note> {
@@ -87,9 +89,12 @@ mod tests {
     fn new() {
         let asset = Asset::new("path/to/image.png", Vec::new());
 
-        let page = Page::new(asset);
+        let page = Page::new().with_image(asset);
 
-        assert_eq!(page.image().path(), "path/to/image.png");
+        match page.image() {
+            Some(image) => assert_eq!(image.path(), "path/to/image.png"),
+            None => panic!("Expected image, found None"),
+        }
 
         assert!(page.notes().is_empty());
     }
@@ -102,7 +107,8 @@ mod tests {
         let note2 = Note::new().with_text(Text::new().with_content("This is a note2."));
         let note3 = Note::new().with_text(Text::new().with_content("This is a note3."));
 
-        let page = Page::new(asset)
+        let page = Page::new()
+            .with_image(asset)
             .with_note(note1.clone())
             .with_note(note2.clone())
             .with_note(note3.clone());
@@ -119,13 +125,19 @@ mod tests {
         let asset1 = Asset::new("path/to/image1.png", Vec::new());
         let asset2 = Asset::new("path/to/image2.png", Vec::new());
 
-        let mut page = Page::new(asset1);
+        let mut page = Page::new().with_image(asset1);
 
-        assert_eq!(page.image().path(), "path/to/image1.png");
+        match page.image() {
+            Some(image) => assert_eq!(image.path(), "path/to/image1.png"),
+            None => panic!("Expected image, found None"),
+        }
 
-        page.set_image(asset2);
+        page.set_image(Some(asset2));
 
-        assert_eq!(page.image().path(), "path/to/image2.png");
+        match page.image() {
+            Some(image) => assert_eq!(image.path(), "path/to/image2.png"),
+            None => panic!("Expected image, found None"),
+        }
     }
 
     #[test]
@@ -136,7 +148,8 @@ mod tests {
         let note2 = Note::new().with_text(Text::new().with_content("This is a note2."));
         let note3 = Note::new().with_text(Text::new().with_content("This is a note3."));
 
-        let page = Page::new(asset)
+        let page = Page::new()
+            .with_image(asset)
             .with_note(note1.clone())
             .with_note(note2.clone())
             .with_note(note3.clone());

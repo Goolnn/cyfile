@@ -26,7 +26,8 @@ fn main() -> anyhow::Result<()> {
         .with_title("Project Title")
         .with_overview("Project Overview")
         .with_page(
-            Page::new(Asset::new("pages/page_1.webp", Vec::new()))
+            Page::new()
+                .with_image(Asset::new("pages/page_1.webp", Vec::new()))
                 .with_note(
                     Note::new().with_position(0.2, 0.5).with_text(
                         Text::new()
@@ -43,7 +44,7 @@ fn main() -> anyhow::Result<()> {
                 ),
         )
         .with_page(
-            Page::new(Asset::new("pages/page_2.webp", Vec::new()))
+            Page::new()
                 .with_note(
                     Note::new().with_position(0.3, 0.6).with_text(
                         Text::new()
