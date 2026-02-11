@@ -76,16 +76,16 @@ where
     fn encode(&self, writer: &mut Writer) -> codec::Result<()> {
         match self {
             Some(value) => {
-                writer.value(
-                    {
-                        let mut writer = writer.clone();
+                let (_, value) = {
+                    let mut writer = writer.clone();
 
-                        Codec::encode(value, &mut writer)?;
+                    Codec::encode(value, &mut writer)?;
 
-                        writer
-                    }
-                    .into_value(),
-                );
+                    writer
+                }
+                .end();
+
+                writer.value(value);
             }
 
             None => {
@@ -117,7 +117,9 @@ where
 
                     Codec::encode(item, &mut writer)?;
 
-                    Ok(writer.into_value())
+                    let (_, value) = writer.end();
+
+                    Ok(value)
                 })
                 .collect::<codec::Result<Vec<Value>>>()?,
         );

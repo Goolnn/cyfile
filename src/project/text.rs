@@ -153,7 +153,7 @@ mod tests {
 
         assert!(Codec::encode(&text, &mut writer).is_ok());
 
-        let value = writer.into_value();
+        let (_, value) = writer.end();
 
         assert_eq!(
             value,

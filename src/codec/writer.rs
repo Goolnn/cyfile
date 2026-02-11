@@ -46,7 +46,7 @@ impl<'a> Writer<'a> {
 
         Codec::encode(value, &mut writer)?;
 
-        let value = writer.into_value();
+        let (_, value) = writer.end();
 
         if let Value::Object(map) = &mut self.value {
             map.insert(key.as_ref().to_string(), value);
@@ -70,10 +70,6 @@ impl<'a> Writer<'a> {
 
     pub fn end(self) -> (Assets, Value) {
         (self.assets, self.value)
-    }
-
-    pub fn into_value(self) -> Value {
-        self.value
     }
 }
 
