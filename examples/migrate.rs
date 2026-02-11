@@ -86,9 +86,9 @@ fn main() -> anyhow::Result<()> {
         .num_threads(args.threads)
         .build_global()?;
 
-    let progress = Arc::new(MultiProgress::new());
+    let multi_progress = Arc::new(MultiProgress::new());
 
-    progress.set_draw_target(ProgressDrawTarget::stdout());
+    multi_progress.set_draw_target(ProgressDrawTarget::stdout());
 
     let target = Arc::new(args.target);
 
@@ -113,7 +113,7 @@ fn main() -> anyhow::Result<()> {
         let target = Arc::clone(&target);
         let results = Arc::clone(&results);
 
-        let result = migrate(path, &file_name, &progress, &target);
+        let result = migrate(path, &file_name, &multi_progress, &target);
 
         add_result(&results, result);
     });
@@ -149,36 +149,36 @@ fn main() -> anyhow::Result<()> {
 fn migrate(
     path: &Path,
     file_name: &str,
-    progress: &MultiProgress,
+    multi_progress: &MultiProgress,
     target: &Path,
 ) -> MigrationResult {
     let result: Result<()> = (|| -> Result<()> {
         let file =
             File::open(path).with_context(|| format!("Failed to open file `{}`", file_name))?;
 
-        let project = cyfile_old::File::open(file)?;
-        let len = project.pages().len();
-        let bar = create_progress_bar(progress, len);
+        let old = cyfile_old::File::open(file)?;
+        let len = old.pages().len();
+        let progress_bar = create_progress_bar(multi_progress, len);
 
-        update_progress_bar(&bar, file_name);
+        update_progress_bar(&progress_bar, file_name);
 
         let file_stem = path
             .file_stem()
             .and_then(|stem| stem.to_str())
             .ok_or_else(|| anyhow::anyhow!("Failed to get file stem for `{}`", file_name))?;
 
-        let new = migrate_project(&project, file_stem.to_string(), file_name, &bar)
+        let new = migrate_project(&old, file_stem.to_string(), file_name, &progress_bar)
             .with_context(|| format!("Failed to migrate project `{}`", file_name))?;
 
         let manifest = Manifest::new();
 
         cyfile::file::save_to_path(target.join(file_name), &manifest, &new)?;
 
-        bar.set_prefix("●");
+        progress_bar.set_prefix("●");
 
         let counter = format_counter(len as u64, len as u64);
 
-        bar.finish_with_message(format!("{:>5} {}", counter, file_name));
+        progress_bar.finish_with_message(format!("{:>5} {}", counter, file_name));
 
         Ok(())
     })();
@@ -189,14 +189,12 @@ fn migrate(
     }
 }
 
-fn create_progress_bar(progress: &MultiProgress, len: usize) -> ProgressBar {
-    let bar = if len == 0 {
-        progress.add(ProgressBar::new_spinner())
+fn create_progress_bar(multi_progress: &MultiProgress, len: usize) -> ProgressBar {
+    let progress_bar = multi_progress.add(if len == 0 {
+        multi_progress.add(ProgressBar::new_spinner())
     } else {
-        progress.add(ProgressBar::new(len as u64))
-    };
-
-    let bar = progress.add(bar);
+        multi_progress.add(ProgressBar::new(len as u64))
+    });
 
     let style = if len == 0 {
         ProgressStyle::with_template("{prefix:.green} {spinner} {msg}")
@@ -207,23 +205,23 @@ fn create_progress_bar(progress: &MultiProgress, len: usize) -> ProgressBar {
             .progress_chars("=>-")
     };
 
-    bar.set_style(style);
-    bar.set_prefix("○");
+    progress_bar.set_style(style);
+    progress_bar.set_prefix("○");
 
     if len == 0 {
-        bar.enable_steady_tick(Duration::from_secs_f32(0.1));
+        progress_bar.enable_steady_tick(Duration::from_secs_f32(0.1));
     }
 
-    bar
+    progress_bar
 }
 
-fn update_progress_bar(progress: &ProgressBar, file_name: &str) {
-    let total = progress.length().unwrap_or(0);
-    let current = progress.position();
+fn update_progress_bar(progress_bar: &ProgressBar, file_name: &str) {
+    let total = progress_bar.length().unwrap_or(0);
+    let current = progress_bar.position();
 
     let counter = format_counter(current, total);
 
-    progress.set_message(format!("{:>5} {}", counter, file_name));
+    progress_bar.set_message(format!("{:>5} {}", counter, file_name));
 }
 
 fn format_counter(current: u64, total: u64) -> String {
@@ -235,15 +233,14 @@ fn format_counter(current: u64, total: u64) -> String {
 }
 
 fn add_result(results: &Arc<Mutex<Vec<MigrationResult>>>, result: MigrationResult) {
-    let mut results_guard = match results.lock() {
+    match results.lock() {
         Ok(guard) => guard,
 
         Err(poisoned) => {
             panic!("Failed to acquire lock on results: {}", poisoned);
         }
-    };
-
-    results_guard.push(result);
+    }
+    .push(result);
 }
 
 pub fn migrate_project(
